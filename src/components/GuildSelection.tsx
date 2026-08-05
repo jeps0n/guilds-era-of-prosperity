@@ -1,5 +1,6 @@
 import type { GuildType } from "../game/engine/types";
 import { GUILDS } from "../game/data/guilds";
+import GuildCard from "./GuildCard";
 
 interface GuildSelectionProps {
   playerName: string;
@@ -21,14 +22,18 @@ function GuildSelection({
             availableGuilds.includes(guild.type)
         )
         .map((guild) => (
-        <button
-          key={guild.type}
-          onClick={() => onSelectGuild(guild.type)}
-        >
-          <h3>{guild.name}</h3>
-          <p>{guild.description}</p>
-        </button>
+          <button
+            key={guild.type}
+            onClick={() => onSelectGuild(guild.type)}
+          >
+            <h3>
+              {guild.icon} {guild.name}
+            </h3>
+
+            <p>{guild.description}</p>
+          </button>
       ))}
+      
     </div>
   );
 }
