@@ -43,9 +43,13 @@ export function createInitialState(): GameState {
     },
   ];
 
+  const startingPlayer = getRandomStartingPlayer(players);
+
   return {
     players,
 
+    guildSelectionPlayerId: startingPlayer.id,
+    
     currentPlayerId: getRandomStartingPlayer(players).id,
 
     phase: "guild_selection",

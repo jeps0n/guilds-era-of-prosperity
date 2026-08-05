@@ -18,6 +18,8 @@ export interface GameState {
 
   currentPlayerId: string;
 
+  guildSelectionPlayerId: string;
+
   turnNumber: number;
 
   phase: GamePhase;
