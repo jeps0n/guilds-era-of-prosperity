@@ -1,5 +1,4 @@
 import type { GameState } from "./GameState";
-import { getRandomStartingPlayer } from "../systems/playerOrder";
 
 export function createInitialState(): GameState {
   const players = [
@@ -42,18 +41,25 @@ export function createInitialState(): GameState {
       secondaryRolls: [],
     },
   ];
-
-  const startingPlayer = getRandomStartingPlayer(players);
+  const placementOrder = [
+    ...players,
+  ]
+  .sort(() => Math.random() - 0.5)
+  .map((player) => player.id);
+  const guildSelectionPlayer =
+  players[Math.floor(Math.random() * players.length)];
 
   return {
     players,
 
-    guildSelectionPlayerId: startingPlayer.id,
+    guildSelectionPlayerId: guildSelectionPlayer.id,
     
-    currentPlayerId: getRandomStartingPlayer(players).id,
+    currentPlayerId: placementOrder[0],
 
     placementStep: 0,
 
+    placementOrder,
+    
     phase: "guild_selection",
 
     turnNumber: 0,

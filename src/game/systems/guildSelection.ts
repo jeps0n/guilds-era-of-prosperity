@@ -6,22 +6,6 @@ export function selectGuild(
   playerId: string,
   guild: GuildType
 ): GameState {
-  const player = game.players.find(
-    (player) => player.id === playerId
-  );
-
-  if (!player || player.guild !== undefined) {
-    return game;
-  }
-
-  const guildTaken = game.players.some(
-    (player) => player.guild === guild
-  );
-
-  if (guildTaken) {
-    return game;
-  }
-
   const updatedPlayers = game.players.map((player) =>
     player.id === playerId
       ? {
@@ -31,18 +15,15 @@ export function selectGuild(
       : player
   );
 
-  const updatedGame = {
+  return advanceGuildSelection({
     ...game,
     players: updatedPlayers,
-  };
-
-  return advanceGuildSelection(updatedGame);
+  });
 }
 
 function advanceGuildSelection(
   game: GameState
 ): GameState {
-
   const selectionComplete = game.players.every(
     (player) => player.guild !== undefined
   );
@@ -51,6 +32,8 @@ function advanceGuildSelection(
     return {
       ...game,
       phase: "initial_placement",
+      currentPlayerId: game.placementOrder[0],
+      placementStep: 0,
     };
   }
 
@@ -60,7 +43,8 @@ function advanceGuildSelection(
 
   return {
     ...game,
-    currentPlayerId: nextPlayer?.id ?? game.currentPlayerId,
+    currentPlayerId:
+      nextPlayer?.id ?? game.currentPlayerId,
   };
 }
 

@@ -25,25 +25,17 @@ export function placeSettlement(
 function advancePlacement(game: GameState): GameState {
   const nextStep = game.placementStep + 1;
 
-  const placementOrder = [
-    game.players[0].id,
-    game.players[1].id,
-    game.players[1].id,
-    game.players[0].id,
-  ];
-
-  const nextPlayerId =
-    placementOrder[nextStep] ?? game.currentPlayerId;
-
   const placementComplete =
-    nextStep >= placementOrder.length;
+    nextStep >= game.placementOrder.length;
 
   return {
     ...game,
     placementStep: nextStep,
+
     currentPlayerId: placementComplete
       ? game.currentPlayerId
-      : nextPlayerId,
+      : game.placementOrder[nextStep],
+
     phase: placementComplete
       ? "playing"
       : game.phase,

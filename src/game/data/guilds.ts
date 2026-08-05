@@ -12,7 +12,7 @@ export const GUILDS: GuildDefinition[] = [
   {
     type: "builder",
     name: "Builder",
-    icon: "🏗️",
+    icon: "🔨",
     color: "#C08457",
     description: "Focuses on construction and development.",
   },
@@ -26,7 +26,7 @@ export const GUILDS: GuildDefinition[] = [
   {
     type: "merchant",
     name: "Merchant",
-    icon: "💰",
+    icon: "📜",
     color: "#D4A017",
     description: "Focuses on trading and resources.",
   },

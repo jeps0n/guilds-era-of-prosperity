@@ -22,6 +22,8 @@ export interface GameState {
 
   placementStep: number;
 
+  placementOrder: string[];
+
   turnNumber: number;
 
   phase: GamePhase;
