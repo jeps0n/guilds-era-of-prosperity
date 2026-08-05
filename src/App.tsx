@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import GameStatus from "./components/GameStatus";
 import GuildSelection from "./components/GuildSelection";
+import InitialPlacement from "./components/InitialPlacement";
 
 import { createInitialState } from "./game/engine/initialState";
 
@@ -31,14 +32,14 @@ function App() {
     setGame(updatedGame);
   }
 
-  function handlePlacement() {
-  const updatedGame = placeSettlement(
-    game,
-    game.currentPlayerId
-  );
+  function handlePlaceSettlement() {
+    const updatedGame = placeSettlement(
+      game,
+      game.currentPlayerId
+    );
 
-  setGame(updatedGame);
-}
+    setGame(updatedGame);
+  }
 
   const currentPlayer = game.players.find(
     (player) => player.id === game.currentPlayerId
@@ -71,19 +72,14 @@ function App() {
           />
         )}
 
-      <GameStatus game={game} />
-      {game.phase === "initial_placement" &&
-        currentPlayer && (
-          <div>
-            <h2>
-              {currentPlayer.name} placement turn
-            </h2>
-
-            <button onClick={handlePlacement}>
-              Place Settlement
-            </button>
-          </div>
+      {game.phase === "initial_placement" && (
+        <InitialPlacement
+          game={game}
+          onPlaceSettlement={handlePlaceSettlement}
+        />
       )}
+
+      <GameStatus game={game} />
     </div>
   );
 }
