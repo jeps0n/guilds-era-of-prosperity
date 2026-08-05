@@ -1,32 +1,11 @@
 import type { GuildType } from "../game/engine/types";
+import { GUILDS } from "../game/data/guilds";
 
 interface GuildSelectionProps {
   playerName: string;
   availableGuilds: GuildType[];
   onSelectGuild: (guild: GuildType) => void;
 }
-
-const guildOptions: {
-  type: GuildType;
-  name: string;
-  description: string;
-}[] = [
-  {
-    type: "builder",
-    name: "Builder",
-    description: "Focuses on construction and development.",
-  },
-  {
-    type: "explorer",
-    name: "Explorer",
-    description: "Focuses on expansion and exploration.",
-  },
-  {
-    type: "merchant",
-    name: "Merchant",
-    description: "Focuses on trading and resources.",
-  },
-];
 
 function GuildSelection({
   playerName,
@@ -37,7 +16,7 @@ function GuildSelection({
     <div>
       <h2>{playerName}, choose your Guild</h2>
 
-      {guildOptions
+      {GUILDS
         .filter((guild) =>
             availableGuilds.includes(guild.type)
         )
