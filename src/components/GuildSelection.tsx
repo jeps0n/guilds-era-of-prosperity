@@ -19,21 +19,16 @@ function GuildSelection({
 
       {GUILDS
         .filter((guild) =>
-            availableGuilds.includes(guild.type)
+          availableGuilds.includes(guild.type)
         )
         .map((guild) => (
-          <button
+          <GuildCard
             key={guild.type}
-            onClick={() => onSelectGuild(guild.type)}
-          >
-            <h3>
-              {guild.icon} {guild.name}
-            </h3>
-
-            <p>{guild.description}</p>
-          </button>
+            guild={guild}
+            onSelect={() => onSelectGuild(guild.type)}
+          />
       ))}
-      
+
     </div>
   );
 }
