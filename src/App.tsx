@@ -3,7 +3,7 @@ import { useState } from "react";
 import GameStatus from "./components/GameStatus";
 import GuildSelection from "./components/GuildSelection";
 
-import { initialState } from "./game/engine/initialState";
+import { createInitialState } from "./game/engine/initialState";
 
 import {
   selectGuild,
@@ -13,7 +13,7 @@ import type { GameState } from "./game/engine/GameState";
 import type { GuildType } from "./game/engine/types";
 
 function App() {
-  const [game, setGame] = useState<GameState>(initialState);
+  const [game, setGame] = useState<GameState>(createInitialState );
 
   function handleGuildSelection(guild: GuildType) {
     const updatedGame = selectGuild(
