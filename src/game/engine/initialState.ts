@@ -52,6 +52,8 @@ export function createInitialState(): GameState {
     
     currentPlayerId: getRandomStartingPlayer(players).id,
 
+    placementStep: 0,
+
     phase: "guild_selection",
 
     turnNumber: 0,

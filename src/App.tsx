@@ -9,11 +9,17 @@ import {
   selectGuild,
 } from "./game/systems/guildSelection";
 
+import {
+  placeSettlement,
+} from "./game/systems/initialPlacement";
+
 import type { GameState } from "./game/engine/GameState";
 import type { GuildType } from "./game/engine/types";
 
 function App() {
-  const [game, setGame] = useState<GameState>(createInitialState );
+  const [game, setGame] = useState<GameState>(
+    createInitialState()
+  );
 
   function handleGuildSelection(guild: GuildType) {
     const updatedGame = selectGuild(
@@ -24,6 +30,15 @@ function App() {
 
     setGame(updatedGame);
   }
+
+  function handlePlacement() {
+  const updatedGame = placeSettlement(
+    game,
+    game.currentPlayerId
+  );
+
+  setGame(updatedGame);
+}
 
   const currentPlayer = game.players.find(
     (player) => player.id === game.currentPlayerId
@@ -57,6 +72,18 @@ function App() {
         )}
 
       <GameStatus game={game} />
+      {game.phase === "initial_placement" &&
+        currentPlayer && (
+          <div>
+            <h2>
+              {currentPlayer.name} placement turn
+            </h2>
+
+            <button onClick={handlePlacement}>
+              Place Settlement
+            </button>
+          </div>
+      )}
     </div>
   );
 }

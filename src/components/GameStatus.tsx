@@ -13,6 +13,13 @@ function GameStatus({ game }: GameStatusProps) {
         Phase: <strong>{game.phase}</strong>
       </p>
 
+      {game.phase === "initial_placement" && (
+      <p>
+        Placement Step:{" "}
+        <strong>{game.placementStep}</strong>
+      </p>
+)}
+
       <p>
         Era of Prosperity:{" "}
         <strong>

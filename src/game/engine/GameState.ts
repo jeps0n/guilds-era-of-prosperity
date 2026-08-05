@@ -20,6 +20,8 @@ export interface GameState {
 
   guildSelectionPlayerId: string;
 
+  placementStep: number;
+
   turnNumber: number;
 
   phase: GamePhase;
