@@ -6,6 +6,22 @@ export function selectGuild(
   playerId: string,
   guild: GuildType
 ): GameState {
+  const player = game.players.find(
+    (player) => player.id === playerId
+  );
+
+  if (!player || player.guild !== undefined) {
+    return game;
+  }
+
+  const guildTaken = game.players.some(
+    (player) => player.guild === guild
+  );
+
+  if (guildTaken) {
+    return game;
+  }
+
   const updatedPlayers = game.players.map((player) =>
     player.id === playerId
       ? {
@@ -35,7 +51,6 @@ function advanceGuildSelection(
     return {
       ...game,
       phase: "initial_placement",
-      currentPlayerId: game.players[0].id,
     };
   }
 
