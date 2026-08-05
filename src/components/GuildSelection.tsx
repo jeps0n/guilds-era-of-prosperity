@@ -23,13 +23,30 @@ function GuildSelection({
         justifyContent: "center",
         gap: "24px",
         padding: "40px",
+        background: "#111827",
+        borderRadius: "16px",
+        color: "white",
       }}
     >
   <div style={{ textAlign: "center" }}>
-    <h2>{playerName}, choose your Guild</h2>
+    <h2>
+      🏛️ Guild Selection
+    </h2>
+
+    <div
+      style={{
+        padding: "8px 16px",
+        borderRadius: "20px",
+        background: "#374151",
+        color: "#f9fafb",
+        fontWeight: "bold",
+      }}
+    >
+      {playerName}'s Turn
+    </div>
 
     <p>
-      Select the Guild that will shape your civilization.
+      Select the Guild that will shape your colony.
     </p>
   </div>
 
