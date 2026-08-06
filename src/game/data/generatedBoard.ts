@@ -83,22 +83,41 @@ const shuffledResources =
   shuffle(RESOURCE_LAYOUT);
 
 const shuffledNumbers =
-  shuffle(NUMBER_LAYOUT);
+  NUMBER_LAYOUT
+    .filter(
+      (number): number is number =>
+        number !== null
+    )
+    .sort(
+      () => Math.random() - 0.5
+    );
+
+let numberIndex = 0;
 
 
 export const GENERATED_TILES: HexTile[] =
-  STANDARD_HEX_LAYOUT.map((hex, index) => ({
-    id: `hex-${index + 1}`,
-    x: hex.x,
-    y: hex.y,
+  STANDARD_HEX_LAYOUT.map((hex, index) => {
 
-    resource:
-      shuffledResources[index],
+    const resource =
+      shuffledResources[index];
 
-    numberToken:
-      shuffledNumbers[index] ?? undefined,
-  }));
 
+    return {
+      id: `hex-${index + 1}`,
+
+      x: hex.x,
+
+      y: hex.y,
+
+      resource,
+
+      numberToken:
+        resource === "desert"
+          ? undefined
+          : shuffledNumbers[numberIndex++] ?? undefined,
+    };
+
+  });
 
 
 export const GENERATED_EDGES =
