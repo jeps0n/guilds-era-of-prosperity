@@ -5,20 +5,33 @@ export function placeSettlement(
   playerId: string,
   nodeId: string
 ): GameState {
-  const updatedPlayers = game.players.map((player) =>
-    player.id === playerId
-      ? {
-          ...player,
-          settlements: [
-            ...player.settlements,
-            {
-              id: `settlement-${player.settlements.length + 1}`,
-              playerId,
-              nodeId,
-            },
-          ],
-        }
-      : player
+  const connectedEdge = game.board.edges.find(
+    (edge) =>
+      edge.nodeA === nodeId ||
+      edge.nodeB === nodeId
+  );
+
+  const updatedPlayers = game.players.map(
+    (player) =>
+      player.id === playerId
+        ? {
+            ...player,
+            settlements: [
+              ...player.settlements,
+              {
+                id: `settlement-${player.settlements.length + 1}`,
+                playerId,
+                nodeId,
+              },
+            ],
+            roads: connectedEdge
+              ? [
+                  ...player.roads,
+                  connectedEdge.id,
+                ]
+              : player.roads,
+          }
+        : player
   );
 
   return advancePlacement({
@@ -42,8 +55,8 @@ function advancePlacement(
     placementStep: nextStep,
 
     currentPlayerId: placementComplete
-  ? game.currentPlayerId
-  : game.placementOrder[nextStep],
+      ? game.currentPlayerId
+      : game.placementOrder[nextStep],
 
     phase: placementComplete
       ? "playing"
