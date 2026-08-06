@@ -46,9 +46,9 @@ function BoardView({
   return (
     <div>
       <svg
-        width="900"
-        height="750"
-        viewBox="-450 -375 900 750"
+        width="800"
+        height="600"
+        viewBox="-360 -320 720 640"
         style={{
           border: "2px dashed gray",
           background: "#87ceeb",

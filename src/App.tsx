@@ -1,10 +1,12 @@
 import { useState } from "react";
 
+import BoardView from "./components/BoardView";
 import GameStatus from "./components/GameStatus";
 import GuildSelection from "./components/GuildSelection";
 import InitialPlacement from "./components/InitialPlacement";
 import PlayerPanel from "./components/PlayerPanel";
-import BoardView from "./components/BoardView";
+
+import GameLayout from "./components/layout/GameLayout";
 
 import { createInitialState } from "./game/engine/initialState";
 
@@ -88,63 +90,60 @@ function App() {
           (edgeId, index) => ({
             id:
               `${player.id}-road-${index}`,
-
             edgeId,
           })
         )
     );
 
 
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#1f2937",
-        color: "white",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "24px",
-      }}
-    >
+  if (
+    game.phase === "guild_selection" &&
+    currentPlayer &&
+    currentPlayer.guild === undefined
+  ) {
 
-      <h1>
-        Guilds: Era of Prosperity
-      </h1>
-
-
-      {game.phase === "guild_selection" &&
-        currentPlayer &&
-        currentPlayer.guild === undefined && (
-
+    return (
+      <GameLayout
+        header={
+          <h1
+            style={{
+              margin: "0 0 6px 0",
+              fontSize: "22px",
+            }}
+          >
+            Guilds: Era of Prosperity
+          </h1>
+        }
+        board={
           <GuildSelection
             playerName={currentPlayer.name}
             availableGuilds={availableGuilds}
             onSelectGuild={handleGuildSelection}
           />
+        }
+      />
+    );
 
-        )}
-
-
-
-      {game.phase === "initial_placement" && (
-
-        <InitialPlacement
-          game={game}
-        />
-
-      )}
+  }
 
 
+  return (
 
-      {game.phase !== "guild_selection" && (
+    <GameLayout
 
+      header={
+        <h1
+          style={{
+            margin: "0 0 6px 0",
+            fontSize: "22px",
+          }}
+        >
+          Guilds: Era of Prosperity
+        </h1>
+      }
+
+      board={
         <>
-
-          <PlayerPanel
-            game={game}
-          />
-
 
           <BoardView
             board={game.board}
@@ -158,22 +157,41 @@ function App() {
             }
           />
 
+          {game.phase === "initial_placement" && (
+
+            <InitialPlacement
+              game={game}
+            />
+
+          )}
+
         </>
+      }
 
-      )}
+      rightSidebar={
+        <>
 
+          <GameStatus
+            game={game}
+          />
 
+          <div
+            style={{
+              height: "12px",
+            }}
+          />
 
-      {game.phase !== "guild_selection" && (
+          <PlayerPanel
+            game={game}
+          />
 
-        <GameStatus
-          game={game}
-        />
+        </>
+      }
 
-      )}
+    />
 
-    </div>
   );
+
 }
 
 

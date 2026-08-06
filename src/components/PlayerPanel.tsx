@@ -12,8 +12,8 @@ function PlayerPanel({
     <div
       style={{
         display: "flex",
-        gap: "20px",
-        marginBottom: "24px",
+        flexDirection: "row",
+        gap: "12px",
       }}
     >
       {game.players.map((player) => (
@@ -24,41 +24,53 @@ function PlayerPanel({
             background: "#111827",
             border: "1px solid #374151",
             borderRadius: "12px",
-            padding: "16px",
-            width: "220px",
+            padding: "10px",
+            width: "185px",
+            minHeight: "145px",
+            boxSizing: "border-box",
           }}
         >
 
-          <h3>
+          <h3
+            style={{
+              margin: "0 0 6px 0",
+              fontSize: "17px",
+            }}
+          >
             {player.name}
           </h3>
 
           <div>
-            Guild: {player.guild ?? "None"}
+            <strong>Guild:</strong>{" "}
+            {player.guild ?? "None"}
           </div>
 
-          <div>
-            VP: {player.vp}
+          <div style={{ marginTop: "2px" }}>
+            <strong>VP:</strong>{" "}
+            {player.vp}
           </div>
 
-          <hr />
+          <hr
+            style={{
+              margin: "8px 0",
+              borderColor: "#374151",
+            }}
+          />
 
           <div>
-            🧱 {player.resources.brick}
-            {" "}
-            🌲 {player.resources.lumber}
-            {" "}
+            🧱 {player.resources.brick}{" "}
+            🌲 {player.resources.lumber}{" "}
             🌾 {player.resources.wheat}
           </div>
 
-          <div>
-            🐑 {player.resources.sheep}
-            {" "}
+          <div style={{ marginTop: "2px" }}>
+            🐑 {player.resources.sheep}{" "}
             ⛰️ {player.resources.ore}
           </div>
 
-          <div>
-            🏠 Settlements: {player.settlements.length}
+          <div style={{ marginTop: "8px" }}>
+            🏠 {player.settlements.length} Settlement
+            {player.settlements.length !== 1 ? "s" : ""}
           </div>
 
         </div>
