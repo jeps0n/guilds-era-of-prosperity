@@ -4,56 +4,41 @@ interface GameStatusProps {
   game: GameState;
 }
 
-function GameStatus({ game }: GameStatusProps) {
+function GameStatus({
+  game,
+}: GameStatusProps) {
+
+  const currentPlayer =
+    game.players.find(
+      (player) =>
+        player.id === game.currentPlayerId
+    );
+
   return (
-    <div>
-      <h2>Game Status</h2>
+    <div
+      style={{
+        marginTop: "24px",
+        padding: "16px",
+        background: "#111827",
+        borderRadius: "12px",
+        color: "white",
+        minWidth: "300px",
+        textAlign: "center",
+      }}
+    >
+      <div>
+        Phase: {game.phase}
+      </div>
 
-      <p>
-        Phase: <strong>{game.phase}</strong>
-      </p>
+      <div>
+        Turn: {game.turnNumber}
+      </div>
 
-      {game.phase === "initial_placement" && (
-      <p>
-        Placement Step:{" "}
-        <strong>{game.placementStep}</strong>
-      </p>
-)}
-
-      <p>
-        Era of Prosperity:{" "}
-        <strong>
-          {game.eraOfProsperity ? "Active" : "Not Started"}
-        </strong>
-      </p>
-
-      <hr />
-
-      {game.players.map((player) => (
-        <div key={player.id}>
-          <h3>{player.name}</h3>
-
-          <p>
-            VP: {player.vp}
-          </p>
-
-          <p>
-            Guild: {player.guild ?? "Not Selected"}
-          </p>
-
-          <p>
-            Resources:
-            <br />
-            🧱 {player.resources.brick}{" "}
-            🌲 {player.resources.lumber}{" "}
-            🌾 {player.resources.wheat}{" "}
-            🐑 {player.resources.sheep}{" "}
-            ⛰️ {player.resources.ore}
-          </p>
-
-          <hr />
-        </div>
-      ))}
+      <div>
+        Current Player:
+        {" "}
+        {currentPlayer?.name ?? "None"}
+      </div>
     </div>
   );
 }

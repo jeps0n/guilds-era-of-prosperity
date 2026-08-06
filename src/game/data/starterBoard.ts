@@ -10,13 +10,3 @@ export const STARTER_BOARD = {
   nodes: GENERATED_NODES,
   edges: GENERATED_EDGES,
 };
-
-
-console.log(
-  "=== BOARD CHECK ===",
-  {
-    tiles: STARTER_BOARD.tiles.length,
-    nodes: STARTER_BOARD.nodes.length,
-    edges: STARTER_BOARD.edges.length,
-  }
-);

@@ -3,6 +3,8 @@ import { useState } from "react";
 import GameStatus from "./components/GameStatus";
 import GuildSelection from "./components/GuildSelection";
 import InitialPlacement from "./components/InitialPlacement";
+import PlayerPanel from "./components/PlayerPanel";
+import BoardView from "./components/BoardView";
 
 import { createInitialState } from "./game/engine/initialState";
 
@@ -17,36 +19,52 @@ import {
 import type { GameState } from "./game/engine/GameState";
 import type { GuildType } from "./game/engine/types";
 
-import BoardView from "./components/BoardView";
 
 function App() {
+
   const [game, setGame] = useState<GameState>(
     createInitialState()
   );
 
-  function handleGuildSelection(guild: GuildType) {
-    const updatedGame = selectGuild(
-      game,
-      game.currentPlayerId,
-      guild
-    );
+
+  function handleGuildSelection(
+    guild: GuildType
+  ) {
+
+    const updatedGame =
+      selectGuild(
+        game,
+        game.currentPlayerId,
+        guild
+      );
 
     setGame(updatedGame);
+
   }
 
-  function handlePlaceSettlement(nodeId: string) {
-    const updatedGame = placeSettlement(
-      game,
-      game.currentPlayerId,
-      nodeId
-    );
+
+  function handlePlaceSettlement(
+    nodeId: string
+  ) {
+
+    const updatedGame =
+      placeSettlement(
+        game,
+        game.currentPlayerId,
+        nodeId
+      );
 
     setGame(updatedGame);
+
   }
 
-  const currentPlayer = game.players.find(
-    (player) => player.id === game.currentPlayerId
-  );
+
+  const currentPlayer =
+    game.players.find(
+      (player) =>
+        player.id === game.currentPlayerId
+    );
+
 
   const availableGuilds: GuildType[] = (
     [
@@ -57,54 +75,106 @@ function App() {
   ).filter(
     (guild) =>
       !game.players.some(
-        (player) => player.guild === guild
+        (player) =>
+          player.guild === guild
       )
   );
 
-  const roads = game.players.flatMap(
-    (player) =>
-      player.roads.map((edgeId, index) => ({
-        id: `${player.id}-road-${index}`,
-        edgeId,
-      }))
-  );
+
+  const roads =
+    game.players.flatMap(
+      (player) =>
+        player.roads.map(
+          (edgeId, index) => ({
+            id:
+              `${player.id}-road-${index}`,
+
+            edgeId,
+          })
+        )
+    );
+
 
   return (
-    <div>
-      <h1>Guilds: Era of Prosperity</h1>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#1f2937",
+        color: "white",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "24px",
+      }}
+    >
+
+      <h1>
+        Guilds: Era of Prosperity
+      </h1>
+
 
       {game.phase === "guild_selection" &&
         currentPlayer &&
         currentPlayer.guild === undefined && (
+
           <GuildSelection
             playerName={currentPlayer.name}
             availableGuilds={availableGuilds}
             onSelectGuild={handleGuildSelection}
           />
+
         )}
 
+
+
       {game.phase === "initial_placement" && (
+
         <InitialPlacement
           game={game}
         />
+
       )}
 
+
+
       {game.phase !== "guild_selection" && (
-        <BoardView
-          board={game.board}
-          settlements={game.players.flatMap(
-            (player) => player.settlements
-          )}
-          roads={roads}
-          onSelectNode={handlePlaceSettlement}
+
+        <>
+
+          <PlayerPanel
+            game={game}
+          />
+
+
+          <BoardView
+            board={game.board}
+            settlements={game.players.flatMap(
+              (player) =>
+                player.settlements
+            )}
+            roads={roads}
+            onSelectNode={
+              handlePlaceSettlement
+            }
+          />
+
+        </>
+
+      )}
+
+
+
+      {game.phase !== "guild_selection" && (
+
+        <GameStatus
+          game={game}
         />
+
       )}
 
-      {game.phase !== "guild_selection" && (
-        <GameStatus game={game} />
-      )}
     </div>
   );
 }
+
 
 export default App;
