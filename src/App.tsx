@@ -16,32 +16,37 @@ import {
 
 import {
   placeSettlement,
-} from "./game/systems/initialPlacement";
+} from "./game/systems/initialPlacement/placeSettlement";
+
+import {
+  placeRoad,
+} from "./game/systems/initialPlacement/placeRoad";
 
 import type { GameState } from "./game/engine/GameState";
 import type { GuildType } from "./game/engine/types";
 
 import { endTurn } from "./game/systems/turn/endTurn";
 
+
 function App() {
 
-  const [game, setGame] = useState<GameState>(
-    createInitialState()
-  );
+  const [game, setGame] =
+    useState<GameState>(
+      createInitialState()
+    );
 
 
   function handleGuildSelection(
     guild: GuildType
   ) {
 
-    const updatedGame =
+    setGame(
       selectGuild(
         game,
         game.currentPlayerId,
         guild
-      );
-
-    setGame(updatedGame);
+      )
+    );
 
   }
 
@@ -50,55 +55,78 @@ function App() {
     nodeId: string
   ) {
 
-    const updatedGame =
+    setGame(
       placeSettlement(
         game,
         game.currentPlayerId,
         nodeId
-      );
-
-    setGame(updatedGame);
+      )
+    );
 
   }
 
-  function handleEndTurn() {
-  const updatedGame =
-    endTurn(game);
 
-  setGame(updatedGame);
-}
+  function handlePlaceRoad(
+    edgeId: string
+  ) {
+
+    setGame(
+      placeRoad(
+        game,
+        game.currentPlayerId,
+        edgeId
+      )
+    );
+
+  }
+
+
+  function handleEndTurn() {
+
+    setGame(
+      endTurn(game)
+    );
+
+  }
 
 
   const currentPlayer =
     game.players.find(
-      (player) =>
+      player =>
         player.id === game.currentPlayerId
     );
 
 
-  const availableGuilds: GuildType[] = (
-    [
-      "builder",
-      "explorer",
-      "merchant",
-    ] as GuildType[]
-  ).filter(
-    (guild) =>
-      !game.players.some(
-        (player) =>
-          player.guild === guild
-      )
-  );
+  const availableGuilds: GuildType[] =
+    (
+      [
+        "builder",
+        "explorer",
+        "merchant",
+      ] as GuildType[]
+    ).filter(
+      guild =>
+        !game.players.some(
+          player =>
+            player.guild === guild
+        )
+    );
 
 
   const roads =
     game.players.flatMap(
-      (player) =>
+      player =>
         player.roads.map(
-          (edgeId, index) => ({
+          (edgeId,index)=>({
+
             id:
               `${player.id}-road-${index}`,
+
             edgeId,
+
+            playerId:
+              player.id,
+
           })
         )
     );
@@ -111,25 +139,37 @@ function App() {
   ) {
 
     return (
+
       <GameLayout
+
         header={
-          <h1
-            style={{
-              margin: "0 0 6px 0",
-              fontSize: "22px",
-            }}
-          >
+          <h1>
             Guilds: Era of Prosperity
           </h1>
         }
+
         board={
+
           <GuildSelection
-            playerName={currentPlayer.name}
-            availableGuilds={availableGuilds}
-            onSelectGuild={handleGuildSelection}
+
+            playerName={
+              currentPlayer.name
+            }
+
+            availableGuilds={
+              availableGuilds
+            }
+
+            onSelectGuild={
+              handleGuildSelection
+            }
+
           />
+
         }
+
       />
+
     );
 
   }
@@ -140,30 +180,62 @@ function App() {
     <GameLayout
 
       header={
-        <h1
-          style={{
-            margin: "0 0 6px 0",
-            fontSize: "22px",
-          }}
-        >
+        <h1>
           Guilds: Era of Prosperity
         </h1>
       }
 
+
       board={
+
         <>
 
           <BoardView
-            board={game.board}
-            settlements={game.players.flatMap(
-              (player) =>
-                player.settlements
-            )}
-            roads={roads}
-            onSelectNode={
-              handlePlaceSettlement
+
+            board={
+              game.board
             }
+
+
+            settlements={
+              game.players.flatMap(
+                player =>
+                  player.settlements
+              )
+            }
+
+
+            roads={
+              roads
+            }
+
+
+            onSelectNode={
+
+              game.phase === "initial_placement" &&
+              game.placementAction === "settlement"
+
+                ? handlePlaceSettlement
+
+                : undefined
+
+            }
+
+
+            onSelectEdge={
+
+              game.phase === "initial_placement" &&
+              game.placementAction === "road"
+
+                ? handlePlaceRoad
+
+                : undefined
+
+            }
+
+
           />
+
 
           {game.phase === "initial_placement" && (
 
@@ -174,27 +246,31 @@ function App() {
           )}
 
         </>
+
       }
 
+
       rightSidebar={
+
         <>
 
-<GameStatus
-  game={game}
-  onEndTurn={handleEndTurn}
-/>
+          <GameStatus
 
-          <div
-            style={{
-              height: "12px",
-            }}
+            game={game}
+
+            onEndTurn={
+              handleEndTurn
+            }
+
           />
+
 
           <PlayerPanel
             game={game}
           />
 
         </>
+
       }
 
     />

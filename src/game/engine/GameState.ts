@@ -2,10 +2,15 @@ import type { Player } from "./types";
 import type { Board } from "../domain/Board";
 
 export type GamePhase =
-  | "guild_selection"
-  | "initial_placement"
-  | "playing"
-  | "game_over";
+    | "guild_selection"
+    | "initial_placement"
+    | "playing"
+    | "game_over";
+
+
+export type PlacementAction =
+    | "settlement"
+    | "road";
 
 export interface GameEvent {
   id: string;
@@ -26,6 +31,10 @@ export interface GameState {
   placementStep: number;
 
   placementOrder: string[];
+
+  placementAction: PlacementAction;
+
+  lastPlacedSettlementNodeId?: string;
 
   turnNumber: number;
 

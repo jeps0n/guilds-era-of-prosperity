@@ -69,6 +69,8 @@ export function createInitialState(): GameState {
     placementStep: 0,
 
     placementOrder,
+
+    placementAction: "settlement",
     
     phase: "guild_selection",
 

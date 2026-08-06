@@ -27,7 +27,7 @@ function PlayerPanel({
 
         {game.players.map((player) => (
 
-            <Panel>
+            <Panel key={player.id}>
 
             <strong>
               {player.name}
