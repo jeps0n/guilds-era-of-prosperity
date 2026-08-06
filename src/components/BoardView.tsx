@@ -11,136 +11,187 @@ interface BoardViewProps {
   onSelectNode?: (nodeId: string) => void;
 }
 
+const SIZE = 75;
+
+
+function hexPoints(
+  x: number,
+  y: number
+) {
+  return Array.from(
+    { length: 6 },
+    (_, i) => {
+
+      const angle =
+        Math.PI / 180 *
+        (30 + i * 60);
+
+      return [
+        x + SIZE * Math.cos(angle),
+        y + SIZE * Math.sin(angle),
+      ].join(",");
+
+    }
+  ).join(" ");
+}
+
+
 function BoardView({
   board,
   settlements,
   roads,
   onSelectNode,
 }: BoardViewProps) {
+
   return (
     <div>
       <h2>🗺️ Board</h2>
 
-      <div
+      <svg
+        width="900"
+        height="750"
+        viewBox="-450 -375 900 750"
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 120px)",
-          gap: "12px",
+          border: "2px dashed gray",
+          background: "#87ceeb",
         }}
       >
-        {board.tiles.map((tile) => (
-          <div
-            key={tile.id}
-            style={{
-              border: "2px solid black",
-              borderRadius: "12px",
-              padding: "20px",
-              textAlign: "center",
-              background:
-                tile.resource === "desert"
-                  ? "#d6b56c"
-                  : "#86efac",
-            }}
-          >
-            <div>
-              {tile.resource === "lumber" && "🌲"}
-              {tile.resource === "brick" && "🧱"}
-              {tile.resource === "wheat" && "🌾"}
-              {tile.resource === "sheep" && "🐑"}
-              {tile.resource === "ore" && "⛰️"}
-              {tile.resource === "desert" && "🏜️"}
-            </div>
 
-            <strong>{tile.resource}</strong>
+        {/* TERRAIN */}
+        {board.tiles.map((tile) => (
+
+          <g key={tile.id}>
+
+            <polygon
+              points={
+                hexPoints(
+                  tile.x,
+                  tile.y
+                )
+              }
+              fill={
+                {
+                  brick: "#b45309",
+                  lumber: "#166534",
+                  wheat: "#eab308",
+                  sheep: "#65a30d",
+                  ore: "#6b7280",
+                  desert: "#d6c28a",
+                }[tile.resource]
+              }
+              stroke="black"
+              strokeWidth="2"
+            />
 
             {tile.numberToken && (
-              <div>{tile.numberToken}</div>
+              <text
+                x={tile.x}
+                y={tile.y}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontSize="18"
+                fill="black"
+              >
+                {tile.numberToken}
+              </text>
             )}
-          </div>
+
+          </g>
+
         ))}
-      </div>
 
-      <h3>Settlement Nodes</h3>
 
-      <div
-        style={{
-          position: "relative",
-          width: "600px",
-          height: "300px",
-          border: "2px dashed gray",
-          marginTop: "20px",
-        }}
-      >
-        <svg
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-          }}
-        >
-          {board.edges.map((edge) => {
-            const nodeA = board.nodes.find(
-              (node) => node.id === edge.nodeA
+        {/* ROADS */}
+        {board.edges.map((edge) => {
+
+          const a =
+            board.nodes.find(
+              (node) =>
+                node.id === edge.nodeA
             );
 
-            const nodeB = board.nodes.find(
-              (node) => node.id === edge.nodeB
+          const b =
+            board.nodes.find(
+              (node) =>
+                node.id === edge.nodeB
             );
 
-            if (!nodeA || !nodeB) {
-              return null;
-            }
 
-            const road = roads.find(
-              (item) => item.edgeId === edge.id
+          if (!a || !b) {
+            return null;
+          }
+
+
+          const road =
+            roads.find(
+              (item) =>
+                item.edgeId === edge.id
             );
 
-            return (
-              <line
-                key={edge.id}
-                x1={nodeA.x}
-                y1={nodeA.y}
-                x2={nodeB.x}
-                y2={nodeB.y}
-                stroke={
-                  road ? "red" : "black"
-                }
-                strokeWidth={
-                  road ? "8" : "4"
-                }
-              />
-            );
-          })}
-        </svg>
-
-        {board.nodes.map((node) => {
-          const settlement = settlements.find(
-            (item) => item.nodeId === node.id
-          );
 
           return (
-            <button
+            <line
+              key={edge.id}
+              x1={a.x}
+              y1={a.y}
+              x2={b.x}
+              y2={b.y}
+              stroke={
+                road
+                  ? "red"
+                  : "#78350f"
+              }
+              strokeWidth={
+                road
+                  ? "10"
+                  : "5"
+              }
+            />
+          );
+
+        })}
+
+
+
+        {/* NODES */}
+        {board.nodes.map((node) => {
+
+          const settlement =
+            settlements.find(
+              (item) =>
+                item.nodeId === node.id
+            );
+
+
+          return (
+            <circle
               key={node.id}
+              cx={node.x}
+              cy={node.y}
+              r="9"
+              fill={
+                settlement
+                  ? "#ef4444"
+                  : "#2563eb"
+              }
+              stroke="white"
+              strokeWidth="2"
               onClick={() =>
                 onSelectNode?.(node.id)
               }
               style={{
-                position: "absolute",
-                left: node.x,
-                top: node.y,
-                transform:
-                  "translate(-50%, -50%)",
-                borderRadius: "50%",
-                zIndex: 1,
+                cursor:"pointer",
               }}
-            >
-              {settlement ? "🏠" : "📍"}
-            </button>
+            />
           );
+
         })}
-      </div>
+
+      </svg>
+
     </div>
   );
 }
+
 
 export default BoardView;

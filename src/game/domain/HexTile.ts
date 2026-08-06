@@ -9,6 +9,9 @@ export type ResourceType =
 export interface HexTile {
   id: string;
 
+  x: number;
+  y: number;
+
   resource: ResourceType;
 
   numberToken?: number;
