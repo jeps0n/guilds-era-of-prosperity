@@ -17,6 +17,8 @@ import {
 import type { GameState } from "./game/engine/GameState";
 import type { GuildType } from "./game/engine/types";
 
+import BoardView from "./components/BoardView";
+
 function App() {
   const [game, setGame] = useState<GameState>(
     createInitialState()
@@ -62,6 +64,8 @@ function App() {
   return (
     <div>
       <h1>Guilds: Era of Prosperity</h1>
+
+      <BoardView board={game.board} />
 
       {game.phase === "guild_selection" &&
         currentPlayer &&

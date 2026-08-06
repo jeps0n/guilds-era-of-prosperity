@@ -1,4 +1,5 @@
 import type { GameState } from "./GameState";
+import { STARTER_BOARD } from "../data/starterBoard";
 
 export function createInitialState(): GameState {
   const players = [
@@ -51,6 +52,8 @@ export function createInitialState(): GameState {
 
   return {
     players,
+
+    board: STARTER_BOARD,
 
     guildSelectionPlayerId: guildSelectionPlayer.id,
     

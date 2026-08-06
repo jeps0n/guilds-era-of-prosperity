@@ -1,17 +1,10 @@
 import type { GameState } from "../game/engine/GameState";
+import GameBoard from "./GameBoard";
 
 interface InitialPlacementProps {
   game: GameState;
-    onPlaceSettlement: (location: string) => void;
+  onPlaceSettlement: (location: string) => void;
 }
-
-const locations = [
-  "Forest",
-  "Mountain",
-  "River",
-  "Plains",
-  "Coast",
-];
 
 function InitialPlacement({
   game,
@@ -33,29 +26,8 @@ function InitialPlacement({
         {currentPlayer.name}, choose a settlement location
       </h3>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 120px)",
-          gap: "12px",
-        }}
-      >
-        {locations.map((location) => (
-          <button
-            key={location}
-            onClick={() => onPlaceSettlement(location)}
-            style={{
-              height: "80px",
-              cursor: "pointer",
-            }}
-          >
-            📍
-            <br />
-            {location}
-          </button>
-        ))}
-      </div>
-
+      <p>Board placement coming next...</p>
+      
       <p>
         Placement:
         {" "}

@@ -1,4 +1,5 @@
 import type { Player } from "./types";
+import type { Board } from "../domain/Board";
 
 export type GamePhase =
   | "guild_selection"
@@ -19,6 +20,8 @@ export interface GameState {
   currentPlayerId: string;
 
   guildSelectionPlayerId: string;
+
+  board: Board;
 
   placementStep: number;
 
