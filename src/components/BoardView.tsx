@@ -45,8 +45,6 @@ function BoardView({
 
   return (
     <div>
-      <h2>🗺️ Board</h2>
-
       <svg
         width="900"
         height="750"

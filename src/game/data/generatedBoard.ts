@@ -3,8 +3,7 @@ import type { BoardNode } from "../domain/BoardNode";
 import {
   generateNodes,
   generateEdges,
-  hexCorners,
-  pointKey,
+  hexCorners
 } from "./hexGrid";
 
 import {
@@ -22,6 +21,11 @@ import {
 
 const SIZE = 75;
 
+function shuffle<T>(array: T[]): T[] {
+  return [...array].sort(
+    () => Math.random() - 0.5
+  );
+}
 
 const generatedNodes =
   generateNodes(
@@ -75,15 +79,25 @@ export const GENERATED_NODES:
     });
 
 
+const shuffledResources =
+  shuffle(RESOURCE_LAYOUT);
+
+const shuffledNumbers =
+  shuffle(NUMBER_LAYOUT);
+
+
 export const GENERATED_TILES: HexTile[] =
   STANDARD_HEX_LAYOUT.map((hex, index) => ({
     id: `hex-${index + 1}`,
     x: hex.x,
     y: hex.y,
-    resource: RESOURCE_LAYOUT[index],
-    numberToken: NUMBER_LAYOUT[index] ?? undefined,
-  }));
 
+    resource:
+      shuffledResources[index],
+
+    numberToken:
+      shuffledNumbers[index] ?? undefined,
+  }));
 
 
 
