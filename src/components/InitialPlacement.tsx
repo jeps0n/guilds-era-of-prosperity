@@ -2,8 +2,16 @@ import type { GameState } from "../game/engine/GameState";
 
 interface InitialPlacementProps {
   game: GameState;
-  onPlaceSettlement: () => void;
+    onPlaceSettlement: (location: string) => void;
 }
+
+const locations = [
+  "Forest",
+  "Mountain",
+  "River",
+  "Plains",
+  "Coast",
+];
 
 function InitialPlacement({
   game,
@@ -17,37 +25,44 @@ function InitialPlacement({
     return null;
   }
 
-  const totalPlacements = game.placementOrder.length;
-  const progress = Math.min(
-    game.placementStep + 1,
-    totalPlacements
-  );
-
   return (
-    <div
-      style={{
-        padding: "24px",
-        background: "#111827",
-        color: "white",
-        borderRadius: "16px",
-        textAlign: "center",
-      }}
-    >
-      <h2>🏘️ Initial Settlement Placement</h2>
+    <div>
+      <h2>🏘️ Initial Placement</h2>
 
       <h3>
-        {currentPlayer.name}'s Turn
+        {currentPlayer.name}, choose a settlement location
       </h3>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 120px)",
+          gap: "12px",
+        }}
+      >
+        {locations.map((location) => (
+          <button
+            key={location}
+            onClick={() => onPlaceSettlement(location)}
+            style={{
+              height: "80px",
+              cursor: "pointer",
+            }}
+          >
+            📍
+            <br />
+            {location}
+          </button>
+        ))}
+      </div>
 
       <p>
         Placement:
         {" "}
-        {progress} / {totalPlacements}
+        {game.placementStep + 1}
+        /
+        {game.placementOrder.length}
       </p>
-
-      <button onClick={onPlaceSettlement}>
-        Place Settlement
-      </button>
     </div>
   );
 }

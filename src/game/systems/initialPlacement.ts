@@ -2,7 +2,8 @@ import type { GameState } from "../engine/GameState";
 
 export function placeSettlement(
   game: GameState,
-  playerId: string
+  playerId: string,
+  location: string
 ): GameState {
   const updatedPlayers = game.players.map((player) =>
     player.id === playerId
@@ -10,7 +11,9 @@ export function placeSettlement(
           ...player,
           settlements: [
             ...player.settlements,
-            "settlement",
+            {
+              location,
+            },
           ],
         }
       : player

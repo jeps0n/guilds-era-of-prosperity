@@ -32,10 +32,11 @@ function App() {
     setGame(updatedGame);
   }
 
-  function handlePlaceSettlement() {
+  function handlePlaceSettlement(location: string) {
     const updatedGame = placeSettlement(
       game,
-      game.currentPlayerId
+      game.currentPlayerId,
+      location
     );
 
     setGame(updatedGame);

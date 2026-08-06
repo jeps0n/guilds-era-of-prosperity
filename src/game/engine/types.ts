@@ -11,6 +11,10 @@ export interface Resources {
   ore: number;
 }
 
+export interface Settlement {
+  location: string;
+}
+
 export interface Player {
   id: string;
   name: string;
@@ -21,7 +25,7 @@ export interface Player {
   resources: Resources;
 
   roads: string[];
-  settlements: string[];
+  settlements: Settlement[];
   cities: string[];
 
   superUnlocked: boolean;
