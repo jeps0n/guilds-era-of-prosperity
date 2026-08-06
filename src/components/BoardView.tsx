@@ -43,17 +43,18 @@ function BoardView({
   onSelectNode,
 }: BoardViewProps) {
 
-  return (
-    <div>
-      <svg
-        width="800"
-        height="600"
-        viewBox="-360 -320 720 640"
-        style={{
-          border: "2px dashed gray",
-          background: "#87ceeb",
-        }}
-      >
+return (
+  <div>
+    <svg
+      width="800"
+      height="600"
+      viewBox="-375 -333 750 666"
+      style={{
+        background: "#3b82f6",
+        borderRadius: "18px",
+        boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
+      }}
+    >
 
         {/* TERRAIN */}
         {board.tiles.map((tile) => (
@@ -77,9 +78,22 @@ function BoardView({
                   desert: "#d6c28a",
                 }[tile.resource]
               }
-              stroke="black"
+              stroke="#111827"
               strokeWidth="2"
             />
+
+            {tile.numberToken && (
+              <rect
+                x={tile.x - 18}
+                y={tile.y - 14}
+                width="36"
+                height="28"
+                rx="8"
+                fill="#f9fafb"
+                stroke="#111827"
+                strokeWidth="2"
+              />
+            )}
 
             {tile.numberToken && (
               <text
@@ -87,8 +101,9 @@ function BoardView({
                 y={tile.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                fontSize="18"
-                fill="black"
+                fontSize="16"
+                fontWeight="bold"
+                fill="#111827"
               >
                 {tile.numberToken}
               </text>
@@ -178,17 +193,16 @@ function BoardView({
                 onSelectNode?.(node.id)
               }
               style={{
-                cursor:"pointer",
+                cursor: "pointer",
               }}
             />
           );
 
         })}
 
-      </svg>
-
-    </div>
-  );
+    </svg>
+  </div>
+);
 }
 
 

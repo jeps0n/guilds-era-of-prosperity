@@ -1,4 +1,5 @@
 import type { GameState } from "../game/engine/GameState";
+import Panel from "./ui/Panel";
 
 interface PlayerPanelProps {
   game: GameState;
@@ -11,71 +12,77 @@ function PlayerPanel({
   return (
     <div
       style={{
-        display: "flex",
-        flexDirection: "row",
-        gap: "12px",
+        marginTop: "14px",
       }}
     >
-      {game.players.map((player) => (
 
-        <div
-          key={player.id}
-          style={{
-            background: "#111827",
-            border: "1px solid #374151",
-            borderRadius: "12px",
-            padding: "10px",
-            width: "185px",
-            minHeight: "145px",
-            boxSizing: "border-box",
-          }}
-        >
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(2, 1fr)",
+    gap: "10px",
+    width: "100%",
+  }}
+>
 
-          <h3
-            style={{
-              margin: "0 0 6px 0",
-              fontSize: "17px",
-            }}
-          >
-            {player.name}
-          </h3>
+        {game.players.map((player) => (
 
-          <div>
-            <strong>Guild:</strong>{" "}
-            {player.guild ?? "None"}
-          </div>
+            <Panel>
 
-          <div style={{ marginTop: "2px" }}>
-            <strong>VP:</strong>{" "}
-            {player.vp}
-          </div>
+            <strong>
+              {player.name}
+            </strong>
 
-          <hr
-            style={{
-              margin: "8px 0",
-              borderColor: "#374151",
-            }}
-          />
 
-          <div>
-            🧱 {player.resources.brick}{" "}
-            🌲 {player.resources.lumber}{" "}
-            🌾 {player.resources.wheat}
-          </div>
+            <div style={{ marginTop: "6px" }}>
+              Guild: {player.guild ?? "None"}
+            </div>
 
-          <div style={{ marginTop: "2px" }}>
-            🐑 {player.resources.sheep}{" "}
-            ⛰️ {player.resources.ore}
-          </div>
 
-          <div style={{ marginTop: "8px" }}>
-            🏠 {player.settlements.length} Settlement
-            {player.settlements.length !== 1 ? "s" : ""}
-          </div>
+            <div>
+              VP: {player.vp}
+            </div>
 
-        </div>
 
-      ))}
+            <hr
+              style={{
+                margin: "8px 0",
+                borderColor: "#374151",
+              }}
+            />
+
+
+            <div>
+              🧱 {player.resources.brick}{" "}
+              🌲 {player.resources.lumber}
+            </div>
+
+
+            <div>
+              🌾 {player.resources.wheat}{" "}
+              🐑 {player.resources.sheep}
+            </div>
+
+
+            <div>
+              ⛰️ {player.resources.ore}
+            </div>
+
+
+            <div
+              style={{
+                marginTop: "8px",
+              }}
+            >
+              🏠 {player.settlements.length}
+            </div>
+
+          </Panel>
+
+        ))}
+
+      </div>
+
     </div>
   );
 }

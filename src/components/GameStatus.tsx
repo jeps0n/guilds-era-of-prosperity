@@ -1,4 +1,5 @@
 import type { GameState } from "../game/engine/GameState";
+import Panel from "./ui/Panel";
 
 interface GameStatusProps {
   game: GameState;
@@ -14,32 +15,46 @@ function GameStatus({
         player.id === game.currentPlayerId
     );
 
-  return (
-    <div
-      style={{
-        marginTop: "24px",
-        padding: "16px",
-        background: "#111827",
-        borderRadius: "12px",
-        color: "white",
-        minWidth: "300px",
-        textAlign: "center",
-      }}
-    >
-      <div>
-        Phase: {game.phase}
-      </div>
+
+return (
+  <Panel>
+
+      <h3
+        style={{
+          margin: "0 0 10px 0",
+          fontSize: "16px",
+        }}
+      >
+        Game Status
+      </h3>
+
 
       <div>
-        Turn: {game.turnNumber}
+        <strong>Phase:</strong>{" "}
+        {game.phase}
       </div>
 
-      <div>
-        Current Player:
-        {" "}
-        {currentPlayer?.name ?? "None"}
+
+      <div
+        style={{
+          marginTop: "6px",
+        }}
+      >
+        <strong>Turn:</strong>{" "}
+        {game.turnNumber}
       </div>
-    </div>
+
+
+      <div
+        style={{
+          marginTop: "6px",
+        }}
+      >
+        <strong>Current:</strong>{" "}
+        {currentPlayer?.name}
+      </div>
+
+    </Panel>
   );
 }
 
