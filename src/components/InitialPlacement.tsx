@@ -1,9 +1,9 @@
 import type { GameState } from "../game/engine/GameState";
-import GameBoard from "./GameBoard";
+import BoardView from "./BoardView";
 
 interface InitialPlacementProps {
   game: GameState;
-  onPlaceSettlement: (location: string) => void;
+  onPlaceSettlement: (nodeId: string) => void;
 }
 
 function InitialPlacement({
@@ -23,11 +23,17 @@ function InitialPlacement({
       <h2>🏘️ Initial Placement</h2>
 
       <h3>
-        {currentPlayer.name}, choose a settlement location
+        {currentPlayer.name}, choose a settlement node
       </h3>
 
-      <p>Board placement coming next...</p>
-      
+      <BoardView
+        board={game.board}
+        settlements={game.players.flatMap(
+          (player) => player.settlements
+        )}
+        onSelectNode={onPlaceSettlement}
+      />
+
       <p>
         Placement:
         {" "}

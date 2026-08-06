@@ -3,7 +3,7 @@ import type { GameState } from "../engine/GameState";
 export function placeSettlement(
   game: GameState,
   playerId: string,
-  location: string
+  nodeId: string
 ): GameState {
   const updatedPlayers = game.players.map((player) =>
     player.id === playerId
@@ -12,7 +12,9 @@ export function placeSettlement(
           settlements: [
             ...player.settlements,
             {
-              location,
+              id: `settlement-${player.settlements.length + 1}`,
+              playerId,
+              nodeId,
             },
           ],
         }
@@ -25,19 +27,30 @@ export function placeSettlement(
   });
 }
 
-function advancePlacement(game: GameState): GameState {
-  const nextStep = game.placementStep + 1;
+function advancePlacement(
+  game: GameState
+): GameState {
+  const nextStep =
+    game.placementStep + 1;
+
+  const placementOrder = [
+    game.players[0].id,
+    game.players[1].id,
+    game.players[1].id,
+    game.players[0].id,
+  ];
 
   const placementComplete =
-    nextStep >= game.placementOrder.length;
+    nextStep >= placementOrder.length;
 
   return {
     ...game,
+
     placementStep: nextStep,
 
     currentPlayerId: placementComplete
       ? game.currentPlayerId
-      : game.placementOrder[nextStep],
+      : placementOrder[nextStep],
 
     phase: placementComplete
       ? "playing"

@@ -34,16 +34,16 @@ function App() {
     setGame(updatedGame);
   }
 
-  function handlePlaceSettlement(location: string) {
+  function handlePlaceSettlement(nodeId: string) {
     const updatedGame = placeSettlement(
       game,
       game.currentPlayerId,
-      location
+      nodeId
     );
 
     setGame(updatedGame);
   }
-
+  
   const currentPlayer = game.players.find(
     (player) => player.id === game.currentPlayerId
   );
@@ -65,7 +65,12 @@ function App() {
     <div>
       <h1>Guilds: Era of Prosperity</h1>
 
-      <BoardView board={game.board} />
+      <BoardView
+        board={game.board}
+        settlements={game.players.flatMap(
+          (player) => player.settlements
+        )}
+      />
 
       {game.phase === "guild_selection" &&
         currentPlayer &&

@@ -1,3 +1,5 @@
+import type { Settlement } from "../domain/Settlement";
+
 export type GuildType =
   | "builder"
   | "explorer"
@@ -11,13 +13,10 @@ export interface Resources {
   ore: number;
 }
 
-export interface Settlement {
-  location: string;
-}
-
 export interface Player {
   id: string;
   name: string;
+
   guild?: GuildType;
 
   vp: number;
@@ -25,10 +24,13 @@ export interface Player {
   resources: Resources;
 
   roads: string[];
+
   settlements: Settlement[];
+
   cities: string[];
 
   superUnlocked: boolean;
+
   superUsed: boolean;
 
   secondaryRolls: number[];

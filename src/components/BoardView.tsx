@@ -1,11 +1,16 @@
 import type { Board } from "../game/domain/Board";
+import type { Settlement } from "../game/domain/Settlement";
 
 interface BoardViewProps {
   board: Board;
+  settlements: Settlement[];
+  onSelectNode?: (nodeId: string) => void;
 }
 
 function BoardView({
   board,
+  settlements,
+  onSelectNode,
 }: BoardViewProps) {
   return (
     <div>
@@ -41,17 +46,36 @@ function BoardView({
               {tile.resource === "desert" && "🏜️"}
             </div>
 
-            <strong>
-              {tile.resource}
-            </strong>
+            <strong>{tile.resource}</strong>
 
             {tile.numberToken && (
-              <div>
-                {tile.numberToken}
-              </div>
+              <div>{tile.numberToken}</div>
             )}
           </div>
         ))}
+      </div>
+
+      <h3>Settlement Nodes</h3>
+
+      <div>
+        {board.nodes.map((node) => {
+          const settlement = settlements.find(
+            (item) => item.nodeId === node.id
+          );
+
+          return (
+            <button
+              key={node.id}
+              onClick={() =>
+                onSelectNode?.(node.id)
+              }
+            >
+              {settlement ? "🏠" : "📍"}
+              <br />
+              {node.id}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
