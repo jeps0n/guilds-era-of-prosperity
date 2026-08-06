@@ -33,7 +33,7 @@ function App() {
 
     setGame(updatedGame);
   }
-  
+
   function handlePlaceSettlement(nodeId: string) {
     const updatedGame = placeSettlement(
       game,
@@ -59,6 +59,14 @@ function App() {
       !game.players.some(
         (player) => player.guild === guild
       )
+  );
+
+  const roads = game.players.flatMap(
+    (player) =>
+      player.roads.map((edgeId, index) => ({
+        id: `${player.id}-road-${index}`,
+        edgeId,
+      }))
   );
 
   return (
@@ -87,6 +95,7 @@ function App() {
           settlements={game.players.flatMap(
             (player) => player.settlements
           )}
+          roads={roads}
           onSelectNode={handlePlaceSettlement}
         />
       )}
@@ -94,7 +103,6 @@ function App() {
       {game.phase !== "guild_selection" && (
         <GameStatus game={game} />
       )}
-
     </div>
   );
 }

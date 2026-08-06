@@ -4,12 +4,17 @@ import type { Settlement } from "../game/domain/Settlement";
 interface BoardViewProps {
   board: Board;
   settlements: Settlement[];
+  roads: {
+    id: string;
+    edgeId: string;
+  }[];
   onSelectNode?: (nodeId: string) => void;
 }
 
 function BoardView({
   board,
   settlements,
+  roads,
   onSelectNode,
 }: BoardViewProps) {
   return (
@@ -75,18 +80,20 @@ function BoardView({
         >
           {board.edges.map((edge) => {
             const nodeA = board.nodes.find(
-              (node) =>
-                node.id === edge.nodeA
+              (node) => node.id === edge.nodeA
             );
 
             const nodeB = board.nodes.find(
-              (node) =>
-                node.id === edge.nodeB
+              (node) => node.id === edge.nodeB
             );
 
             if (!nodeA || !nodeB) {
               return null;
             }
+
+            const road = roads.find(
+              (item) => item.edgeId === edge.id
+            );
 
             return (
               <line
@@ -95,8 +102,12 @@ function BoardView({
                 y1={nodeA.y}
                 x2={nodeB.x}
                 y2={nodeB.y}
-                stroke="black"
-                strokeWidth="4"
+                stroke={
+                  road ? "red" : "black"
+                }
+                strokeWidth={
+                  road ? "8" : "4"
+                }
               />
             );
           })}
