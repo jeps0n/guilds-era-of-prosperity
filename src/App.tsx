@@ -33,7 +33,7 @@ function App() {
 
     setGame(updatedGame);
   }
-
+  
   function handlePlaceSettlement(nodeId: string) {
     const updatedGame = placeSettlement(
       game,
@@ -78,7 +78,16 @@ function App() {
       {game.phase === "initial_placement" && (
         <InitialPlacement
           game={game}
-          onPlaceSettlement={handlePlaceSettlement}
+        />
+      )}
+
+      {game.phase !== "guild_selection" && (
+        <BoardView
+          board={game.board}
+          settlements={game.players.flatMap(
+            (player) => player.settlements
+          )}
+          onSelectNode={handlePlaceSettlement}
         />
       )}
 

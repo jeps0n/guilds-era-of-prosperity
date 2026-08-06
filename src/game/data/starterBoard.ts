@@ -36,12 +36,16 @@ export const STARTER_BOARD: Board = {
   nodes: [
     {
       id: "node-1",
+      x: 100,
+      y: 100,
       adjacentTiles: [
         "hex-1",
       ],
     },
     {
       id: "node-2",
+      x: 220,
+      y: 100,
       adjacentTiles: [
         "hex-1",
         "hex-2",
@@ -49,6 +53,8 @@ export const STARTER_BOARD: Board = {
     },
     {
       id: "node-3",
+      x: 340,
+      y: 100,
       adjacentTiles: [
         "hex-2",
         "hex-3",
@@ -56,6 +62,8 @@ export const STARTER_BOARD: Board = {
     },
     {
       id: "node-4",
+      x: 460,
+      y: 100,
       adjacentTiles: [
         "hex-3",
       ],
