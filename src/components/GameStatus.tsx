@@ -1,12 +1,13 @@
 import type { GameState } from "../game/engine/GameState";
-import Panel from "./ui/Panel";
 
 interface GameStatusProps {
   game: GameState;
+  onEndTurn: () => void;
 }
 
 function GameStatus({
   game,
+  onEndTurn,
 }: GameStatusProps) {
 
   const currentPlayer =
@@ -15,46 +16,54 @@ function GameStatus({
         player.id === game.currentPlayerId
     );
 
-
-return (
-  <Panel>
-
-      <h3
-        style={{
-          margin: "0 0 10px 0",
-          fontSize: "16px",
-        }}
-      >
-        Game Status
-      </h3>
-
+  return (
+    <div
+      style={{
+        marginTop: "12px",
+        background: "#111827",
+        border: "1px solid #374151",
+        borderRadius: "12px",
+        padding: "12px 20px",
+        minWidth: "280px",
+        textAlign: "center",
+      }}
+    >
 
       <div>
         <strong>Phase:</strong>{" "}
         {game.phase}
       </div>
 
-
-      <div
-        style={{
-          marginTop: "6px",
-        }}
-      >
+      <div>
         <strong>Turn:</strong>{" "}
         {game.turnNumber}
       </div>
 
-
-      <div
-        style={{
-          marginTop: "6px",
-        }}
-      >
-        <strong>Current:</strong>{" "}
-        {currentPlayer?.name}
+      <div>
+        <strong>Current Player:</strong>{" "}
+        {currentPlayer?.name ?? "Unknown"}
       </div>
 
-    </Panel>
+
+      {game.phase === "playing" && (
+        <button
+          onClick={onEndTurn}
+          style={{
+            marginTop: "12px",
+            padding: "8px 16px",
+            borderRadius: "8px",
+            border: "none",
+            background: "#2563eb",
+            color: "white",
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          End Turn
+        </button>
+      )}
+
+    </div>
   );
 }
 

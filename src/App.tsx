@@ -21,6 +21,7 @@ import {
 import type { GameState } from "./game/engine/GameState";
 import type { GuildType } from "./game/engine/types";
 
+import { endTurn } from "./game/systems/turn/endTurn";
 
 function App() {
 
@@ -59,6 +60,13 @@ function App() {
     setGame(updatedGame);
 
   }
+
+  function handleEndTurn() {
+  const updatedGame =
+    endTurn(game);
+
+  setGame(updatedGame);
+}
 
 
   const currentPlayer =
@@ -171,9 +179,10 @@ function App() {
       rightSidebar={
         <>
 
-          <GameStatus
-            game={game}
-          />
+<GameStatus
+  game={game}
+  onEndTurn={handleEndTurn}
+/>
 
           <div
             style={{

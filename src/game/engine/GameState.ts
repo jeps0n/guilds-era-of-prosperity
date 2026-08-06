@@ -29,6 +29,8 @@ export interface GameState {
 
   turnNumber: number;
 
+  lastDiceRoll?: number;
+
   phase: GamePhase;
 
   eraOfProsperity: boolean;
