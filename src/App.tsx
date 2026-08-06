@@ -43,7 +43,7 @@ function App() {
 
     setGame(updatedGame);
   }
-  
+
   const currentPlayer = game.players.find(
     (player) => player.id === game.currentPlayerId
   );
@@ -65,13 +65,6 @@ function App() {
     <div>
       <h1>Guilds: Era of Prosperity</h1>
 
-      <BoardView
-        board={game.board}
-        settlements={game.players.flatMap(
-          (player) => player.settlements
-        )}
-      />
-
       {game.phase === "guild_selection" &&
         currentPlayer &&
         currentPlayer.guild === undefined && (
@@ -89,7 +82,10 @@ function App() {
         />
       )}
 
-      <GameStatus game={game} />
+      {game.phase !== "guild_selection" && (
+        <GameStatus game={game} />
+      )}
+
     </div>
   );
 }

@@ -42,11 +42,18 @@ export function createInitialState(): GameState {
       secondaryRolls: [],
     },
   ];
-  const placementOrder = [
+
+  const shuffledPlayers = [
     ...players,
-  ]
-  .sort(() => Math.random() - 0.5)
-  .map((player) => player.id);
+  ].sort(() => Math.random() - 0.5);
+
+  const placementOrder = [
+    shuffledPlayers[0].id,
+    shuffledPlayers[1].id,
+    shuffledPlayers[1].id,
+    shuffledPlayers[0].id,
+  ];
+  
   const guildSelectionPlayer =
   players[Math.floor(Math.random() * players.length)];
 

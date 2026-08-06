@@ -33,15 +33,8 @@ function advancePlacement(
   const nextStep =
     game.placementStep + 1;
 
-  const placementOrder = [
-    game.players[0].id,
-    game.players[1].id,
-    game.players[1].id,
-    game.players[0].id,
-  ];
-
   const placementComplete =
-    nextStep >= placementOrder.length;
+    nextStep >= game.placementOrder.length;
 
   return {
     ...game,
@@ -49,8 +42,8 @@ function advancePlacement(
     placementStep: nextStep,
 
     currentPlayerId: placementComplete
-      ? game.currentPlayerId
-      : placementOrder[nextStep],
+  ? game.currentPlayerId
+  : game.placementOrder[nextStep],
 
     phase: placementComplete
       ? "playing"
