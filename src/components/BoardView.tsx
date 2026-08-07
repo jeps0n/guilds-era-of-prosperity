@@ -114,6 +114,10 @@ function BoardView({
             (r) =>
               r.edgeId === edge.id
           );
+        const port =
+          board.ports.find(
+            p => p.edgeId === edge.id
+          );
         const hovered =
           hoveredEdge === edge.id;
         const isPortEdge =
@@ -122,6 +126,7 @@ function BoardView({
               port.nodeIds.includes(edge.nodeA) &&
               port.nodeIds.includes(edge.nodeB)
           );
+
         return (
           <g key={edge.id}>
             {/* PORT DEBUG EDGE */}
@@ -131,8 +136,23 @@ function BoardView({
                 y1={a.y}
                 x2={b.x}
                 y2={b.y}
-                stroke="#22d3ee"
+                stroke="#CD7F32"
                 strokeWidth="14"
+                strokeLinecap="round"
+                pointerEvents="none"
+              />
+            )}
+            {port && (
+              <path
+                d={portArcPath(
+                  a.x,
+                  a.y,
+                  b.x,
+                  b.y
+                )}
+                fill="#CD7F32"
+                stroke="#CD7F32"
+                strokeWidth="10"
                 strokeLinecap="round"
                 pointerEvents="none"
               />
@@ -156,10 +176,10 @@ function BoardView({
                   y2={b.y}
                   stroke={
                     hovered
-                    ? "#ff0000"
-                    : road.playerId === "player-1"
-                    ? "#f97316"
-                    : "#9333ea"
+                      ? "#ff0000"
+                      : road.playerId === "player-1"
+                        ? "#f97316"
+                        : "#9333ea"
                   }
                   strokeWidth="8"
                   strokeLinecap="round"
@@ -174,13 +194,13 @@ function BoardView({
                 y2={b.y}
                 stroke={
                   hovered
-                  ? "#ff0000"
-                  : "#78350f"
+                    ? "#ff0000"
+                    : "#78350f"
                 }
                 strokeWidth={
                   hovered
-                  ? 10
-                  : 6
+                    ? 10
+                    : 6
                 }
                 strokeLinecap="round"
                 pointerEvents="none"
@@ -205,8 +225,8 @@ function BoardView({
               style={{
                 cursor:
                   onSelectEdge
-                  ? "pointer"
-                  : "default",
+                    ? "pointer"
+                    : "default",
               }}
             />
           </g>
@@ -227,11 +247,12 @@ function BoardView({
         if (!a || !b)
           return null;
         return (
+          // PORT TEXT
           <text
             key={port.id}
             x={(a.x + b.x) / 2}
             y={(a.y + b.y) / 2 - 8}
-            fill="#22d3ee"
+            fill="#964B00"
             fontWeight="bold"
             fontSize="12"
             textAnchor="middle"
@@ -265,10 +286,10 @@ ${node.x - 11},${node.y + 16}
 ${node.x - 16},${node.y - 6}`}
                 fill={
                   hovered
-                  ? "#ff0000"
-                  : settlement.playerId === "player-1"
-                  ? "#f97316"
-                  : "#9333ea"
+                    ? "#ff0000"
+                    : settlement.playerId === "player-1"
+                      ? "#f97316"
+                      : "#9333ea"
                 }
                 stroke="#000"
                 strokeWidth="4"
@@ -289,10 +310,10 @@ ${node.x - 16},${node.y - 6}`}
                 r={hovered ? 13 : 9}
                 fill={
                   hovered
-                  ? "#ff0000"
-                  : isPortNode
-                  ? "#38bdf8"
-                  : "#2563eb"
+                    ? "#ff0000"
+                    : isPortNode
+                      ? "#CD7F32"
+                      : "#2563eb"
                 }
                 stroke="white"
                 strokeWidth="2"
@@ -312,5 +333,25 @@ ${node.x - 16},${node.y - 6}`}
       })}
     </svg>
   );
+}
+function portArcPath(
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number
+) {
+  const dx = bx - ax;
+  const dy = by - ay;
+
+  const length = Math.sqrt(
+    dx * dx + dy * dy
+  );
+
+  const radius = length / 2;
+
+  return `
+    M ${ax} ${ay}
+    A ${radius} ${radius} 0 0 1 ${bx} ${by}
+  `;
 }
 export default BoardView;
