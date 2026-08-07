@@ -9,82 +9,120 @@ function PlayerPanel({
   game,
 }: PlayerPanelProps) {
 
-  return (
+return (
+<div style={{ marginTop: "14px" }}>
+
+  {game.players.map((player) => (
+
     <div
+      key={player.id}
       style={{
-        marginTop: "14px",
+        marginBottom: "12px",
+        borderRadius: "12px",
+        boxShadow:
+          player.id === game.currentPlayerId
+            ? "0 0 18px 4px rgba(239, 68, 68, 0.8)"
+            : "none",
+        transition: "box-shadow 0.2s ease",
       }}
     >
 
-<div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(2, 1fr)",
-    gap: "10px",
-    width: "100%",
-  }}
->
+      <Panel>
 
-        {game.players.map((player) => (
+        <strong>{player.name}</strong>
 
-            <Panel key={player.id}>
+        <div style={{ marginTop: "6px" }}>
+          Guild: {player.guild ?? "None"}
+        </div>
 
-            <strong>
-              {player.name}
-            </strong>
+        <div>
+          VP: {player.vp}
+        </div>
 
+        <hr
+          style={{
+            margin: "8px 0",
+            borderColor: "#374151",
+          }}
+        />
 
-            <div style={{ marginTop: "6px" }}>
-              Guild: {player.guild ?? "None"}
-            </div>
-
-
-            <div>
-              VP: {player.vp}
-            </div>
-
-
-            <hr
-              style={{
-                margin: "8px 0",
-                borderColor: "#374151",
-              }}
-            />
-
-
-            <div>
-              🧱 {player.resources.brick}{" "}
-              🌲 {player.resources.lumber}
-            </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: "18px",
+            marginBottom: "8px",
+          }}
+        >
+          <span>🧱 {player.resources.brick}</span>
+          <span>🌲 {player.resources.lumber}</span>
+          <span>🌾 {player.resources.wheat}</span>
+          <span>🐑 {player.resources.sheep}</span>
+          <span>⛰️ {player.resources.ore}</span>
+        </div>
 
 
-            <div>
-              🌾 {player.resources.wheat}{" "}
-              🐑 {player.resources.sheep}
-            </div>
+        <hr
+          style={{
+            margin: "8px 0",
+            borderColor: "#374151",
+          }}
+        />
 
 
-            <div>
-              ⛰️ {player.resources.ore}
-            </div>
+        <div>
+          🏠 Settlements Remaining: {player.availableSettlements}
+        </div>
+
+        <div>
+          🛣️ Roads Remaining: {player.availableRoads}
+        </div>
+
+        <div>
+          🏙️ Cities Remaining: {player.availableCities}
+        </div>
 
 
-            <div
-              style={{
-                marginTop: "8px",
-              }}
-            >
-              🏠 {player.settlements.length}
-            </div>
-
-          </Panel>
-
-        ))}
-
-      </div>
+      </Panel>
 
     </div>
-  );
+
+  ))}
+
+
+  <div style={{ marginTop: "12px" }}>
+
+    <Panel>
+
+      <strong>🏦 Resource Bank</strong>
+
+      <hr
+        style={{
+          margin: "8px 0",
+          borderColor: "#374151",
+        }}
+      />
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontSize: "18px",
+        }}
+      >
+        <span>🧱 {game.resourceBank.brick}</span>
+        <span>🌲 {game.resourceBank.lumber}</span>
+        <span>🌾 {game.resourceBank.wheat}</span>
+        <span>🐑 {game.resourceBank.sheep}</span>
+        <span>⛰️ {game.resourceBank.ore}</span>
+      </div>
+
+    </Panel>
+
+  </div>
+
+</div>
+);
 }
 
 export default PlayerPanel;

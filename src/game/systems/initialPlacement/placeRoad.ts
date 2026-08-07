@@ -2,102 +2,120 @@ import type { GameState } from "../../engine/GameState";
 
 
 export function placeRoad(
-  game: GameState,
-  playerId: string,
-  edgeId: string
+game: GameState,
+playerId: string,
+edgeId: string
 ): GameState {
 
 
-  const validEdge =
-    game.board.edges.find(
-      (edge) =>
-        edge.id === edgeId &&
-        (
-          edge.nodeA === game.lastPlacedSettlementNodeId ||
-          edge.nodeB === game.lastPlacedSettlementNodeId
-        )
-    );
+const player =
+game.players.find(
+(player) => player.id === playerId
+);
 
 
-  if (!validEdge) {
-    return game;
-  }
+if (!player || player.availableRoads <= 0) {
+return game;
+}
 
 
-  const updatedPlayers =
-    game.players.map(
-      (player) =>
-        player.id === playerId
-          ? {
-
-              ...player,
-
-              roads: [
-                ...player.roads,
-                edgeId,
-              ],
-
-            }
-
-          : player
-    );
+const validEdge =
+game.board.edges.find(
+(edge) =>
+edge.id === edgeId &&
+(
+edge.nodeA === game.lastPlacedSettlementNodeId ||
+edge.nodeB === game.lastPlacedSettlementNodeId
+)
+);
 
 
+if (!validEdge) {
+return game;
+}
 
-  return advancePlacement({
 
-    ...game,
+const updatedPlayers =
+game.players.map(
+(player) =>
 
-    players:
-      updatedPlayers,
+player.id === playerId
 
-    placementAction:
-      "settlement",
+? {
 
-    lastPlacedSettlementNodeId:
-      undefined,
+...player,
 
-  });
+availableRoads:
+player.availableRoads - 1,
+
+roads:[
+...player.roads,
+edgeId,
+],
+
+}
+
+: player
+
+);
+
+
+return advancePlacement({
+
+...game,
+
+players: updatedPlayers,
+
+placementAction:
+"settlement",
+
+lastPlacedSettlementNodeId:
+undefined,
+
+});
 
 }
 
 
 
 function advancePlacement(
-  game: GameState
+game: GameState
 ): GameState {
 
 
-  const nextStep =
-    game.placementStep + 1;
+const nextStep =
+game.placementStep + 1;
 
 
-  const complete =
-    nextStep >= game.placementOrder.length;
+const complete =
+nextStep >= game.placementOrder.length;
 
 
 
-  return {
+return {
 
-    ...game,
-
-    placementStep:
-      complete
-        ? game.placementStep
-        : nextStep,
+...game,
 
 
-    currentPlayerId:
-      complete
-        ? game.currentPlayerId
-        : game.placementOrder[nextStep],
+placementStep:
+complete
+? game.placementStep
+: nextStep,
 
 
-    phase:
-      complete
-        ? "playing"
-        : game.phase,
+currentPlayerId:
+complete
+? game.placementOrder[
+game.placementOrder.length - 1
+]
+: game.placementOrder[nextStep],
 
-  };
+
+phase:
+complete
+? "playing"
+: game.phase,
+
+};
 
 }

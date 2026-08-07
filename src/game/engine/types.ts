@@ -5,6 +5,7 @@ export type GuildType =
   | "explorer"
   | "merchant";
 
+
 export interface Resources {
   brick: number;
   lumber: number;
@@ -13,8 +14,11 @@ export interface Resources {
   ore: number;
 }
 
+
 export interface Player {
+
   id: string;
+
   name: string;
 
   guild?: GuildType;
@@ -29,9 +33,16 @@ export interface Player {
 
   cities: string[];
 
+  availableSettlements: number;
+
+  availableRoads: number;
+
+  availableCities: number;
+
   superUnlocked: boolean;
 
   superUsed: boolean;
 
   secondaryRolls: number[];
+
 }

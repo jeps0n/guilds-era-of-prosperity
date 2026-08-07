@@ -43,7 +43,6 @@ function hexPoints(
         Math.PI / 180 *
         (30 + i * 60);
 
-
       return [
         x + SIZE * Math.cos(angle),
         y + SIZE * Math.sin(angle),
@@ -54,8 +53,6 @@ function hexPoints(
 
 }
 
-
-
 function BoardView({
   board,
   settlements,
@@ -64,15 +61,11 @@ function BoardView({
   onSelectEdge,
 }: BoardViewProps) {
 
-
   const [hoveredEdge, setHoveredEdge] =
     useState<string | null>(null);
 
-
   const [hoveredNode, setHoveredNode] =
     useState<string | null>(null);
-
-
 
   return (
 
@@ -94,7 +87,6 @@ function BoardView({
         }}
 
       >
-
 
         {board.tiles.map((tile)=>(
 
@@ -119,7 +111,6 @@ function BoardView({
               strokeWidth="2"
             />
 
-
             {tile.numberToken && (
 
               <>
@@ -141,7 +132,6 @@ function BoardView({
                   strokeWidth="2"
 
                 />
-
 
                 <text
 
@@ -171,8 +161,6 @@ function BoardView({
           </g>
 
         ))}
-
-
 
 
         {/* ROADS */}
@@ -205,42 +193,108 @@ function BoardView({
             hoveredEdge === edge.id;
 
 
-
           return (
 
             <g key={edge.id}>
 
 
-              <line
+              {/* BLACK ROAD BORDER */}
 
-                x1={a.x}
-                y1={a.y}
+              {road && (
 
-                x2={b.x}
-                y2={b.y}
+                <line
 
-                stroke={
-                  isHovered
-                    ? "#facc15"
-                    : road
-                      ? road.playerId === "player-1"
+                  x1={a.x}
+                  y1={a.y}
+
+                  x2={b.x}
+                  y2={b.y}
+
+                  stroke="#000000"
+
+                  strokeWidth="16"
+
+                  strokeLinecap="round"
+
+                  pointerEvents="none"
+
+                />
+
+              )}
+
+
+
+              {/* ROAD COLOR */}
+
+              {road && (
+
+                <line
+
+                  x1={a.x}
+                  y1={a.y}
+
+                  x2={b.x}
+                  y2={b.y}
+
+                  stroke={
+
+                    isHovered
+
+                      ? "#ff0000"
+
+                      : road.playerId === "player-1"
                         ? "#f97316"
                         : "#9333ea"
-                      : "#78350f"
-                }
 
-                strokeWidth={
-                  isHovered
-                    ? 12
-                    : road
-                      ? 10
-                      : 5
-                }
+                  }
 
-                pointerEvents="none"
+                  strokeWidth="10"
 
-              />
+                  strokeLinecap="round"
 
+                  pointerEvents="none"
+
+                />
+
+              )}
+
+
+{/* EMPTY EDGE */}
+
+{!road && (
+
+  <line
+
+    x1={a.x}
+    y1={a.y}
+
+    x2={b.x}
+    y2={b.y}
+
+    stroke={
+
+      isHovered
+        ? "#ff0000"
+        : "#78350f"
+
+    }
+
+    strokeWidth={
+      isHovered
+      ? "10"
+      : "6"
+    }
+    strokeLinecap="round"
+
+    pointerEvents="none"
+
+  />
+
+)}
+
+
+
+              {/* CLICK / HOVER AREA */}
 
               <line
 
@@ -254,21 +308,17 @@ function BoardView({
 
                 strokeWidth="22"
 
-
                 onMouseEnter={() =>
                   setHoveredEdge(edge.id)
                 }
-
 
                 onMouseLeave={() =>
                   setHoveredEdge(null)
                 }
 
-
                 onClick={() =>
                   onSelectEdge?.(edge.id)
                 }
-
 
                 style={{
                   cursor:
@@ -286,88 +336,64 @@ function BoardView({
 
         })}
 
-
-
-
         {/* NODES */}
 
         {board.nodes.map((node)=>{
-
 
           const settlement =
             settlements.find(
               s => s.nodeId === node.id
             );
 
-
           const isHovered =
             hoveredNode === node.id;
-
-
 
           return (
 
             <g key={node.id}>
 
-
               {settlement ? (
 
                 <polygon
 
-
                   points={`
-
                     ${node.x},${node.y - 18}
-
                     ${node.x + 16},${node.y - 6}
-
                     ${node.x + 11},${node.y + 16}
-
                     ${node.x - 11},${node.y + 16}
-
                     ${node.x - 16},${node.y - 6}
-
                   `}
+// PLAYER SETTLEMENT
+fill={
+  isHovered
+    ? "#ff0000"
+    : settlement.playerId === "player-1"
+      ? "#f97316"
+      : "#9333ea"
+}
 
-
-                  fill={
-                    settlement.playerId === "player-1"
-                      ? "#f97316"
-                      : "#9333ea"
-                  }
-
-
-                  stroke={
-                    isHovered
-                      ? "#facc15"
-                      : "#475569"
-                  }
+stroke="#000000"
 
 
                   strokeWidth={
                     isHovered
-                      ? 5
+                      ? 4
                       : 4
                   }
 
-
                   strokeLinejoin="round"
-
 
                   onMouseEnter={() =>
                     setHoveredNode(node.id)
                   }
 
-
                   onMouseLeave={() =>
                     setHoveredNode(null)
                   }
 
-
                   onClick={() =>
                     onSelectNode?.(node.id)
                   }
-
 
                   style={{
                     cursor:
@@ -378,9 +404,7 @@ function BoardView({
 
                 />
 
-
               ) : (
-
 
                 <circle
 
@@ -394,33 +418,27 @@ function BoardView({
                       : 9
                   }
 
-
                   fill={
                     isHovered
-                      ? "#facc15"
+                      ? "#ff0000"
                       : "#2563eb"
                   }
-
 
                   stroke="white"
 
                   strokeWidth="2"
 
-
                   onMouseEnter={() =>
                     setHoveredNode(node.id)
                   }
-
 
                   onMouseLeave={() =>
                     setHoveredNode(null)
                   }
 
-
                   onClick={() =>
                     onSelectNode?.(node.id)
                   }
-
 
                   style={{
                     cursor:
@@ -431,16 +449,13 @@ function BoardView({
 
                 />
 
-
               )}
-
 
             </g>
 
           );
 
         })}
-
 
       </svg>
 
@@ -449,6 +464,5 @@ function BoardView({
   );
 
 }
-
 
 export default BoardView;

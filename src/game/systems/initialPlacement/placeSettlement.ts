@@ -1,63 +1,100 @@
 import type { GameState } from "../../engine/GameState";
 import { canPlaceSettlement } from "../validation/canPlaceSettlement";
+import { collectResources } from "../resources/collectResources";
 
 
 export function placeSettlement(
-  game: GameState,
-  playerId: string,
-  nodeId: string
+game: GameState,
+playerId: string,
+nodeId: string
 ): GameState {
 
-  if (
-    !canPlaceSettlement(
-      game,
-      nodeId
-    )
-  ) {
-    return game;
-  }
+
+if (!canPlaceSettlement(game,nodeId)) {
+return game;
+}
 
 
-  const updatedPlayers =
-    game.players.map(
-      (player) =>
-        player.id === playerId
-          ? {
-              ...player,
-
-              settlements: [
-                ...player.settlements,
-
-                {
-                  id:
-                    `settlement-${player.settlements.length + 1}`,
-
-                  playerId,
-
-                  nodeId,
-                },
-
-              ],
-            }
-          : player
-    );
+const player =
+game.players.find(
+(player) => player.id === playerId
+);
 
 
-  return {
-
-    ...game,
-
-    players:
-      updatedPlayers,
+if (!player || player.availableSettlements <= 0) {
+return game;
+}
 
 
-    lastPlacedSettlementNodeId:
-      nodeId,
+const isSecondSettlement =
+player.settlements.length === 1;
 
 
-    placementAction:
-      "road",
+let updatedGame: GameState = {
 
-  };
+...game,
+
+
+players:
+game.players.map(
+(player) =>
+
+player.id === playerId
+
+? {
+
+...player,
+
+availableSettlements:
+player.availableSettlements - 1,
+
+vp:
+player.vp + 1,
+
+settlements:[
+...player.settlements,
+
+{
+id:
+`settlement-${player.settlements.length + 1}`,
+
+playerId,
+
+nodeId,
+
+},
+
+],
+
+}
+
+: player
+
+),
+
+
+lastPlacedSettlementNodeId:
+nodeId,
+
+
+placementAction:
+"road",
+
+};
+
+
+if (isSecondSettlement) {
+
+updatedGame =
+collectResources(
+updatedGame,
+playerId,
+nodeId
+);
+
+}
+
+
+return updatedGame;
 
 }
