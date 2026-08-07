@@ -15,6 +15,7 @@ export function collectResources(
     return game;
   }
 
+
   const requestedResources: Resources = {
     brick: 0,
     lumber: 0,
@@ -23,111 +24,155 @@ export function collectResources(
     ore: 0,
   };
 
+
   node.adjacentTiles.forEach((tileId) => {
 
     const tile = game.board.tiles.find(
       (tile) => tile.id === tileId
     );
 
-    if (!tile || tile.resource === "desert") {
+
+    if (
+      !tile ||
+      tile.resource === "desert"
+    ) {
       return;
     }
+
 
     requestedResources[tile.resource] += 1;
 
   });
 
+
   const resourcesGranted: Resources = {
+
     brick:
-      game.resourceBank.brick >= requestedResources.brick
-        ? requestedResources.brick
-        : 0,
+      Math.min(
+        requestedResources.brick,
+        game.resourceBank.brick
+      ),
+
 
     lumber:
-      game.resourceBank.lumber >= requestedResources.lumber
-        ? requestedResources.lumber
-        : 0,
+      Math.min(
+        requestedResources.lumber,
+        game.resourceBank.lumber
+      ),
+
 
     wheat:
-      game.resourceBank.wheat >= requestedResources.wheat
-        ? requestedResources.wheat
-        : 0,
+      Math.min(
+        requestedResources.wheat,
+        game.resourceBank.wheat
+      ),
+
 
     sheep:
-      game.resourceBank.sheep >= requestedResources.sheep
-        ? requestedResources.sheep
-        : 0,
+      Math.min(
+        requestedResources.sheep,
+        game.resourceBank.sheep
+      ),
+
 
     ore:
-      game.resourceBank.ore >= requestedResources.ore
-        ? requestedResources.ore
-        : 0,
+      Math.min(
+        requestedResources.ore,
+        game.resourceBank.ore
+      ),
+
   };
 
+
   const updatedPlayers =
-    game.players.map((player) => {
+    game.players.map(
+      (player) => {
 
-      if (player.id !== playerId) {
-        return player;
+        if (
+          player.id !== playerId
+        ) {
+          return player;
+        }
+
+
+        return {
+
+          ...player,
+
+          resources: {
+
+            brick:
+              player.resources.brick +
+              resourcesGranted.brick,
+
+
+            lumber:
+              player.resources.lumber +
+              resourcesGranted.lumber,
+
+
+            wheat:
+              player.resources.wheat +
+              resourcesGranted.wheat,
+
+
+            sheep:
+              player.resources.sheep +
+              resourcesGranted.sheep,
+
+
+            ore:
+              player.resources.ore +
+              resourcesGranted.ore,
+
+          },
+
+        };
+
       }
+    );
 
-      return {
-        ...player,
 
-        resources: {
-          brick:
-            player.resources.brick +
-            resourcesGranted.brick,
-
-          lumber:
-            player.resources.lumber +
-            resourcesGranted.lumber,
-
-          wheat:
-            player.resources.wheat +
-            resourcesGranted.wheat,
-
-          sheep:
-            player.resources.sheep +
-            resourcesGranted.sheep,
-
-          ore:
-            player.resources.ore +
-            resourcesGranted.ore,
-        },
-      };
-
-    });
-
-  const updatedBank = {
+  const updatedBank: Resources = {
 
     brick:
       game.resourceBank.brick -
       resourcesGranted.brick,
 
+
     lumber:
       game.resourceBank.lumber -
       resourcesGranted.lumber,
+
 
     wheat:
       game.resourceBank.wheat -
       resourcesGranted.wheat,
 
+
     sheep:
       game.resourceBank.sheep -
       resourcesGranted.sheep,
 
+
     ore:
       game.resourceBank.ore -
       resourcesGranted.ore,
+
   };
 
+
   return {
+
     ...game,
 
-    players: updatedPlayers,
+    players:
+      updatedPlayers,
 
-    resourceBank: updatedBank,
+
+    resourceBank:
+      updatedBank,
+
   };
 
 }

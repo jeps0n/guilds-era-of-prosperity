@@ -1,5 +1,6 @@
 import type { Settlement } from "../domain/Settlement";
 
+
 export type GuildType =
   | "builder"
   | "explorer"
@@ -13,6 +14,7 @@ export interface Resources {
   sheep: number;
   ore: number;
 }
+
 
 
 export interface Player {
@@ -32,12 +34,6 @@ export interface Player {
   settlements: Settlement[];
 
   cities: string[];
-
-  availableSettlements: number;
-
-  availableRoads: number;
-
-  availableCities: number;
 
   superUnlocked: boolean;
 

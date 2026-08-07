@@ -29,7 +29,16 @@ return (
 
       <Panel>
 
-        <strong>{player.name}</strong>
+      <strong
+        style={{
+          color:
+            player.id === game.currentPlayerId
+              ? "#ef4444"
+              : "white",
+        }}
+      >
+        {player.name}
+      </strong>
 
         <div style={{ marginTop: "6px" }}>
           Guild: {player.guild ?? "None"}
@@ -71,15 +80,15 @@ return (
 
 
         <div>
-          🏠 Settlements Remaining: {player.availableSettlements}
+          🏠 Settlements Remaining: {5 - player.settlements.length}
         </div>
 
         <div>
-          🛣️ Roads Remaining: {player.availableRoads}
+          🛣️ Roads Remaining: {15 - player.roads.length}
         </div>
 
         <div>
-          🏙️ Cities Remaining: {player.availableCities}
+          🏙️ Cities Remaining: {4 - player.cities.length}
         </div>
 
 

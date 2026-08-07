@@ -5,10 +5,12 @@ import { STARTER_BOARD } from "../data/starterBoard";
 export function createInitialState(): GameState {
 
 const players = [
+
 {
 id: "player-1",
 name: "Player A",
 guild: undefined,
+
 vp: 0,
 
 resources: {
@@ -24,12 +26,6 @@ roads: [],
 settlements: [],
 
 cities: [],
-
-availableSettlements: 5,
-
-availableRoads: 15,
-
-availableCities: 4,
 
 superUnlocked: false,
 
@@ -43,6 +39,7 @@ secondaryRolls: [],
 id: "player-2",
 name: "Player B",
 guild: undefined,
+
 vp: 0,
 
 resources: {
@@ -59,12 +56,6 @@ settlements: [],
 
 cities: [],
 
-availableSettlements: 5,
-
-availableRoads: 15,
-
-availableCities: 4,
-
 superUnlocked: false,
 
 superUsed: false,
@@ -72,39 +63,53 @@ superUsed: false,
 secondaryRolls: [],
 
 },
+
 ];
 
 
-const shuffledPlayers = [
+const shuffledPlayers =
+[
 ...players,
 ].sort(() => Math.random() - 0.5);
 
 
 const placementOrder = [
+
 shuffledPlayers[0].id,
+
 shuffledPlayers[1].id,
+
 shuffledPlayers[1].id,
+
 shuffledPlayers[0].id,
+
 ];
 
 
 const guildSelectionPlayer =
-players[Math.floor(Math.random() * players.length)];
+players[
+Math.floor(
+Math.random() * players.length
+)
+];
 
 
 return {
 
 players,
 
-board: STARTER_BOARD,
+board:
+STARTER_BOARD,
 
 
 resourceBank: {
+
 brick: 19,
 lumber: 19,
 wheat: 19,
 sheep: 19,
 ore: 19,
+
 },
 
 
@@ -120,13 +125,17 @@ placementStep: 0,
 
 placementOrder,
 
-placementAction: "settlement",
+placementAction:
+"settlement",
 
-phase: "guild_selection",
+phase:
+"guild_selection",
 
-turnNumber: 0,
+turnNumber:
+0,
 
-eraOfProsperity: false,
+eraOfProsperity:
+false,
 
 eventLog: [],
 

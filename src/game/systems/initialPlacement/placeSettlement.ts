@@ -2,99 +2,90 @@ import type { GameState } from "../../engine/GameState";
 import { canPlaceSettlement } from "../validation/canPlaceSettlement";
 import { collectResources } from "../resources/collectResources";
 
-
 export function placeSettlement(
-game: GameState,
-playerId: string,
-nodeId: string
+  game: GameState,
+  playerId: string,
+  nodeId: string
 ): GameState {
 
+  if (!canPlaceSettlement(game, nodeId)) {
+    return game;
+  }
 
-if (!canPlaceSettlement(game,nodeId)) {
-return game;
-}
+  const player =
+    game.players.find(
+      (player) => player.id === playerId
+    );
 
+  if (!player) {
+    return game;
+  }
 
-const player =
-game.players.find(
-(player) => player.id === playerId
-);
+  if (player.settlements.length >= 5) {
+    return game;
+  }
 
+  const isSecondSettlement =
+    player.settlements.length === 1;
 
-if (!player || player.availableSettlements <= 0) {
-return game;
-}
+  let updatedGame: GameState = {
 
+    ...game,
 
-const isSecondSettlement =
-player.settlements.length === 1;
+    players:
+      game.players.map(
+        (player) =>
 
+          player.id === playerId
 
-let updatedGame: GameState = {
+            ? {
 
-...game,
+                ...player,
 
+                vp:
+                  player.vp + 1,
 
-players:
-game.players.map(
-(player) =>
+                settlements: [
+                  ...player.settlements,
 
-player.id === playerId
+                  {
+                    id:
+                      `settlement-${player.settlements.length + 1}`,
 
-? {
+                    playerId,
 
-...player,
+                    nodeId,
+                  },
 
-availableSettlements:
-player.availableSettlements - 1,
+                ],
 
-vp:
-player.vp + 1,
+              }
 
-settlements:[
-...player.settlements,
+            : player
 
-{
-id:
-`settlement-${player.settlements.length + 1}`,
+      ),
 
-playerId,
+    lastPlacedSettlementNodeId:
+      nodeId,
 
-nodeId,
+    placementAction:
+      "road",
 
-},
-
-],
-
-}
-
-: player
-
-),
-
-
-lastPlacedSettlementNodeId:
-nodeId,
+  };
 
 
-placementAction:
-"road",
+  if (isSecondSettlement) {
 
-};
+    updatedGame =
+      collectResources(
+        updatedGame,
+        playerId,
+        nodeId
+      );
 
-
-if (isSecondSettlement) {
-
-updatedGame =
-collectResources(
-updatedGame,
-playerId,
-nodeId
-);
-
-}
+  }
 
 
-return updatedGame;
+  return updatedGame;
 
 }
