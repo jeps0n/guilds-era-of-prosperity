@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Board } from "../game/domain/Board";
 import type { Settlement } from "../game/domain/Settlement";
+import PortBadge from "./PortBadge";
 interface BoardViewProps {
   board: Board;
   settlements: Settlement[];
@@ -126,7 +127,6 @@ function BoardView({
               port.nodeIds.includes(edge.nodeA) &&
               port.nodeIds.includes(edge.nodeB)
           );
-
         return (
           <g key={edge.id}>
             {/* PORT DEBUG EDGE */}
@@ -232,7 +232,7 @@ function BoardView({
           </g>
         );
       })}
-      {/* PORT LABELS */}
+      {/* PORT BADGES */}
       {board.ports.map((port) => {
         const a =
           board.nodes.find(
@@ -244,21 +244,32 @@ function BoardView({
             n =>
               n.id === port.nodeIds[1]
           );
-        if (!a || !b)
+        if (!a || !b) {
           return null;
+        }
+        const midX = (a.x + b.x) / 2;
+        const midY = (a.y + b.y) / 2;
+        // Direction from board center to port
+        const length = Math.sqrt(
+          midX * midX +
+          midY * midY
+        );
+        const outwardDistance = 38;
+        const badgeX =
+          midX +
+          (midX / length) * outwardDistance;
+        const badgeY =
+          midY +
+          (midY / length) * outwardDistance;
+        /* PORT BADGE*/
         return (
-          // PORT TEXT
-          <text
+          <PortBadge
             key={port.id}
-            x={(a.x + b.x) / 2}
-            y={(a.y + b.y) / 2 - 8}
-            fill="#964B00"
-            fontWeight="bold"
-            fontSize="12"
-            textAnchor="middle"
-          >
-            {port.type}
-          </text>
+            x={badgeX}
+            y={badgeY}
+            type={port.type}
+            ratio={port.ratio}
+          />
         );
       })}
       {/* NODES */}
@@ -342,13 +353,10 @@ function portArcPath(
 ) {
   const dx = bx - ax;
   const dy = by - ay;
-
   const length = Math.sqrt(
     dx * dx + dy * dy
   );
-
   const radius = length / 2;
-
   return `
     M ${ax} ${ay}
     A ${radius} ${radius} 0 0 1 ${bx} ${by}

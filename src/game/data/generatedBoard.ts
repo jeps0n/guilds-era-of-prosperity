@@ -275,7 +275,7 @@ function placePortsOnCoast(): Port[] {
       2,
     ];
   const portTypes:
-    Port["type"][] =[
+    Port["type"][] = shuffle([
       "generic",
       "generic",
       "generic",
@@ -285,7 +285,7 @@ function placePortsOnCoast(): Port[] {
       "wheat",
       "sheep",
       "ore",
-    ];
+    ]);
   const selectedEdges:
     typeof GENERATED_EDGES =
     [];
