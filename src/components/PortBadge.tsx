@@ -1,12 +1,10 @@
 import type { Port } from "../game/domain/Port";
-
 interface PortBadgeProps {
     x: number;
     y: number;
     type: Port["type"];
     ratio: number;
 }
-
 const RESOURCE_COLORS = {
     generic: "#94a3b8", // placeholder, polish later
     brick: "#b45309",
@@ -15,7 +13,6 @@ const RESOURCE_COLORS = {
     sheep: "#65a30d",
     ore: "#6b7280",
 };
-
 const RESOURCE_LABELS = {
     generic: "any",
     brick: "brick",
@@ -24,17 +21,14 @@ const RESOURCE_LABELS = {
     sheep: "sheep",
     ore: "ore",
 };
-
 export default function PortBadge({
     x,
     y,
     type,
     ratio,
 }: PortBadgeProps) {
-
     return (
         <g>
-
             {/* white badge background */}
             <rect
                 x={x - 20}
@@ -46,7 +40,6 @@ export default function PortBadge({
                 stroke="#111827"
                 strokeWidth="2"
             />
-
             {/* resource square */}
             <rect
                 x={x - 8}
@@ -58,8 +51,6 @@ export default function PortBadge({
                 stroke="#111827"
                 strokeWidth="1.5"
             />
-
-
             {/* generic symbol */}
             {type === "generic" && (
                 <text
@@ -73,8 +64,6 @@ export default function PortBadge({
                     ?
                 </text>
             )}
-
-
             {/* resource name */}
             <text
                 x={x}
@@ -86,8 +75,6 @@ export default function PortBadge({
             >
                 {RESOURCE_LABELS[type]}
             </text>
-
-
             {/* trade ratio */}
             <text
                 x={x}
@@ -99,7 +86,6 @@ export default function PortBadge({
             >
                 {ratio}:1
             </text>
-
         </g>
     );
 }

@@ -1,10 +1,7 @@
 export interface Port {
   id: string;
-
   edgeId: string;
-
   nodeIds: string[];
-
   type:
     | "generic"
     | "brick"
@@ -12,6 +9,5 @@ export interface Port {
     | "wheat"
     | "sheep"
     | "ore";
-
   ratio: number;
 }

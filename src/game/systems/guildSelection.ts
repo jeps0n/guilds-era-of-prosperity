@@ -1,6 +1,5 @@
 import type { GameState } from "../engine/GameState";
 import type { GuildType } from "../engine/types";
-
 export function selectGuild(
   game: GameState,
   playerId: string,
@@ -14,20 +13,17 @@ export function selectGuild(
         }
       : player
   );
-
   return advanceGuildSelection({
     ...game,
     players: updatedPlayers,
   });
 }
-
 function advanceGuildSelection(
   game: GameState
 ): GameState {
   const selectionComplete = game.players.every(
     (player) => player.guild !== undefined
   );
-
   if (selectionComplete) {
     return {
       ...game,
@@ -36,18 +32,15 @@ function advanceGuildSelection(
       placementStep: 0,
     };
   }
-
   const nextPlayer = game.players.find(
     (player) => player.guild === undefined
   );
-
   return {
     ...game,
     currentPlayerId:
       nextPlayer?.id ?? game.currentPlayerId,
   };
 }
-
 export function isGuildSelectionComplete(
   game: GameState
 ): boolean {

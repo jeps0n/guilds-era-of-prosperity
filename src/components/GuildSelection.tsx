@@ -1,13 +1,11 @@
 import type { GuildType } from "../game/engine/types";
 import { GUILDS } from "../game/data/guilds";
 import GuildCard from "./GuildCard";
-
 interface GuildSelectionProps {
   playerName: string;
   availableGuilds: GuildType[];
   onSelectGuild: (guild: GuildType) => void;
 }
-
 function GuildSelection({
   playerName,
   availableGuilds,
@@ -32,7 +30,6 @@ function GuildSelection({
     <h2>
       🏛️ Guild Selection
     </h2>
-
     <div
       style={{
         padding: "8px 16px",
@@ -44,12 +41,10 @@ function GuildSelection({
     >
       {playerName}'s Turn
     </div>
-
     <p>
       Select the Guild that will shape your colony.
     </p>
   </div>
-
   <div
     style={{
       display: "flex",
@@ -70,9 +65,7 @@ function GuildSelection({
         />
       ))}
   </div>
-
     </div>
   );
 }
-
 export default GuildSelection;

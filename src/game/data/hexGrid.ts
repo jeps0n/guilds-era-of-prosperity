@@ -111,41 +111,33 @@ export function generateEdges(
   size: number,
   nodes: GeneratedNode[]
 ): GeneratedEdge[] {
-
   const edgeMap =
     new Map<string, GeneratedEdge>();
-
   const nodeLookup =
     new Map<string, GeneratedNode>();
-
   nodes.forEach((node) => {
     nodeLookup.set(
       pointKey(node),
       node
     );
   });
-
   hexes.forEach((hex, hexIndex) => {
-
     const corners =
       hexCorners(
         hex,
         size
       );
-
     for (
       let i = 0;
       i < 6;
       i++
     ) {
-
       const a =
         nodeLookup.get(
           pointKey(
             corners[i]
           )
         );
-
       const b =
         nodeLookup.get(
           pointKey(
@@ -154,14 +146,12 @@ export function generateEdges(
             ]
           )
         );
-
       if (
         !a ||
         !b
       ) {
         continue;
       }
-
       const key =
         [
           a.id,
@@ -169,47 +159,33 @@ export function generateEdges(
         ]
           .sort()
           .join("-");
-
       const hexId =
         `hex-${hexIndex + 1}`;
-
       const existing =
         edgeMap.get(key);
-
       if (existing) {
-
         existing.adjacentHexes.push(
           hexId
         );
-
       } else {
-
         edgeMap.set(
           key,
           {
             id:
               `edge-${edgeMap.size + 1}`,
-
             nodeA:
               a.id,
-
             nodeB:
               b.id,
-
             adjacentHexes: [
               hexId,
             ],
           }
         );
-
       }
-
     }
-
   });
-
   return Array.from(
     edgeMap.values()
   );
-
 }

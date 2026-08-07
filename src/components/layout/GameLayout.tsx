@@ -1,20 +1,17 @@
 import type { ReactNode } from "react";
 import Panel from "../ui/Panel";
-
 interface GameLayoutProps {
   header?: ReactNode;
   board: ReactNode;
   rightSidebar?: ReactNode;
   bottom?: ReactNode;
 }
-
 function GameLayout({
   header,
   board,
   rightSidebar,
   bottom,
 }: GameLayoutProps) {
-
   return (
     <div
       style={{
@@ -28,10 +25,7 @@ function GameLayout({
         boxSizing: "border-box",
       }}
     >
-
       {header}
-
-
       <div
         style={{
           display: "flex",
@@ -40,7 +34,6 @@ function GameLayout({
           flex: 1,
         }}
       >
-
         <div
           style={{
             display: "grid",
@@ -54,34 +47,22 @@ function GameLayout({
             justifyContent: "center",
           }}
         >
-
           {/* Future left sidebar */}
           {rightSidebar && <div />}
-
-
           {/* Main content */}
           <div>
             {board}
           </div>
-
-
           {/* Right HUD */}
           {rightSidebar && (
             <Panel minHeight="400px">
               {rightSidebar}
             </Panel>
           )}
-
-
         </div>
-
       </div>
-
-
       {bottom}
-
     </div>
   );
 }
-
 export default GameLayout;

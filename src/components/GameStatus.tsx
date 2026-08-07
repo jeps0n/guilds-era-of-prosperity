@@ -1,21 +1,17 @@
 import type { GameState } from "../game/engine/GameState";
-
 interface GameStatusProps {
   game: GameState;
   onEndTurn: () => void;
 }
-
 function GameStatus({
   game,
   onEndTurn,
 }: GameStatusProps) {
-
   const currentPlayer =
     game.players.find(
       (player) =>
         player.id === game.currentPlayerId
     );
-
   return (
     <div
       style={{
@@ -28,23 +24,18 @@ function GameStatus({
         textAlign: "center",
       }}
     >
-
       <div>
         <strong>Phase:</strong>{" "}
         {game.phase}
       </div>
-
       <div>
         <strong>Turn:</strong>{" "}
         {game.turnNumber}
       </div>
-
       <div>
         <strong>Current Player:</strong>{" "}
         {currentPlayer?.name ?? "Unknown"}
       </div>
-
-
       {game.phase === "playing" && (
         <button
           onClick={onEndTurn}
@@ -62,9 +53,7 @@ function GameStatus({
           End Turn
         </button>
       )}
-
     </div>
   );
 }
-
 export default GameStatus;

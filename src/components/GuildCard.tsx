@@ -1,10 +1,8 @@
 import type { GuildDefinition } from "../game/data/guilds";
-
 interface GuildCardProps {
   guild: GuildDefinition;
   onSelect: () => void;
 }
-
 function GuildCard({
   guild,
   onSelect,
@@ -32,9 +30,7 @@ function GuildCard({
       <h2>
         {guild.icon} {guild.name}
       </h2>
-
       <p>{guild.description}</p>
-
       <button
         onClick={onSelect}
         style={{
@@ -54,5 +50,4 @@ function GuildCard({
     </div>
   );
 }
-
 export default GuildCard;

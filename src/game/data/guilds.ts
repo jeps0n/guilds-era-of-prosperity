@@ -1,5 +1,4 @@
 import type { GuildType } from "../engine/types";
-
 export interface GuildDefinition {
   type: GuildType;
   name: string;
@@ -7,7 +6,6 @@ export interface GuildDefinition {
   color: string;
   description: string;
 }
-
 export const GUILDS: GuildDefinition[] = [
   {
     type: "builder",

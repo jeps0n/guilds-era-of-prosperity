@@ -1,17 +1,14 @@
 import type { ReactNode } from "react";
-
 interface PanelProps {
   children: ReactNode;
   width?: string;
   minHeight?: string;
 }
-
 function Panel({
   children,
   width,
   minHeight,
 }: PanelProps) {
-
   return (
     <div
       style={{
@@ -28,5 +25,4 @@ function Panel({
     </div>
   );
 }
-
 export default Panel;

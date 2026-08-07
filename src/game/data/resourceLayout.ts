@@ -1,29 +1,22 @@
 import type { ResourceType } from "../domain/HexTile";
-
-
 export const RESOURCE_LAYOUT: ResourceType[] = [
   "lumber",
   "lumber",
   "lumber",
   "lumber",
-
   "wheat",
   "wheat",
   "wheat",
   "wheat",
-
   "sheep",
   "sheep",
   "sheep",
   "sheep",
-
   "brick",
   "brick",
   "brick",
-
   "ore",
   "ore",
   "ore",
-
   "desert",
 ];
