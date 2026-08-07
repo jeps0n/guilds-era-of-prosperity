@@ -1,5 +1,8 @@
 import type { GameState } from "./GameState";
 import { STARTER_BOARD } from "../data/starterBoard";
+import {
+ DEVELOPMENT_CARD_DECK
+} from "../data/developmentCards";
 export function createInitialState(): GameState {
 const players = [
 {
@@ -17,6 +20,7 @@ ore: 0,
 roads: [],
 settlements: [],
 cities: [],
+developmentCards: [],
 superUnlocked: false,
 superUsed: false,
 secondaryRolls: [],
@@ -36,6 +40,7 @@ ore: 0,
 roads: [],
 settlements: [],
 cities: [],
+developmentCards: [],
 superUnlocked: false,
 superUsed: false,
 secondaryRolls: [],
@@ -68,6 +73,8 @@ wheat: 19,
 sheep: 19,
 ore: 19,
 },
+developmentDeck: [...DEVELOPMENT_CARD_DECK]
+  .sort(() => Math.random() - 0.5),
 guildSelectionPlayerId:
 guildSelectionPlayer.id,
 currentPlayerId:

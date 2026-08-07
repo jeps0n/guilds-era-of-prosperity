@@ -11,8 +11,21 @@ export type PlacementAction =
 export type GameEventType =
   | "GAME_STARTED"
   | "GUILD_SELECTED"
+  | "INITIAL_SETTLEMENT_PLACED"
+  | "INITIAL_ROAD_PLACED"
   | "SETTLEMENT_BUILT"
   | "ROAD_PLACED"
+  | "CITY_BUILT"
+  | "DICE_ROLLED"
+  | "RESOURCES_COLLECTED"
+  | "BANK_TRADE"
+  | "PORT_TRADE"
+  | "DEVELOPMENT_CARD_PURCHASED"
+  | "DEVELOPMENT_CARD_PLAYED"
+  | "ROBBER_MOVED"
+  | "RESOURCE_STOLEN"
+  | "LONGEST_ROAD_CLAIMED"
+  | "LARGEST_ARMY_CLAIMED"
   | "PLAYER_REACHED_6VP"
   | "ERA_STARTED"
   | "SUPER_UNLOCKED"
@@ -21,7 +34,7 @@ export type GameEventType =
   | "GAME_ENDED";
 export interface GameEvent {
   id: string;
-  type: string;
+  type: GameEventType;
   message: string;
   timestamp: number;
 }
@@ -31,6 +44,15 @@ export interface GameState {
   guildSelectionPlayerId: string;
   board: Board;
   resourceBank: Resources;
+  developmentDeck: {
+    id: string;
+    type:
+      | "knight"
+      | "victory_point"
+      | "road_building"
+      | "year_of_plenty"
+      | "monopoly";
+  }[];
   placementStep: number;
   placementOrder: string[];
   placementAction: PlacementAction;

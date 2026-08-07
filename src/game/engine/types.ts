@@ -1,4 +1,5 @@
 import type { Settlement } from "../domain/Settlement";
+import type { DevelopmentCard } from "../domain/DevelopmentCard";
 export type GuildType =
   | "builder"
   | "explorer"
@@ -19,6 +20,7 @@ export interface Player {
   roads: string[];
   settlements: Settlement[];
   cities: string[];
+  developmentCards: DevelopmentCard[];
   superUnlocked: boolean;
   superUsed: boolean;
   secondaryRolls: number[];
