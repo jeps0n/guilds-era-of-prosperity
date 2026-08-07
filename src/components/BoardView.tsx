@@ -2,6 +2,9 @@ import { useState } from "react";
 import type { Board } from "../game/domain/Board";
 import type { Settlement } from "../game/domain/Settlement";
 import PortBadge from "./PortBadge";
+import HexTileView from "./HexTileView";
+import BoardNodeView from "./BoardNodeView";
+import BoardEdgeView from "./BoardEdgeView";
 interface BoardViewProps {
   board: Board;
   settlements: Settlement[];
@@ -12,17 +15,6 @@ interface BoardViewProps {
   }[];
   onSelectNode?: (nodeId: string) => void;
   onSelectEdge?: (edgeId: string) => void;
-}
-const SIZE = 75;
-function hexPoints(x: number, y: number) {
-  return Array.from({ length: 6 }, (_, i) => {
-    const angle =
-      (Math.PI / 180) * (30 + i * 60);
-    return [
-      x + SIZE * Math.cos(angle),
-      y + SIZE * Math.sin(angle),
-    ].join(",");
-  }).join(" ");
 }
 function BoardView({
   board,
@@ -39,7 +31,7 @@ function BoardView({
     <svg
       width="800"
       height="600"
-      viewBox="-375 -333 750 666"
+      viewBox="-450 -400 900 800"
       style={{
         background: "#3b82f6",
         borderRadius: "18px",
@@ -49,187 +41,47 @@ function BoardView({
     >
       {/* HEXES */}
       {board.tiles.map((tile) => (
-        <g key={tile.id}>
-          <polygon
-            points={hexPoints(tile.x, tile.y)}
-            fill={{
-              brick: "#b45309",
-              lumber: "#166534",
-              wheat: "#eab308",
-              sheep: "#65a30d",
-              ore: "#6b7280",
-              desert: "#d6c28a",
-            }[tile.resource]}
-            stroke="#111827"
-            strokeWidth="2"
-          />
-          {tile.numberToken && (
-            <>
-              <rect
-                x={tile.x - 18}
-                y={tile.y - 18}
-                width="36"
-                height="36"
-                rx="8"
-                fill="#f9fafb"
-                stroke="#111827"
-                strokeWidth="2"
-              />
-              <text
-                x={tile.x}
-                y={tile.y + 6}
-                textAnchor="middle"
-                fontWeight="bold"
-                fontSize="18"
-              >
-                {tile.numberToken}
-              </text>
-            </>
-          )}
-          <text
-            x={tile.x}
-            y={tile.y + 38}
-            textAnchor="middle"
-            fontSize="10"
-            fill="white"
-            fontWeight="bold"
-          >
-            {tile.resource}
-          </text>
-        </g>
+        <HexTileView
+          key={tile.id}
+          tile={tile}
+        />
       ))}
-      {/* ROADS */}
+      {/* EDGES */}
       {board.edges.map((edge) => {
-        const a =
+        const nodeA =
           board.nodes.find(
-            (n) => n.id === edge.nodeA
+            (node) =>
+              node.id === edge.nodeA
           );
-        const b =
+        const nodeB =
           board.nodes.find(
-            (n) => n.id === edge.nodeB
+            (node) =>
+              node.id === edge.nodeB
           );
-        if (!a || !b)
-          return null;
         const road =
           roads.find(
-            (r) =>
-              r.edgeId === edge.id
+            (road) =>
+              road.edgeId === edge.id
           );
         const port =
           board.ports.find(
-            p => p.edgeId === edge.id
-          );
-        const hovered =
-          hoveredEdge === edge.id;
-        const isPortEdge =
-          board.ports.some(
             (port) =>
-              port.nodeIds.includes(edge.nodeA) &&
-              port.nodeIds.includes(edge.nodeB)
+              port.edgeId === edge.id
           );
         return (
-          <g key={edge.id}>
-            {/* PORT DEBUG EDGE */}
-            {isPortEdge && (
-              <line
-                x1={a.x}
-                y1={a.y}
-                x2={b.x}
-                y2={b.y}
-                stroke="#CD7F32"
-                strokeWidth="14"
-                strokeLinecap="round"
-                pointerEvents="none"
-              />
-            )}
-            {port && (
-              <path
-                d={portArcPath(
-                  a.x,
-                  a.y,
-                  b.x,
-                  b.y
-                )}
-                fill="#CD7F32"
-                stroke="#CD7F32"
-                strokeWidth="10"
-                strokeLinecap="round"
-                pointerEvents="none"
-              />
-            )}
-            {road ? (
-              <>
-                <line
-                  x1={a.x}
-                  y1={a.y}
-                  x2={b.x}
-                  y2={b.y}
-                  stroke="#000000"
-                  strokeWidth="15"
-                  strokeLinecap="round"
-                  pointerEvents="none"
-                />
-                <line
-                  x1={a.x}
-                  y1={a.y}
-                  x2={b.x}
-                  y2={b.y}
-                  stroke={
-                    hovered
-                      ? "#ff0000"
-                      : road.playerId === "player-1"
-                        ? "#f97316"
-                        : "#9333ea"
-                  }
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  pointerEvents="none"
-                />
-              </>
-            ) : (
-              <line
-                x1={a.x}
-                y1={a.y}
-                x2={b.x}
-                y2={b.y}
-                stroke={
-                  hovered
-                    ? "#ff0000"
-                    : "#78350f"
-                }
-                strokeWidth={
-                  hovered
-                    ? 10
-                    : 6
-                }
-                strokeLinecap="round"
-                pointerEvents="none"
-              />
-            )}
-            <line
-              x1={a.x}
-              y1={a.y}
-              x2={b.x}
-              y2={b.y}
-              stroke="transparent"
-              strokeWidth="22"
-              onMouseEnter={() =>
-                setHoveredEdge(edge.id)
-              }
-              onMouseLeave={() =>
-                setHoveredEdge(null)
-              }
-              onClick={() =>
-                onSelectEdge?.(edge.id)
-              }
-              style={{
-                cursor:
-                  onSelectEdge
-                    ? "pointer"
-                    : "default",
-              }}
-            />
-          </g>
+          <BoardEdgeView
+            key={edge.id}
+            edge={edge}
+            nodeA={nodeA}
+            nodeB={nodeB}
+            road={road}
+            port={port}
+            hovered={
+              hoveredEdge === edge.id
+            }
+            onHover={setHoveredEdge}
+            onSelectEdge={onSelectEdge}
+          />
         );
       })}
       {/* PORT BADGES */}
@@ -249,18 +101,33 @@ function BoardView({
         }
         const midX = (a.x + b.x) / 2;
         const midY = (a.y + b.y) / 2;
-        // Direction from board center to port
-        const length = Math.sqrt(
-          midX * midX +
-          midY * midY
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const edgeLength = Math.sqrt(
+          dx * dx + dy * dy
         );
-        const outwardDistance = 38;
+        // perpendicular direction
+        const normalX = -dy / edgeLength;
+        const normalY = dx / edgeLength;
+        // determine outward side
+        const direction =
+          (
+            midX * normalX +
+            midY * normalY
+          ) > 0
+            ? 1
+            : -1;
+        // this point matches the arc peak
         const badgeX =
           midX +
-          (midX / length) * outwardDistance;
+          normalX *
+          38 *
+          direction;
         const badgeY =
           midY +
-          (midY / length) * outwardDistance;
+          normalY *
+          38 *
+          direction;
         /* PORT BADGE*/
         return (
           <PortBadge
@@ -279,87 +146,24 @@ function BoardView({
             (s) =>
               s.nodeId === node.id
           );
-        const hovered =
-          hoveredNode === node.id;
         const isPortNode =
           board.ports.some(
             (p) =>
               p.nodeIds.includes(node.id)
           );
         return (
-          <g key={node.id}>
-            {settlement ? (
-              <polygon
-                points={`${node.x},${node.y - 18}
-${node.x + 16},${node.y - 6}
-${node.x + 11},${node.y + 16}
-${node.x - 11},${node.y + 16}
-${node.x - 16},${node.y - 6}`}
-                fill={
-                  hovered
-                    ? "#ff0000"
-                    : settlement.playerId === "player-1"
-                      ? "#f97316"
-                      : "#9333ea"
-                }
-                stroke="#000"
-                strokeWidth="4"
-                onMouseEnter={() =>
-                  setHoveredNode(node.id)
-                }
-                onMouseLeave={() =>
-                  setHoveredNode(null)
-                }
-                onClick={() =>
-                  onSelectNode?.(node.id)
-                }
-              />
-            ) : (
-              <circle
-                cx={node.x}
-                cy={node.y}
-                r={hovered ? 13 : 9}
-                fill={
-                  hovered
-                    ? "#ff0000"
-                    : isPortNode
-                      ? "#CD7F32"
-                      : "#2563eb"
-                }
-                stroke="white"
-                strokeWidth="2"
-                onMouseEnter={() =>
-                  setHoveredNode(node.id)
-                }
-                onMouseLeave={() =>
-                  setHoveredNode(null)
-                }
-                onClick={() =>
-                  onSelectNode?.(node.id)
-                }
-              />
-            )}
-          </g>
+          <BoardNodeView
+            key={node.id}
+            node={node}
+            settlement={settlement}
+            isPortNode={isPortNode}
+            hovered={hoveredNode === node.id}
+            onHover={setHoveredNode}
+            onSelectNode={onSelectNode}
+          />
         );
       })}
     </svg>
   );
-}
-function portArcPath(
-  ax: number,
-  ay: number,
-  bx: number,
-  by: number
-) {
-  const dx = bx - ax;
-  const dy = by - ay;
-  const length = Math.sqrt(
-    dx * dx + dy * dy
-  );
-  const radius = length / 2;
-  return `
-    M ${ax} ${ay}
-    A ${radius} ${radius} 0 0 1 ${bx} ${by}
-  `;
 }
 export default BoardView;
