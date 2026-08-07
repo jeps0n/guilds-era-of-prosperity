@@ -3,9 +3,7 @@ import { useState } from "react";
 import type { Board } from "../game/domain/Board";
 import type { Settlement } from "../game/domain/Settlement";
 
-
 interface BoardViewProps {
-
   board: Board;
 
   settlements: Settlement[];
@@ -23,7 +21,6 @@ interface BoardViewProps {
   onSelectEdge?: (
     edgeId: string
   ) => void;
-
 }
 
 
@@ -53,6 +50,7 @@ function hexPoints(
 
 }
 
+
 function BoardView({
   board,
   settlements,
@@ -61,408 +59,448 @@ function BoardView({
   onSelectEdge,
 }: BoardViewProps) {
 
-  const [hoveredEdge, setHoveredEdge] =
-    useState<string | null>(null);
 
-  const [hoveredNode, setHoveredNode] =
-    useState<string | null>(null);
+const [hoveredEdge, setHoveredEdge] =
+useState<string | null>(null);
 
-  return (
 
-    <div>
+const [hoveredNode, setHoveredNode] =
+useState<string | null>(null);
 
-      <svg
 
-        width="800"
 
-        height="600"
+return (
 
-        viewBox="-375 -333 750 666"
+<div>
 
-        style={{
-          background:"#3b82f6",
-          borderRadius:"18px",
-          boxShadow:
-            "0 12px 30px rgba(0,0,0,0.35)"
-        }}
+<svg
 
-      >
+width="800"
 
-        {board.tiles.map((tile)=>(
+height="600"
 
-          <g key={tile.id}>
+viewBox="-375 -333 750 666"
 
-            <polygon
-              points={hexPoints(tile.x,tile.y)}
+style={{
+background:"#3b82f6",
+borderRadius:"18px",
+boxShadow:
+"0 12px 30px rgba(0,0,0,0.35)"
+}}
 
-              fill={
-                {
-                  brick:"#b45309",
-                  lumber:"#166534",
-                  wheat:"#eab308",
-                  sheep:"#65a30d",
-                  ore:"#6b7280",
-                  desert:"#d6c28a",
-                }[tile.resource]
-              }
+>
 
-              stroke="#111827"
 
-              strokeWidth="2"
-            />
+{board.tiles.map((tile)=>(
 
-            {tile.numberToken && (
+<g key={tile.id}>
 
-              <>
 
-                <rect
+<polygon
 
-                  x={tile.x - 18}
-                  y={tile.y - 18}
+points={
+hexPoints(
+tile.x,
+tile.y
+)
+}
 
-                  width="36"
-                  height="36"
+fill={
+{
+brick:"#b45309",
+lumber:"#166534",
+wheat:"#eab308",
+sheep:"#65a30d",
+ore:"#6b7280",
+desert:"#d6c28a",
+}[tile.resource]
+}
 
-                  rx="8"
+stroke="#111827"
 
-                  fill="#f9fafb"
+strokeWidth="2"
 
-                  stroke="#111827"
+/>
 
-                  strokeWidth="2"
 
-                />
+{tile.numberToken && (
 
-                <text
+<>
 
-                  x={tile.x}
-                  y={tile.y}
+<rect
 
-                  textAnchor="middle"
+x={tile.x - 18}
 
-                  dominantBaseline="middle"
+y={tile.y - 18}
 
-                  fontSize="16"
+width="36"
 
-                  fontWeight="bold"
+height="36"
 
-                  fill="#111827"
+rx="8"
 
-                >
+fill="#f9fafb"
 
-                  {tile.numberToken}
+stroke="#111827"
 
-                </text>
+strokeWidth="2"
 
-              </>
+/>
 
-            )}
 
-          </g>
+<text
 
-        ))}
+x={tile.x}
 
+y={tile.y}
 
-        {/* ROADS */}
+textAnchor="middle"
 
-        {board.edges.map((edge)=>{
+dominantBaseline="middle"
 
-          const a =
-            board.nodes.find(
-              n => n.id === edge.nodeA
-            );
+fontSize="16"
 
-          const b =
-            board.nodes.find(
-              n => n.id === edge.nodeB
-            );
+fontWeight="bold"
 
+fill="#111827"
 
-          if (!a || !b) {
-            return null;
-          }
+>
 
+{tile.numberToken}
 
-          const road =
-            roads.find(
-              r => r.edgeId === edge.id
-            );
+</text>
 
 
-          const isHovered =
-            hoveredEdge === edge.id;
-
-
-          return (
-
-            <g key={edge.id}>
-
-
-              {/* BLACK ROAD BORDER */}
-
-              {road && (
-
-                <line
-
-                  x1={a.x}
-                  y1={a.y}
-
-                  x2={b.x}
-                  y2={b.y}
-
-                  stroke="#000000"
-
-                  strokeWidth="16"
-
-                  strokeLinecap="round"
-
-                  pointerEvents="none"
-
-                />
-
-              )}
-
-
-
-              {/* ROAD COLOR */}
-
-              {road && (
-
-                <line
-
-                  x1={a.x}
-                  y1={a.y}
-
-                  x2={b.x}
-                  y2={b.y}
-
-                  stroke={
-
-                    isHovered
-
-                      ? "#ff0000"
-
-                      : road.playerId === "player-1"
-                        ? "#f97316"
-                        : "#9333ea"
-
-                  }
-
-                  strokeWidth="10"
-
-                  strokeLinecap="round"
-
-                  pointerEvents="none"
-
-                />
-
-              )}
-
-
-{/* EMPTY EDGE */}
-
-{!road && (
-
-  <line
-
-    x1={a.x}
-    y1={a.y}
-
-    x2={b.x}
-    y2={b.y}
-
-    stroke={
-
-      isHovered
-        ? "#ff0000"
-        : "#78350f"
-
-    }
-
-    strokeWidth={
-      isHovered
-      ? "10"
-      : "6"
-    }
-    strokeLinecap="round"
-
-    pointerEvents="none"
-
-  />
+</>
 
 )}
 
 
 
-              {/* CLICK / HOVER AREA */}
+{/* DEBUG TERRAIN LABEL */}
 
-              <line
+<text
 
-                x1={a.x}
-                y1={a.y}
+x={tile.x}
 
-                x2={b.x}
-                y2={b.y}
+y={tile.y + 38}
 
-                stroke="transparent"
+textAnchor="middle"
 
-                strokeWidth="22"
+fontSize="10"
 
-                onMouseEnter={() =>
-                  setHoveredEdge(edge.id)
-                }
+fill="white"
 
-                onMouseLeave={() =>
-                  setHoveredEdge(null)
-                }
+fontWeight="bold"
 
-                onClick={() =>
-                  onSelectEdge?.(edge.id)
-                }
+>
 
-                style={{
-                  cursor:
-                    onSelectEdge
-                      ? "pointer"
-                      : "default"
-                }}
+{tile.resource}
 
-              />
+</text>
 
 
-            </g>
+</g>
 
-          );
+))}
 
-        })}
 
-        {/* NODES */}
 
-        {board.nodes.map((node)=>{
+{/* ROADS */}
 
-          const settlement =
-            settlements.find(
-              s => s.nodeId === node.id
-            );
+{board.edges.map((edge)=>{
 
-          const isHovered =
-            hoveredNode === node.id;
+const a =
+board.nodes.find(
+n => n.id === edge.nodeA
+);
 
-          return (
 
-            <g key={node.id}>
+const b =
+board.nodes.find(
+n => n.id === edge.nodeB
+);
 
-              {settlement ? (
 
-                <polygon
+if(!a || !b){
+return null;
+}
 
-                  points={`
-                    ${node.x},${node.y - 18}
-                    ${node.x + 16},${node.y - 6}
-                    ${node.x + 11},${node.y + 16}
-                    ${node.x - 11},${node.y + 16}
-                    ${node.x - 16},${node.y - 6}
-                  `}
-// PLAYER SETTLEMENT
+
+const road =
+roads.find(
+r => r.edgeId === edge.id
+);
+
+
+const isHovered =
+hoveredEdge === edge.id;
+
+
+
+return (
+
+<g key={edge.id}>
+
+
+{road && (
+
+<line
+
+x1={a.x}
+
+y1={a.y}
+
+x2={b.x}
+
+y2={b.y}
+
+stroke="#000000"
+
+strokeWidth="16"
+
+strokeLinecap="round"
+
+pointerEvents="none"
+
+/>
+
+)}
+
+
+
+{road && (
+
+<line
+
+x1={a.x}
+
+y1={a.y}
+
+x2={b.x}
+
+y2={b.y}
+
+stroke={
+isHovered
+?"#ff0000"
+:
+road.playerId === "player-1"
+?"#f97316"
+:"#9333ea"
+}
+
+strokeWidth="10"
+
+strokeLinecap="round"
+
+pointerEvents="none"
+
+/>
+
+)}
+
+
+
+{!road && (
+
+<line
+
+x1={a.x}
+
+y1={a.y}
+
+x2={b.x}
+
+y2={b.y}
+
+stroke={
+isHovered
+?"#ff0000"
+:"#78350f"
+}
+
+strokeWidth={
+isHovered
+?"10"
+:"6"
+}
+
+strokeLinecap="round"
+
+pointerEvents="none"
+
+/>
+
+)}
+
+
+
+<line
+
+x1={a.x}
+
+y1={a.y}
+
+x2={b.x}
+
+y2={b.y}
+
+stroke="transparent"
+
+strokeWidth="22"
+
+onMouseEnter={()=>
+setHoveredEdge(edge.id)
+}
+
+onMouseLeave={()=>
+setHoveredEdge(null)
+}
+
+onClick={()=>
+onSelectEdge?.(edge.id)
+}
+
+style={{
+cursor:
+onSelectEdge
+?"pointer"
+:"default"
+}}
+
+/>
+
+
+</g>
+
+);
+
+})}
+
+
+
+{/* NODES */}
+
+{board.nodes.map((node)=>{
+
+
+const settlement =
+settlements.find(
+s => s.nodeId === node.id
+);
+
+
+const isHovered =
+hoveredNode === node.id;
+
+
+
+return (
+
+<g key={node.id}>
+
+
+{settlement ? (
+
+<polygon
+
+points={`
+${node.x},${node.y - 18}
+${node.x + 16},${node.y - 6}
+${node.x + 11},${node.y + 16}
+${node.x - 11},${node.y + 16}
+${node.x - 16},${node.y - 6}
+`}
+
 fill={
-  isHovered
-    ? "#ff0000"
-    : settlement.playerId === "player-1"
-      ? "#f97316"
-      : "#9333ea"
+isHovered
+?"#ff0000"
+:
+settlement.playerId === "player-1"
+?"#f97316"
+:"#9333ea"
 }
 
 stroke="#000000"
 
+strokeWidth="4"
 
-                  strokeWidth={
-                    isHovered
-                      ? 4
-                      : 4
-                  }
+onMouseEnter={()=>
+setHoveredNode(node.id)
+}
 
-                  strokeLinejoin="round"
+onMouseLeave={()=>
+setHoveredNode(null)
+}
 
-                  onMouseEnter={() =>
-                    setHoveredNode(node.id)
-                  }
+onClick={()=>
+onSelectNode?.(node.id)
+}
 
-                  onMouseLeave={() =>
-                    setHoveredNode(null)
-                  }
+/>
 
-                  onClick={() =>
-                    onSelectNode?.(node.id)
-                  }
+)
 
-                  style={{
-                    cursor:
-                      onSelectNode
-                        ? "pointer"
-                        : "default"
-                  }}
+:
 
-                />
+(
 
-              ) : (
+<circle
 
-                <circle
+cx={node.x}
 
-                  cx={node.x}
+cy={node.y}
 
-                  cy={node.y}
+r={
+isHovered
+?13
+:9
+}
 
-                  r={
-                    isHovered
-                      ? 13
-                      : 9
-                  }
+fill={
+isHovered
+?"#ff0000"
+:"#2563eb"
+}
 
-                  fill={
-                    isHovered
-                      ? "#ff0000"
-                      : "#2563eb"
-                  }
+stroke="white"
 
-                  stroke="white"
+strokeWidth="2"
 
-                  strokeWidth="2"
+onMouseEnter={()=>
+setHoveredNode(node.id)
+}
 
-                  onMouseEnter={() =>
-                    setHoveredNode(node.id)
-                  }
+onMouseLeave={()=>
+setHoveredNode(null)
+}
 
-                  onMouseLeave={() =>
-                    setHoveredNode(null)
-                  }
+onClick={()=>
+onSelectNode?.(node.id)
+}
 
-                  onClick={() =>
-                    onSelectNode?.(node.id)
-                  }
+/>
 
-                  style={{
-                    cursor:
-                      onSelectNode
-                        ? "pointer"
-                        : "default"
-                  }}
-
-                />
-
-              )}
-
-            </g>
-
-          );
-
-        })}
-
-      </svg>
-
-    </div>
-
-  );
+)
 
 }
+
+
+</g>
+
+);
+
+})}
+
+
+</svg>
+
+</div>
+
+);
+
+}
+
 
 export default BoardView;
