@@ -29,7 +29,7 @@ export function canPlaceSettlement(
 
   /*
     Rule 2:
-    Catan distance rule
+    settlement distance rule
 
     A settlement cannot be placed
     directly adjacent to another settlement.

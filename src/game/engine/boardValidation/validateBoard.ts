@@ -169,7 +169,7 @@ export function validateBoard(
   ){
 
     throw new Error(
-      "Invalid Catan board generated"
+      "Invalid game board generated"
     );
 
   }

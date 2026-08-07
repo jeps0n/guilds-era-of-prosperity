@@ -13,7 +13,7 @@ const SIZE = 75;
 
 
 /*
-  Standard 19 hex Catan board
+  Standard 19 hex game board
 
         3
       4 4
