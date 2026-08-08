@@ -1,6 +1,7 @@
+import type { ActionAvailability } from "../game/systems/actions/getActionAvailability";
 interface ActionBarProps {
     onRollDice?: () => void;
-    onEndTurn: () => void;
+    onEndTurn?: () => void;
     phase:
     | "guild_selection"
     | "initial_placement"
@@ -10,8 +11,10 @@ interface ActionBarProps {
     | "settlement"
     | "road";
     lastDiceRoll?: number;
+    availability?: ActionAvailability;
     diceOnly?: boolean;
     hideDice?: boolean;
+    playerColor?: string;
 }
 interface ActionButtonProps {
     label: string;
@@ -78,25 +81,68 @@ function ActionButton({
         </button>
     );
 }
+function hexToRgba(
+    hex: string,
+    alpha: number
+): string {
+    const normalized = hex.replace("#", "");
+    if (normalized.length !== 6) {
+        return `rgba(17, 24, 39, ${alpha})`;
+    }
+    const red = parseInt(
+        normalized.slice(0, 2),
+        16
+    );
+    const green = parseInt(
+        normalized.slice(2, 4),
+        16
+    );
+    const blue = parseInt(
+        normalized.slice(4, 6),
+        16
+    );
+    return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+}
 function ActionBar({
     onRollDice,
     onEndTurn,
     phase,
     placementAction,
     lastDiceRoll,
+    availability,
     diceOnly = false,
     hideDice = false,
+    playerColor = "#111827",
 }: ActionBarProps) {
     const isInitialPlacement =
         phase === "initial_placement";
     const isPlaying =
         phase === "playing";
     const canRoll =
-        isPlaying &&
-        lastDiceRoll === undefined;
+        availability?.canRollDice ??
+        (isPlaying &&
+            lastDiceRoll === undefined);
     const canEndTurn =
-        isPlaying &&
-        lastDiceRoll !== undefined;
+        availability?.canEndTurn ??
+        (isPlaying &&
+            lastDiceRoll !== undefined);
+    const canTrade =
+        availability?.canTrade ??
+        isPlaying;
+    const canRoad =
+        availability?.canRoad ??
+        false;
+    const canSettlement =
+        availability?.canSettlement ??
+        false;
+    const canCity =
+        availability?.canCity ??
+        false;
+    const canBuyDevelopment =
+        availability?.canBuyDevelopment ??
+        false;
+    const actionBarBackground =
+        hexToRgba(playerColor, 0.50);
     if (diceOnly) {
         return (
             <ActionButton
@@ -119,11 +165,12 @@ function ActionBar({
                 display: "flex",
                 justifyContent: "center",
                 width: "100%",
+                overflowX: "auto",
             }}
         >
             <div
                 style={{
-                    background: "#111827",
+                    background: actionBarBackground,
                     border: "1px solid #374151",
                     borderRadius: "14px",
                     padding: "10px",
@@ -133,6 +180,7 @@ function ActionBar({
                     justifyContent: "center",
                     boxShadow:
                         "0 8px 24px rgba(0,0,0,0.25)",
+                    flexWrap: "nowrap",
                 }}
             >
                 {!hideDice && (
@@ -149,14 +197,9 @@ function ActionBar({
                     />
                 )}
                 <ActionButton
-                    icon="🔄"
+                    icon="🤝"
                     label="Trade"
-                    disabled={!isPlaying}
-                />
-                <ActionButton
-                    icon="🃏"
-                    label="Buy Development"
-                    disabled={!isPlaying}
+                    disabled={!canTrade}
                 />
                 <ActionButton
                     icon="🛣️"
@@ -165,7 +208,11 @@ function ActionBar({
                         isInitialPlacement &&
                         placementAction === "road"
                     }
-                    disabled={!isInitialPlacement}
+                    disabled={
+                        isInitialPlacement
+                            ? placementAction !== "road"
+                            : !canRoad
+                    }
                 />
                 <ActionButton
                     icon="🏠"
@@ -174,12 +221,21 @@ function ActionBar({
                         isInitialPlacement &&
                         placementAction === "settlement"
                     }
-                    disabled={!isInitialPlacement}
+                    disabled={
+                        isInitialPlacement
+                            ? placementAction !== "settlement"
+                            : !canSettlement
+                    }
                 />
                 <ActionButton
                     icon="🏙️"
                     label="City"
-                    disabled={!isPlaying}
+                    disabled={!canCity}
+                />
+                <ActionButton
+                    icon="🎴"
+                    label="Buy Development"
+                    disabled={!canBuyDevelopment}
                 />
                 <ActionButton
                     icon="⏭️"

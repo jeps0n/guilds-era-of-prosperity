@@ -31,6 +31,9 @@ import {
     restorePhaseCheckpoint,
     canRestorePhaseCheckpoint,
 } from "./store/gameStore";
+import {
+    getActionAvailability,
+} from "./game/systems/actions/getActionAvailability";
 const initialGame = createInitialState();
 if (import.meta.env.DEV) {
     validateBoard(initialGame.board);
@@ -104,6 +107,10 @@ function App() {
         (player) =>
             player.id === game.currentPlayerId
     );
+    const currentPlayerColor =
+        currentPlayer?.id === "player-1"
+            ? "#f97316"
+            : "#9333ea";
     const availableGuilds: GuildType[] = (
         [
             "builder",
@@ -129,6 +136,37 @@ function App() {
     );
     const restoreAvailable =
         canRestorePhaseCheckpoint(game);
+    const actionAvailability =
+        getActionAvailability(game);
+    function renderActionBar(
+        options: {
+            diceOnly?: boolean;
+            hideDice?: boolean;
+        } = {}
+    ) {
+        return (
+            <ActionBar
+                playerColor={currentPlayerColor}
+                phase={game.phase}
+                placementAction={
+                    game.placementAction
+                }
+                lastDiceRoll={
+                    game.lastDiceRoll
+                }
+                availability={
+                    actionAvailability
+                }
+                onRollDice={
+                    handleRollDice
+                }
+                onEndTurn={
+                    handleEndTurn
+                }
+                {...options}
+            />
+        );
+    }
     /*
      * GUILD SELECTION
      */
@@ -190,7 +228,7 @@ function App() {
                         onSelectNode={
                             game.phase ===
                                 "initial_placement" &&
-                            game.placementAction ===
+                                game.placementAction ===
                                 "settlement"
                                 ? handlePlaceSettlement
                                 : undefined
@@ -198,7 +236,7 @@ function App() {
                         onSelectEdge={
                             game.phase ===
                                 "initial_placement" &&
-                            game.placementAction ===
+                                game.placementAction ===
                                 "road"
                                 ? handlePlaceRoad
                                 : undefined
@@ -212,22 +250,9 @@ function App() {
                                 bottom: "16px",
                             }}
                         >
-                            <ActionBar
-                                phase={game.phase}
-                                placementAction={
-                                    game.placementAction
-                                }
-                                lastDiceRoll={
-                                    game.lastDiceRoll
-                                }
-                                onRollDice={
-                                    handleRollDice
-                                }
-                                onEndTurn={
-                                    handleEndTurn
-                                }
-                                diceOnly
-                            />
+                            {renderActionBar({
+                                diceOnly: true,
+                            })}
                         </div>
                     )}
                 </div>
@@ -247,24 +272,9 @@ function App() {
                     <PlayerPanel game={game} />
                 </>
             }
-            bottom={
-                <ActionBar
-                    phase={game.phase}
-                    placementAction={
-                        game.placementAction
-                    }
-                    lastDiceRoll={
-                        game.lastDiceRoll
-                    }
-                    onRollDice={
-                        handleRollDice
-                    }
-                    onEndTurn={
-                        handleEndTurn
-                    }
-                    hideDice
-                />
-            }
+            bottom={renderActionBar({
+                hideDice: true,
+            })}
         />
     );
 }
