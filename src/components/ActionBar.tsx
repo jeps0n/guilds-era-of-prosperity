@@ -149,13 +149,13 @@ function ActionBar({
                     />
                 )}
                 <ActionButton
-                    icon="🤝"
+                    icon="🔄"
                     label="Trade"
                     disabled={!isPlaying}
                 />
                 <ActionButton
                     icon="🃏"
-                    label="Buy Dev Card"
+                    label="Buy Development"
                     disabled={!isPlaying}
                 />
                 <ActionButton
@@ -182,8 +182,9 @@ function ActionBar({
                     disabled={!isPlaying}
                 />
                 <ActionButton
-                    icon="⏩"
+                    icon="⏭️"
                     label="End Turn"
+                    active={canEndTurn}
                     disabled={!canEndTurn}
                     onClick={onEndTurn}
                 />
