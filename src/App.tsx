@@ -1,9 +1,11 @@
 import { useState } from "react";
+import ActionBar from "./components/ActionBar";
 import BoardView from "./components/BoardView";
+import GameLog from "./components/GameLog";
 import GameStatus from "./components/GameStatus";
 import GuildSelection from "./components/GuildSelection";
 import GameLayout from "./components/layout/GameLayout";
-import InitialPlacement from "./components/InitialPlacement";
+// import InitialPlacement from "./components/InitialPlacement";
 import PlayerPanel from "./components/PlayerPanel";
 import { createInitialState } from "./game/engine/initialState";
 import {
@@ -155,16 +157,33 @@ function App() {
     canRestorePhaseCheckpoint(
       game
     );
+  /*
+   * GUILD SELECTION
+   *
+   * Only show:
+   * - Guild selection
+   * - Game log
+   * - Game status / Turn Back
+   */
   if (
     game.phase ===
-      "guild_selection" &&
+    "guild_selection" &&
     currentPlayer &&
     currentPlayer.guild ===
-      undefined
+    undefined
   ) {
     return (
       <GameLayout
-        header="Guilds: Era of Prosperity"
+        header={
+          <h1
+            style={{
+              margin: "8px 0 16px",
+              fontSize: "24px",
+            }}
+          >
+            Guilds: Era of Prosperity
+          </h1>
+        }
         board={
           <GuildSelection
             playerName={
@@ -180,6 +199,9 @@ function App() {
         }
         rightSidebar={
           <>
+            <GameLog
+              game={game}
+            />
             <GameStatus
               game={game}
               onEndTurn={
@@ -192,17 +214,34 @@ function App() {
                 restoreAvailable
               }
             />
-            <PlayerPanel
-              game={game}
-            />
           </>
         }
       />
     );
   }
+  /*
+   * INITIAL PLACEMENT / PLAYING
+   *
+   * Show:
+   * - Board
+   * - Placement status when applicable
+   * - Game log
+   * - Game status / Turn Back
+   * - Player panel
+   * - Action bar
+   */
   return (
     <GameLayout
-      header="Guilds: Era of Prosperity"
+      header={
+        <h1
+          style={{
+            margin: "8px 0 16px",
+            fontSize: "24px",
+          }}
+        >
+          Guilds: Era of Prosperity
+        </h1>
+      }
       board={
         <>
           <BoardView
@@ -217,7 +256,7 @@ function App() {
             onSelectNode={
               game.phase ===
                 "initial_placement" &&
-              game.placementAction ===
+                game.placementAction ===
                 "settlement"
                 ? handlePlaceSettlement
                 : undefined
@@ -225,22 +264,25 @@ function App() {
             onSelectEdge={
               game.phase ===
                 "initial_placement" &&
-              game.placementAction ===
+                game.placementAction ===
                 "road"
                 ? handlePlaceRoad
                 : undefined
             }
           />
-          {game.phase ===
+          {/* {game.phase ===
             "initial_placement" && (
-            <InitialPlacement
-              game={game}
-            />
-          )}
+              <InitialPlacement
+                game={game}
+              />
+            )} */}
         </>
       }
       rightSidebar={
         <>
+          <GameLog
+            game={game}
+          />
           <GameStatus
             game={game}
             onEndTurn={
@@ -257,6 +299,17 @@ function App() {
             game={game}
           />
         </>
+      }
+      bottom={
+        <ActionBar
+          phase={game.phase}
+          placementAction={
+            game.placementAction
+          }
+          onEndTurn={
+            handleEndTurn
+          }
+        />
       }
     />
   );

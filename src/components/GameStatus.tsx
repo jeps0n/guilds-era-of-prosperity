@@ -1,22 +1,15 @@
 import type { GameState } from "../game/engine/GameState";
 interface GameStatusProps {
   game: GameState;
-  onEndTurn: () => void;
+  onEndTurn?: () => void;
   onRestoreCheckpoint: () => void;
   canRestoreCheckpoint: boolean;
 }
 function GameStatus({
   game,
-  onEndTurn,
   onRestoreCheckpoint,
   canRestoreCheckpoint,
 }: GameStatusProps) {
-  const currentPlayer =
-    game.players.find(
-      (player) =>
-        player.id ===
-        game.currentPlayerId
-    );
   return (
     <div
       style={{
@@ -29,66 +22,53 @@ function GameStatus({
         textAlign: "center",
       }}
     >
-      <div>
-        <strong>Phase:</strong>{" "}
-        {game.phase}
-      </div>
-      <div>
-        <strong>Turn:</strong>{" "}
-        {game.turnNumber}
-      </div>
-      <div>
-        <strong>Current Player:</strong>{" "}
-        {currentPlayer?.name ??
-          "Unknown"}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "12px",
+        }}
+      >
+        <div
+          style={{
+            textAlign: "left",
+          }}
+        >
+          <strong>Phase:</strong>{" "}
+          {game.phase}
+        </div>
+        <div
+          style={{
+            textAlign: "right",
+          }}
+        >
+          <strong>Turn:</strong>{" "}
+          {game.turnNumber}
+        </div>
       </div>
       <button
-        onClick={
-          onRestoreCheckpoint
-        }
-        disabled={
-          !canRestoreCheckpoint
-        }
+        type="button"
+        onClick={onRestoreCheckpoint}
+        disabled={!canRestoreCheckpoint}
         style={{
-          marginTop: "12px",
-          marginRight: "8px",
           padding: "8px 16px",
           borderRadius: "8px",
           border: "none",
-          background:
-            canRestoreCheckpoint
-              ? "#4b5563"
-              : "#1f2937",
-          color:
-            canRestoreCheckpoint
-              ? "white"
-              : "#6b7280",
-          cursor:
-            canRestoreCheckpoint
-              ? "pointer"
-              : "not-allowed",
+          background: canRestoreCheckpoint
+            ? "#4b5563"
+            : "#1f2937",
+          color: canRestoreCheckpoint
+            ? "white"
+            : "#6b7280",
+          cursor: canRestoreCheckpoint
+            ? "pointer"
+            : "not-allowed",
           fontWeight: "bold",
         }}
       >
-        Restore Checkpoint
+        Turn Back
       </button>
-      {game.phase === "playing" && (
-        <button
-          onClick={onEndTurn}
-          style={{
-            marginTop: "12px",
-            padding: "8px 16px",
-            borderRadius: "8px",
-            border: "none",
-            background: "#2563eb",
-            color: "white",
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-        >
-          End Turn
-        </button>
-      )}
     </div>
   );
 }

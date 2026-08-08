@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import Panel from "../ui/Panel";
 interface GameLayoutProps {
   header?: ReactNode;
   board: ReactNode;
@@ -16,6 +15,7 @@ function GameLayout({
     <div
       style={{
         minHeight: "100vh",
+        width: "100%",
         background: "#1f2937",
         color: "white",
         display: "flex",
@@ -28,40 +28,56 @@ function GameLayout({
       {header}
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
           width: "100%",
           flex: 1,
+          display: "flex",
+          justifyContent: "center",
+          boxSizing: "border-box",
         }}
       >
         <div
           style={{
+            width: "100%",
+            maxWidth: "1240px",
             display: "grid",
             gridTemplateColumns: rightSidebar
-              ? "100px auto 420px"
-              : "auto",
-            columnGap: rightSidebar
-              ? "20px"
-              : "0px",
+              ? "800px 420px"
+              : "800px",
+            gap: "20px",
             alignItems: "start",
             justifyContent: "center",
           }}
         >
-          {/* Future left sidebar */}
-          {rightSidebar && <div />}
-          {/* Main content */}
-          <div>
+          <main
+            style={{
+              width: "800px",
+              minWidth: 0,
+            }}
+          >
             {board}
-          </div>
-          {/* Right HUD */}
+            {bottom && (
+              <div
+                style={{
+                  width: "800px",
+                  marginTop: "0px",
+                }}
+              >
+                {bottom}
+              </div>
+            )}
+          </main>
           {rightSidebar && (
-            <Panel minHeight="400px">
+            <aside
+              style={{
+                width: "420px",
+                minWidth: 0,
+              }}
+            >
               {rightSidebar}
-            </Panel>
+            </aside>
           )}
         </div>
       </div>
-      {bottom}
     </div>
   );
 }

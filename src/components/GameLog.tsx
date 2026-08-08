@@ -1,59 +1,76 @@
-import type { GameEvent } from "../game/engine/GameState";
+import {
+    useEffect,
+    useRef,
+} from "react";
+import type { GameState } from "../game/engine/GameState";
+import Panel from "./ui/Panel";
 interface GameLogProps {
-  events: GameEvent[];
+    game: GameState;
 }
 function GameLog({
-  events,
+    game,
 }: GameLogProps) {
-  return (
-    <div
-      style={{
-        background: "#111827",
-        color: "white",
-        borderRadius: "12px",
-        padding: "12px",
-        width: "260px",
-        height: "300px",
-        overflowY: "auto",
-        boxShadow:
-          "0 8px 20px rgba(0,0,0,0.25)",
-      }}
-    >
-      <h3
-        style={{
-          marginTop: 0,
-          marginBottom: "10px",
-          fontSize: "16px",
-        }}
-      >
-        Game Events
-      </h3>
-      {events.length === 0 ? (
+    const logRef =
+        useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const log = logRef.current;
+        if (!log) {
+            return;
+        }
+        log.scrollTop =
+            log.scrollHeight;
+    }, [game.eventLog.length]);
+    return (
         <div
-          style={{
-            opacity: 0.6,
-            fontSize: "14px",
-          }}
-        >
-          No events yet.
-        </div>
-      ) : (
-        events.map((event) => (
-          <div
-            key={event.id}
             style={{
-              fontSize: "13px",
-              marginBottom: "8px",
-              paddingBottom: "8px",
-              borderBottom:
-                "1px solid rgba(255,255,255,0.1)",
+                marginTop: "12px",
+                marginBottom: "12px",
             }}
-          >
-            {event.message}
-          </div>
-        ))
-      )}
-    </div>
-  );
+        >
+            <Panel>
+                <strong>Game Log</strong>
+                <hr
+                    style={{
+                        margin: "8px 0",
+                        borderColor: "#374151",
+                    }}
+                />
+                <div
+                    ref={logRef}
+                    style={{
+                        height: "180px",
+                        overflowY: "auto",
+                        fontSize: "14px",
+                        textAlign: "left",
+                        paddingRight: "4px",
+                    }}
+                >
+                    {game.eventLog.length === 0 ? (
+                        <div
+                            style={{
+                                color: "#6b7280",
+                            }}
+                        >
+                            No events yet.
+                        </div>
+                    ) : (
+                        game.eventLog.map((event) => (
+                            <div
+                                key={event.id}
+                                style={{
+                                    padding: "6px 0",
+                                    borderBottom:
+                                        "1px solid #1f2937",
+                                    color: "#d1d5db",
+                                }}
+                            >
+                                {event.message}
+                            </div>
+                        ))
+                    )}
+                </div>
+            </Panel>
+        </div>
+    );
 }
 export default GameLog;

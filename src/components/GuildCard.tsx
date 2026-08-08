@@ -8,30 +8,38 @@ function GuildCard({
   onSelect,
 }: GuildCardProps) {
   return (
-      <div
-        style={{
-          border: `3px solid ${guild.color}`,
-          borderRadius: "12px",
-          padding: "20px",
-          width: "220px",
-          background: "#1f2937",
-          color: "white",
-          boxShadow: `0 0 18px ${guild.color}55`,
-          transition: "transform 0.2s ease, box-shadow 0.2s ease",
-          cursor: "pointer",
-        }}
-        onMouseEnter={(event) => {
-          event.currentTarget.style.transform = "translateY(-6px)";
-        }}
-        onMouseLeave={(event) => {
-          event.currentTarget.style.transform = "translateY(0)";
-        }}
-      >
-      <h2>
+    <div
+      style={{
+        border: `3px solid ${guild.color}`,
+        borderRadius: "12px",
+        padding: "20px",
+        width: "220px",
+        minHeight: "220px",
+        boxSizing: "border-box",
+        background: "#1f2937",
+        color: "white",
+        boxShadow: `0 0 18px ${guild.color}55`,
+        transition:
+          "transform 0.2s ease, box-shadow 0.2s ease",
+        cursor: "pointer",
+      }}
+      onMouseEnter={(event) => {
+        event.currentTarget.style.transform =
+          "translateY(-6px)";
+      }}
+      onMouseLeave={(event) => {
+        event.currentTarget.style.transform =
+          "translateY(0)";
+      }}
+    >
+      <div>
         {guild.icon} {guild.name}
-      </h2>
-      <p>{guild.description}</p>
+      </div>
+      <div>
+        {guild.description}
+      </div>
       <button
+        type="button"
         onClick={onSelect}
         style={{
           marginTop: "16px",
