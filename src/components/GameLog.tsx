@@ -20,6 +20,39 @@ function GameLog({
         log.scrollTop =
             log.scrollHeight;
     }, [game.eventLog.length]);
+    function renderEventMessage(
+        message: string
+    ) {
+        const parts = message.split(
+            /(Player A|Player B)/g
+        );
+        return parts.map((part, index) => {
+            if (
+                part !== "Player A" &&
+                part !== "Player B"
+            ) {
+                return (
+                    <span key={index}>
+                        {part}
+                    </span>
+                );
+            }
+            const color =
+                part === "Player A"
+                    ? "#f97316"
+                    : "#9333ea";
+            return (
+                <strong
+                    key={index}
+                    style={{
+                        color,
+                    }}
+                >
+                    {part}
+                </strong>
+            );
+        });
+    }
     return (
         <div
             style={{
@@ -64,7 +97,9 @@ function GameLog({
                                     color: "#d1d5db",
                                 }}
                             >
-                                {event.message}
+                                {renderEventMessage(
+                                    event.message
+                                )}
                             </div>
                         ))
                     )}

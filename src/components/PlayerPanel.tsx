@@ -58,11 +58,10 @@ function PlayerPanel({
                   <strong
                     style={{
                       color:
-                        player.id ===
-                        game.currentPlayerId
-                          ? "#ef4444"
-                          : "white",
-                      fontSize: "16px",
+                        player.id === "player-1"
+                          ? "#f97316"
+                          : "#9333ea",
+                      fontSize: "18px",
                     }}
                   >
                     {player.name}
@@ -84,7 +83,7 @@ function PlayerPanel({
                   }}
                 >
                   {player.guild
-                    ? `${player.guild} Guild`
+                    ? `${player.guild.charAt(0).toUpperCase()}${player.guild.slice(1)} Guild`
                     : "No Guild"}
                 </div>
               </div>
