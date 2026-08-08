@@ -23,8 +23,8 @@ function GameLog({
     return (
         <div
             style={{
-                marginTop: "12px",
-                marginBottom: "12px",
+                marginTop: "8px",
+                marginBottom: "8px",
             }}
         >
             <Panel>

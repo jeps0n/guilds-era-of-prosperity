@@ -1,10 +1,11 @@
 import type { GameState } from "../game/engine/GameState";
+
 interface GameStatusProps {
   game: GameState;
-  onEndTurn?: () => void;
   onRestoreCheckpoint: () => void;
   canRestoreCheckpoint: boolean;
 }
+
 function GameStatus({
   game,
   onRestoreCheckpoint,
@@ -13,7 +14,7 @@ function GameStatus({
   return (
     <div
       style={{
-        marginTop: "12px",
+        marginTop: "8px",
         background: "#111827",
         border: "1px solid #374151",
         borderRadius: "12px",
@@ -27,26 +28,20 @@ function GameStatus({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "12px",
+          marginBottom: "8px",
         }}
       >
-        <div
-          style={{
-            textAlign: "left",
-          }}
-        >
+        <div style={{ textAlign: "left" }}>
           <strong>Phase:</strong>{" "}
           {game.phase}
         </div>
-        <div
-          style={{
-            textAlign: "right",
-          }}
-        >
+
+        <div style={{ textAlign: "right" }}>
           <strong>Turn:</strong>{" "}
           {game.turnNumber}
         </div>
       </div>
+
       <button
         type="button"
         onClick={onRestoreCheckpoint}
@@ -55,15 +50,18 @@ function GameStatus({
           padding: "8px 16px",
           borderRadius: "8px",
           border: "none",
-          background: canRestoreCheckpoint
-            ? "#4b5563"
-            : "#1f2937",
-          color: canRestoreCheckpoint
-            ? "white"
-            : "#6b7280",
-          cursor: canRestoreCheckpoint
-            ? "pointer"
-            : "not-allowed",
+          background:
+            canRestoreCheckpoint
+              ? "#4b5563"
+              : "#1f2937",
+          color:
+            canRestoreCheckpoint
+              ? "white"
+              : "#6b7280",
+          cursor:
+            canRestoreCheckpoint
+              ? "pointer"
+              : "not-allowed",
           fontWeight: "bold",
         }}
       >
@@ -72,4 +70,5 @@ function GameStatus({
     </div>
   );
 }
+
 export default GameStatus;

@@ -32,9 +32,9 @@ function GuildCard({
           "translateY(0)";
       }}
     >
-      <div>
+      <h2>
         {guild.icon} {guild.name}
-      </div>
+      </h2>
       <div>
         {guild.description}
       </div>
