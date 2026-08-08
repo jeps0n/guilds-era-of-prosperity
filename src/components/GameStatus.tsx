@@ -1,11 +1,9 @@
 import type { GameState } from "../game/engine/GameState";
-
 interface GameStatusProps {
   game: GameState;
   onRestoreCheckpoint: () => void;
   canRestoreCheckpoint: boolean;
 }
-
 function GameStatus({
   game,
   onRestoreCheckpoint,
@@ -35,13 +33,11 @@ function GameStatus({
           <strong>Phase:</strong>{" "}
           {game.phase}
         </div>
-
         <div style={{ textAlign: "right" }}>
           <strong>Turn:</strong>{" "}
           {game.turnNumber}
         </div>
       </div>
-
       <button
         type="button"
         onClick={onRestoreCheckpoint}
@@ -70,5 +66,4 @@ function GameStatus({
     </div>
   );
 }
-
 export default GameStatus;

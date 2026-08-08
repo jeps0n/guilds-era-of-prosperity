@@ -1,5 +1,5 @@
 interface ActionBarProps {
-    onRollDice: () => void;
+    onRollDice?: () => void;
     onEndTurn: () => void;
     phase:
     | "guild_selection"
@@ -10,6 +10,8 @@ interface ActionBarProps {
     | "settlement"
     | "road";
     lastDiceRoll?: number;
+    diceOnly?: boolean;
+    hideDice?: boolean;
 }
 interface ActionButtonProps {
     label: string;
@@ -82,6 +84,8 @@ function ActionBar({
     phase,
     placementAction,
     lastDiceRoll,
+    diceOnly = false,
+    hideDice = false,
 }: ActionBarProps) {
     const isInitialPlacement =
         phase === "initial_placement";
@@ -90,6 +94,24 @@ function ActionBar({
     const canRoll =
         isPlaying &&
         lastDiceRoll === undefined;
+    const canEndTurn =
+        isPlaying &&
+        lastDiceRoll !== undefined;
+    if (diceOnly) {
+        return (
+            <ActionButton
+                icon="🎲"
+                label={
+                    lastDiceRoll !== undefined
+                        ? `Rolled ${lastDiceRoll}`
+                        : "Roll Dice"
+                }
+                active={canRoll}
+                disabled={!canRoll}
+                onClick={onRollDice}
+            />
+        );
+    }
     return (
         <div
             style={{
@@ -113,17 +135,19 @@ function ActionBar({
                         "0 8px 24px rgba(0,0,0,0.25)",
                 }}
             >
-                <ActionButton
-                    icon="🎲"
-                    label={
-                        lastDiceRoll !== undefined
-                            ? `Rolled ${lastDiceRoll}`
-                            : "Roll Dice"
-                    }
-                    active={canRoll}
-                    disabled={!canRoll}
-                    onClick={onRollDice}
-                />
+                {!hideDice && (
+                    <ActionButton
+                        icon="🎲"
+                        label={
+                            lastDiceRoll !== undefined
+                                ? `Rolled ${lastDiceRoll}`
+                                : "Roll Dice"
+                        }
+                        active={canRoll}
+                        disabled={!canRoll}
+                        onClick={onRollDice}
+                    />
+                )}
                 <ActionButton
                     icon="🤝"
                     label="Trade"
@@ -131,7 +155,7 @@ function ActionBar({
                 />
                 <ActionButton
                     icon="🃏"
-                    label="Development Card"
+                    label="Buy Dev Card"
                     disabled={!isPlaying}
                 />
                 <ActionButton
@@ -160,10 +184,7 @@ function ActionBar({
                 <ActionButton
                     icon="⏩"
                     label="End Turn"
-                    disabled={
-                        !isPlaying ||
-                        lastDiceRoll === undefined
-                    }
+                    disabled={!canEndTurn}
                     onClick={onEndTurn}
                 />
             </div>

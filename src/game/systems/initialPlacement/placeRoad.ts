@@ -1,6 +1,5 @@
 import type { GameState } from "../../engine/GameState";
 import { createEvent } from "../../engine/createEvent";
-
 export function placeRoad(
   game: GameState,
   playerId: string,
@@ -9,15 +8,12 @@ export function placeRoad(
   const player = game.players.find(
     (player) => player.id === playerId
   );
-
   if (!player) {
     return game;
   }
-
   if (player.roads.length >= 15) {
     return game;
   }
-
   const validEdge = game.board.edges.find(
     (edge) =>
       edge.id === edgeId &&
@@ -28,11 +24,9 @@ export function placeRoad(
           game.lastPlacedSettlementNodeId
       )
   );
-
   if (!validEdge) {
     return game;
   }
-
   const updatedPlayers = game.players.map(
     (player) =>
       player.id === playerId
@@ -45,7 +39,6 @@ export function placeRoad(
           }
         : player
   );
-
   return advancePlacement({
     ...game,
     players: updatedPlayers,
@@ -61,17 +54,14 @@ export function placeRoad(
     ],
   });
 }
-
 function advancePlacement(
   game: GameState
 ): GameState {
   const nextStep =
     game.placementStep + 1;
-
   const complete =
     nextStep >=
     game.placementOrder.length;
-
   return {
     ...game,
     placementStep: complete

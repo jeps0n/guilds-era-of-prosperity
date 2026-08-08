@@ -1,10 +1,8 @@
 import type { GameState } from "../game/engine/GameState";
 import Panel from "./ui/Panel";
-
 interface PlayerPanelProps {
   game: GameState;
 }
-
 function PlayerPanel({
   game,
 }: PlayerPanelProps) {
@@ -12,14 +10,12 @@ function PlayerPanel({
     <div style={{ marginTop: "8px" }}>
       <Panel>
         <strong>🏦 Resource Bank</strong>
-
         <hr
           style={{
             margin: "8px 0",
             borderColor: "#374151",
           }}
         />
-
         <div
           style={{
             display: "flex",
@@ -34,7 +30,6 @@ function PlayerPanel({
           <span>⛰️ {game.resourceBank.ore}</span>
         </div>
       </Panel>
-
       <div style={{ marginTop: "12px" }}>
         {game.players.map((player) => (
           <div
@@ -72,7 +67,6 @@ function PlayerPanel({
                   >
                     {player.name}
                   </strong>
-
                   <div
                     style={{
                       marginTop: "4px",
@@ -82,7 +76,6 @@ function PlayerPanel({
                     VP: {player.vp}
                   </div>
                 </div>
-
                 <div
                   style={{
                     color: "#f9fafb",
@@ -95,14 +88,12 @@ function PlayerPanel({
                     : "No Guild"}
                 </div>
               </div>
-
               <hr
                 style={{
                   margin: "8px 0",
                   borderColor: "#374151",
                 }}
               />
-
               <div
                 style={{
                   display: "flex",
@@ -128,24 +119,20 @@ function PlayerPanel({
                   ⛰️ {player.resources.ore}
                 </span>
               </div>
-
               <hr
                 style={{
                   margin: "8px 0",
                   borderColor: "#374151",
                 }}
               />
-
               <div>
                 🏠 Settlements Remaining:{" "}
                 {5 - player.settlements.length}
               </div>
-
               <div>
                 🛣️ Roads Remaining:{" "}
                 {15 - player.roads.length}
               </div>
-
               <div>
                 🏙️ Cities Remaining:{" "}
                 {4 - player.cities.length}
@@ -157,5 +144,4 @@ function PlayerPanel({
     </div>
   );
 }
-
 export default PlayerPanel;
