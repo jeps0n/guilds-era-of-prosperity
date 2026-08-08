@@ -34,6 +34,9 @@ import {
 import {
     getActionAvailability,
 } from "./game/systems/actions/getActionAvailability";
+import {
+    buildRoad,
+} from "./game/systems/building/buildRoad";
 const initialGame = createInitialState();
 if (import.meta.env.DEV) {
     validateBoard(initialGame.board);
@@ -80,6 +83,19 @@ function App() {
         if (nextGame.phase !== game.phase) {
             savePhaseCheckpoint(nextGame);
         }
+    }
+    function handleBuildRoad(edgeId: string) {
+        const nextGame = buildRoad(
+            game,
+            game.currentPlayerId,
+            edgeId
+        );
+
+        if (nextGame === game) {
+            return;
+        }
+
+        setGame(nextGame);
     }
     function handleRollDice() {
         const nextGame = rollDice(game);
@@ -234,12 +250,13 @@ function App() {
                                 : undefined
                         }
                         onSelectEdge={
-                            game.phase ===
-                                "initial_placement" &&
-                                game.placementAction ===
-                                "road"
+                            game.phase === "initial_placement" &&
+                                game.placementAction === "road"
                                 ? handlePlaceRoad
-                                : undefined
+                                : game.phase === "playing" &&
+                                    actionAvailability.canRoad
+                                    ? handleBuildRoad
+                                    : undefined
                         }
                     />
                     {game.phase === "playing" && (
