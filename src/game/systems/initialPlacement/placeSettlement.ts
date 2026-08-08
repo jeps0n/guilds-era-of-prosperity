@@ -1,11 +1,7 @@
 import type { GameState } from "../../engine/GameState";
-
 import { createEvent } from "../../engine/createEvent";
-
 import { canPlaceSettlement } from "../validation/canPlaceSettlement";
-
 import { collectResources } from "../resources/collectResources";
-
 export function placeSettlement(
   game: GameState,
   playerId: string,
@@ -14,70 +10,53 @@ export function placeSettlement(
   if (!canPlaceSettlement(game, nodeId)) {
     return game;
   }
-
   const player =
     game.players.find(
       (player) =>
         player.id === playerId
     );
-
   if (!player) {
     return game;
   }
-
   if (player.settlements.length >= 5) {
     return game;
   }
-
   const isSecondSettlement =
     player.settlements.length === 1;
-
   let updatedGame: GameState = {
     ...game,
-
     players:
       game.players.map(
         (player) =>
           player.id === playerId
             ? {
                 ...player,
-
                 vp:
                   player.vp + 1,
-
                 settlements: [
                   ...player.settlements,
-
                   {
                     id:
                       `settlement-${player.settlements.length + 1}`,
-
                     playerId,
-
                     nodeId,
                   },
                 ],
               }
             : player
       ),
-
     lastPlacedSettlementNodeId:
       nodeId,
-
     placementAction:
       "road",
-
     eventLog: [
       ...game.eventLog,
-
       createEvent(
         "INITIAL_SETTLEMENT_PLACED",
         `${player.name} placed a settlement.`
       ),
     ],
   };
-
-
   if (isSecondSettlement) {
     updatedGame =
       collectResources(
@@ -86,6 +65,5 @@ export function placeSettlement(
         nodeId
       );
   }
-
   return updatedGame;
 }

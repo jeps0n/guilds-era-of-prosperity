@@ -2,15 +2,20 @@ import type { GameState } from "../game/engine/GameState";
 interface GameStatusProps {
   game: GameState;
   onEndTurn: () => void;
+  onRestoreCheckpoint: () => void;
+  canRestoreCheckpoint: boolean;
 }
 function GameStatus({
   game,
   onEndTurn,
+  onRestoreCheckpoint,
+  canRestoreCheckpoint,
 }: GameStatusProps) {
   const currentPlayer =
     game.players.find(
       (player) =>
-        player.id === game.currentPlayerId
+        player.id ===
+        game.currentPlayerId
     );
   return (
     <div
@@ -34,8 +39,39 @@ function GameStatus({
       </div>
       <div>
         <strong>Current Player:</strong>{" "}
-        {currentPlayer?.name ?? "Unknown"}
+        {currentPlayer?.name ??
+          "Unknown"}
       </div>
+      <button
+        onClick={
+          onRestoreCheckpoint
+        }
+        disabled={
+          !canRestoreCheckpoint
+        }
+        style={{
+          marginTop: "12px",
+          marginRight: "8px",
+          padding: "8px 16px",
+          borderRadius: "8px",
+          border: "none",
+          background:
+            canRestoreCheckpoint
+              ? "#4b5563"
+              : "#1f2937",
+          color:
+            canRestoreCheckpoint
+              ? "white"
+              : "#6b7280",
+          cursor:
+            canRestoreCheckpoint
+              ? "pointer"
+              : "not-allowed",
+          fontWeight: "bold",
+        }}
+      >
+        Restore Checkpoint
+      </button>
       {game.phase === "playing" && (
         <button
           onClick={onEndTurn}
