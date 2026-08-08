@@ -24,32 +24,80 @@ function GameLog({
         message: string
     ) {
         const parts = message.split(
-            /(Player A|Player B)/g
+            /(Player A|Player B|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/g
         );
         return parts.map((part, index) => {
             if (
-                part !== "Player A" &&
-                part !== "Player B"
+                part === "Player A" ||
+                part === "Player B"
             ) {
+                const color =
+                    part === "Player A"
+                        ? "#f97316"
+                        : "#9333ea";
                 return (
-                    <span key={index}>
+                    <strong
+                        key={index}
+                        style={{
+                            color,
+                        }}
+                    >
                         {part}
+                    </strong>
+                );
+            }
+            const resourceMatch = part.match(
+                /^\[(brick|lumber|wheat|sheep|ore)\] (\d+)$/
+            );
+            if (resourceMatch) {
+                const resource =
+                    resourceMatch[1];
+                const amount =
+                    resourceMatch[2];
+                const resourceColors: Record<
+                    string,
+                    string
+                > = {
+                    brick: "#b45309",
+                    lumber: "#166534",
+                    wheat: "#eab308",
+                    sheep: "#65a30d",
+                    ore: "#6b7280",
+                };
+                return (
+                    <span
+                        key={index}
+                        style={{
+                            display:
+                                "inline-flex",
+                            alignItems:
+                                "center",
+                            justifyContent:
+                                "center",
+                            width: "22px",
+                            height: "22px",
+                            margin: "0 3px",
+                            borderRadius: "6px",
+                            backgroundColor:
+                                resourceColors[
+                                resource
+                                ],
+                            color:
+                                "#000000",
+                            verticalAlign:
+                                "middle",
+                            fontSize: "12px",
+                            fontWeight: "bold",
+                        }}
+                    >
+                        {amount}
                     </span>
                 );
             }
-            const color =
-                part === "Player A"
-                    ? "#f97316"
-                    : "#9333ea";
             return (
-                <strong
-                    key={index}
-                    style={{
-                        color,
-                    }}
-                >
+                <span key={index}>
                     {part}
-                </strong>
+                </span>
             );
         });
     }
@@ -65,7 +113,8 @@ function GameLog({
                 <hr
                     style={{
                         margin: "8px 0",
-                        borderColor: "#374151",
+                        borderColor:
+                            "#374151",
                     }}
                 />
                 <div
@@ -78,30 +127,38 @@ function GameLog({
                         paddingRight: "4px",
                     }}
                 >
-                    {game.eventLog.length === 0 ? (
+                    {game.eventLog.length ===
+                        0 ? (
                         <div
                             style={{
-                                color: "#6b7280",
+                                color:
+                                    "#6b7280",
                             }}
                         >
                             No events yet.
                         </div>
                     ) : (
-                        game.eventLog.map((event) => (
-                            <div
-                                key={event.id}
-                                style={{
-                                    padding: "6px 0",
-                                    borderBottom:
-                                        "1px solid #1f2937",
-                                    color: "#d1d5db",
-                                }}
-                            >
-                                {renderEventMessage(
-                                    event.message
-                                )}
-                            </div>
-                        ))
+                        game.eventLog.map(
+                            (event) => (
+                                <div
+                                    key={
+                                        event.id
+                                    }
+                                    style={{
+                                        padding:
+                                            "6px 0",
+                                        borderBottom:
+                                            "1px solid #1f2937",
+                                        color:
+                                            "#d1d5db",
+                                    }}
+                                >
+                                    {renderEventMessage(
+                                        event.message
+                                    )}
+                                </div>
+                            )
+                        )
                     )}
                 </div>
             </Panel>

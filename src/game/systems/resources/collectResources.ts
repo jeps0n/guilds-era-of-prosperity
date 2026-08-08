@@ -59,8 +59,8 @@ export function collectResources(
       game.resourceBank.ore
     ),
   };
-  const updatedPlayers = game.players.map(
-    (player) => {
+  const updatedPlayers =
+    game.players.map((player) => {
       if (player.id !== playerId) {
         return player;
       }
@@ -84,8 +84,7 @@ export function collectResources(
             resourcesGranted.ore,
         },
       };
-    }
-  );
+    });
   const updatedBank: Resources = {
     brick:
       game.resourceBank.brick -
@@ -106,27 +105,27 @@ export function collectResources(
   const parts: string[] = [];
   if (resourcesGranted.brick > 0) {
     parts.push(
-      `🧱 ${resourcesGranted.brick}`
+      `[brick] ${resourcesGranted.brick}`
     );
   }
   if (resourcesGranted.lumber > 0) {
     parts.push(
-      `🌲 ${resourcesGranted.lumber}`
+      `[lumber] ${resourcesGranted.lumber}`
     );
   }
   if (resourcesGranted.wheat > 0) {
     parts.push(
-      `🌾 ${resourcesGranted.wheat}`
+      `[wheat] ${resourcesGranted.wheat}`
     );
   }
   if (resourcesGranted.sheep > 0) {
     parts.push(
-      `🐑 ${resourcesGranted.sheep}`
+      `[sheep] ${resourcesGranted.sheep}`
     );
   }
   if (resourcesGranted.ore > 0) {
     parts.push(
-      `⛰️ ${resourcesGranted.ore}`
+      `[ore] ${resourcesGranted.ore}`
     );
   }
   const eventLog = [...game.eventLog];

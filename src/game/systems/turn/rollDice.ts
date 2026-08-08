@@ -173,27 +173,27 @@ export function rollDice(
     const parts: string[] = [];
     if (gained.brick > 0) {
       parts.push(
-        `🧱 ${gained.brick}`
+        `[brick] ${gained.brick}`
       );
     }
     if (gained.lumber > 0) {
       parts.push(
-        `🌲 ${gained.lumber}`
+        `[lumber] ${gained.lumber}`
       );
     }
     if (gained.wheat > 0) {
       parts.push(
-        `🌾 ${gained.wheat}`
+        `[wheat] ${gained.wheat}`
       );
     }
     if (gained.sheep > 0) {
       parts.push(
-        `🐑 ${gained.sheep}`
+        `[sheep] ${gained.sheep}`
       );
     }
     if (gained.ore > 0) {
       parts.push(
-        `⛰️ ${gained.ore}`
+        `[ore] ${gained.ore}`
       );
     }
     events.push(
