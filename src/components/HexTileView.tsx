@@ -85,34 +85,153 @@ export default function HexTileView({
             >
                 {tile.resource}
             </text>
-            {/* ROBBER */}
+            {/* ROBBER — JACK-O-LANTERN ICON */}
             {isRobberTile && (
-                <g pointerEvents="none">
+                <g>
+                    {/* Purple circle behind pumpkin */}
                     <circle
                         cx={tile.x}
                         cy={tile.y}
-                        r="18"
-                        fill="#111827"
-                        stroke="#ffffff"
-                        strokeWidth="3"
+                        r="25"
+                        fill="#7c3aed"
+                        stroke="#000000"
+                        strokeWidth="2"
                     />
+                    <g transform="translate(0 1)">
+                        {/* Black pumpkin body — slightly elongated horizontally */}
+                        <path
+                            d={`
+                                M ${tile.x} ${tile.y - 14}
 
-                    <circle
-                        cx={tile.x}
-                        cy={tile.y - 8}
-                        r="6"
-                        fill="#ffffff"
-                    />
+                                C ${tile.x - 5} ${tile.y - 20},
+                                ${tile.x - 14} ${tile.y - 14},
+                                ${tile.x - 18} ${tile.y - 11}
 
-                    <path
-                        d={`
-                M ${tile.x - 9} ${tile.y + 12}
-                Q ${tile.x} ${tile.y + 2}
-                  ${tile.x + 9} ${tile.y + 12}
-                Z
-            `}
-                        fill="#ffffff"
-                    />
+                                C ${tile.x - 24} ${tile.y - 4},
+                                ${tile.x - 22} ${tile.y + 7},
+                                ${tile.x - 14} ${tile.y + 14}
+
+                                C ${tile.x - 9} ${tile.y + 18},
+                                ${tile.x - 3} ${tile.y + 19},
+                                ${tile.x} ${tile.y + 17}
+
+                                C ${tile.x + 3} ${tile.y + 19},
+                                ${tile.x + 9} ${tile.y + 18},
+                                ${tile.x + 14} ${tile.y + 14}
+
+                                C ${tile.x + 22} ${tile.y + 7},
+                                ${tile.x + 24} ${tile.y - 4},
+                                ${tile.x + 18} ${tile.y - 11}
+
+                                C ${tile.x + 14} ${tile.y - 14},
+                                ${tile.x + 5} ${tile.y - 20},
+                                ${tile.x} ${tile.y - 14}
+
+                                Z
+                            `}
+                            fill="#000000"
+                        />
+
+                        {/* Subtle pumpkin center indentation */}
+                        <path
+                            d={`
+        M ${tile.x} ${tile.y - 17}
+        C ${tile.x - 2} ${tile.y - 8},
+          ${tile.x - 2} ${tile.y + 9},
+          ${tile.x} ${tile.y + 18}
+        `}
+                            fill="none"
+                            stroke="#111111"
+                            strokeWidth="2"
+                        />
+
+                        {/* Sharp pointed stem */}
+                        <path
+                            d={`
+                                M ${tile.x - 3} ${tile.y - 15}
+                                L ${tile.x - 1} ${tile.y - 22}
+                                L ${tile.x + 3} ${tile.y - 20}
+                                L ${tile.x + 3} ${tile.y - 15}
+                                Z
+                            `}
+                            fill="#000000"
+                        />
+
+                        {/* Orange triangle eyes */}
+                        <polygon
+                            points={`
+                            ${tile.x - 10},${tile.y - 6}
+                            ${tile.x - 3},${tile.y - 2}
+                            ${tile.x - 11},${tile.y + 0}
+                        `}
+                            fill="#f97316"
+                        />
+                        {/* Small orange triangle nose */}
+                        <polygon
+                            points={`
+                                ${tile.x},${tile.y - 1}
+                                ${tile.x - 3},${tile.y + 3}
+                                ${tile.x + 3},${tile.y + 3}
+                            `}
+                                                    fill="#f97316"
+                                                />
+                                                <polygon
+                                                    points={`
+                                ${tile.x + 3},${tile.y - 2}
+                                ${tile.x + 10},${tile.y - 6}
+                                ${tile.x + 11},${tile.y + 0}
+                            `}
+                            fill="#f97316"
+                        />
+
+                        {/* Slightly closed jack-o-lantern smile */}
+                        <path
+                            d={`
+                            M ${tile.x - 13} ${tile.y + 4}
+
+                            Q ${tile.x} ${tile.y + 10}
+                            ${tile.x + 13} ${tile.y + 4}
+
+                            L ${tile.x + 10} ${tile.y + 11}
+
+                            Q ${tile.x + 6} ${tile.y + 12}
+                            ${tile.x} ${tile.y + 12}
+
+                            Q ${tile.x - 6} ${tile.y + 12}
+                            ${tile.x - 10} ${tile.y + 11}
+
+                            Z
+                        `}
+                            fill="#f97316"
+                        />
+
+                        {/* Square-ish black tooth cuts */}
+                        <rect
+                            x={tile.x - 8}
+                            y={tile.y + 6}
+                            width="4"
+                            height="4"
+                            rx="0.5"
+                            fill="#000000"
+                        />
+                        <rect
+                            x={tile.x + 4}
+                            y={tile.y + 6}
+                            width="4"
+                            height="4"
+                            rx="0.5"
+                            fill="#000000"
+                        />
+
+                        <rect
+                            x={tile.x - 2}
+                            y={tile.y + 9}
+                            width="4"
+                            height="5"
+                            rx="0.5"
+                            fill="#000000"
+                        />
+                    </g>
                 </g>
             )}
 
