@@ -95,10 +95,6 @@ export function validateBoard(
     sixEightRule:
       validateSixEightRule(board),
   };
-  console.log(
-    "BOARD VALIDATION",
-    results
-  );
   if(
     Object.values(results)
       .some(

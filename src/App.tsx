@@ -50,6 +50,7 @@ const initialGame = createInitialState();
 if (import.meta.env.DEV) {
     validateBoard(initialGame.board);
 }
+import { getTradeRatio } from "./game/systems/trading/getTradeRatio";
 function App() {
     const [game, setGame] = useState(initialGame);
     const [tradeOpen, setTradeOpen] = useState(false);
@@ -70,6 +71,7 @@ function App() {
             console.log("Cities:", player.cities);
             console.log("VP:", player.vp);
         });
+        console.log("----------------------------------------");
         console.log("Board:", game.board);
         console.log("Resource Bank:", game.resourceBank);
         console.log("Event Log:", game.eventLog);
@@ -241,11 +243,16 @@ function App() {
     ];
     const tradeGiveOptions =
         currentPlayer
-            ? tradeResources.filter(
-                (resource) =>
-                    currentPlayer.tradeRatios[resource] === 4 &&
-                    currentPlayer.resources[resource] >= 4
-            )
+            ? tradeResources.filter((resource) => {
+                const ratio = getTradeRatio(
+                    game,
+                    currentPlayer.id,
+                    resource
+                );
+                return (
+                    currentPlayer.resources[resource] >= ratio
+                );
+            })
             : [];
     const tradeReceiveOptions =
         selectedGiveResource
@@ -445,48 +452,38 @@ function App() {
                                         gap: "8px",
                                     }}
                                 >
-                                    {tradeGiveOptions.map(
-                                        (resource) => (
-                                            <button
-                                                key={
-                                                    resource
-                                                }
-                                                type="button"
-                                                onClick={() =>
-                                                    handleSelectGiveResource(
-                                                        resource
-                                                    )
-                                                }
-                                                style={{
-                                                    padding:
-                                                        "10px",
-                                                    borderRadius:
-                                                        "10px",
-                                                    border:
-                                                        selectedGiveResource ===
-                                                            resource
-                                                            ? "2px solid #60a5fa"
-                                                            : "1px solid #374151",
-                                                    background:
-                                                        selectedGiveResource ===
-                                                            resource
-                                                            ? "#1d4ed8"
-                                                            : "#1f2937",
-                                                    color:
-                                                        "white",
-                                                    cursor:
-                                                        "pointer",
-                                                    fontWeight:
-                                                        "bold",
-                                                    textAlign:
-                                                        "left",
-                                                }}
-                                            >
-                                                4{" "}
-                                                {resource}
-                                            </button>
-                                        )
-                                    )}
+                                    {tradeGiveOptions.map((resource) => (
+                                        <button
+                                            key={resource}
+                                            type="button"
+                                            onClick={() =>
+                                                handleSelectGiveResource(resource)
+                                            }
+                                            style={{
+                                                padding: "10px",
+                                                borderRadius: "10px",
+                                                border:
+                                                    selectedGiveResource === resource
+                                                        ? "2px solid #60a5fa"
+                                                        : "1px solid #374151",
+                                                background:
+                                                    selectedGiveResource === resource
+                                                        ? "#1d4ed8"
+                                                        : "#1f2937",
+                                                color: "white",
+                                                cursor: "pointer",
+                                                fontWeight: "bold",
+                                                textAlign: "left",
+                                            }}
+                                        >
+                                            {getTradeRatio(
+                                                game,
+                                                currentPlayer!.id,
+                                                resource
+                                            )}{" "}
+                                            {resource}
+                                        </button>
+                                    ))}
                                     {tradeGiveOptions.length ===
                                         0 && (
                                             <div

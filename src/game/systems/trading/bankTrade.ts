@@ -1,6 +1,7 @@
 import type { GameState } from "../../engine/GameState";
 import type { Resources } from "../../engine/types";
 import { createEvent } from "../../engine/createEvent";
+import { getTradeRatio } from "./getTradeRatio";
 export function bankTrade(
   game: GameState,
   playerId: string,
@@ -25,10 +26,11 @@ export function bankTrade(
   if (!player) {
     return game;
   }
-  const ratio = player.tradeRatios[giveResource];
-  if (ratio !== 4) {
-    return game;
-  }
+  const ratio = getTradeRatio(
+    game,
+    playerId,
+    giveResource
+  );
   if (player.resources[giveResource] < ratio) {
     return game;
   }
@@ -45,9 +47,11 @@ export function bankTrade(
         resources: {
           ...candidate.resources,
           [giveResource]:
-            candidate.resources[giveResource] - ratio,
+            candidate.resources[giveResource] -
+            ratio,
           [receiveResource]:
-            candidate.resources[receiveResource] + 1,
+            candidate.resources[receiveResource] +
+            1,
         },
       };
     }
