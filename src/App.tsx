@@ -44,6 +44,9 @@ import {
     buildSettlement,
 } from "./game/systems/building/buildSettlement";
 import {
+    buildCity,
+} from "./game/systems/building/buildCity";
+import {
     bankTrade,
 } from "./game/systems/trading/bankTrade";
 const initialGame = createInitialState();
@@ -54,7 +57,6 @@ import { getTradeRatio } from "./game/systems/trading/getTradeRatio";
 function App() {
     const [game, setGame] = useState(initialGame);
     const [tradeOpen, setTradeOpen] = useState(false);
-    const [tradeCloseHovered, setTradeCloseHovered] = useState(false);
     const [selectedGiveResource, setSelectedGiveResource] =
         useState<keyof Resources | undefined>(undefined);
     useEffect(() => {
@@ -124,6 +126,17 @@ function App() {
             game,
             game.currentPlayerId,
             edgeId
+        );
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
+    }
+    function handleBuildCity(nodeId: string) {
+        const nextGame = buildCity(
+            game,
+            game.currentPlayerId,
+            nodeId
         );
         if (nextGame === game) {
             return;
@@ -230,6 +243,13 @@ function App() {
                     playerId: player.id,
                 })
             )
+    );
+    const cities = game.players.flatMap(
+        (player) =>
+            player.cities.map((nodeId) => ({
+                nodeId,
+                playerId: player.id,
+            }))
     );
     const restoreAvailable =
         canRestorePhaseCheckpoint(game);
@@ -388,6 +408,7 @@ function App() {
                             (player) =>
                                 player.settlements
                         )}
+                        cities={cities}
                         roads={roads}
                         onSelectNode={
                             game.phase ===
@@ -397,14 +418,24 @@ function App() {
                                 ? handlePlaceSettlement
                                 : game.phase ===
                                     "playing"
-                                    ? (nodeId) =>
+                                    ? (nodeId) => {
+                                        const ownsSettlement =
+                                            currentPlayer?.settlements.some(
+                                                (settlement) =>
+                                                    settlement.nodeId === nodeId
+                                            );
+                                        if (ownsSettlement) {
+                                            handleBuildCity(nodeId);
+                                            return;
+                                        }
                                         setGame(
                                             buildSettlement(
                                                 game,
                                                 game.currentPlayerId,
                                                 nodeId
                                             )
-                                        )
+                                        );
+                                    }
                                     : undefined
                         }
                         onSelectEdge={

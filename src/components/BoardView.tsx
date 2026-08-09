@@ -8,6 +8,10 @@ import BoardEdgeView from "./BoardEdgeView";
 interface BoardViewProps {
   board: Board;
   settlements: Settlement[];
+  cities: {
+    nodeId: string;
+    playerId: string;
+  }[];
   roads: {
     id: string;
     edgeId: string;
@@ -19,6 +23,7 @@ interface BoardViewProps {
 function BoardView({
   board,
   settlements,
+  cities,
   roads,
   onSelectNode,
   onSelectEdge,
@@ -146,6 +151,11 @@ function BoardView({
             (s) =>
               s.nodeId === node.id
           );
+        const city =
+          cities.find(
+            (c) =>
+              c.nodeId === node.id
+          );
         const isPortNode =
           board.ports.some(
             (p) =>
@@ -156,6 +166,7 @@ function BoardView({
             key={node.id}
             node={node}
             settlement={settlement}
+            city={city}
             isPortNode={isPortNode}
             hovered={hoveredNode === node.id}
             onHover={setHoveredNode}

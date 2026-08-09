@@ -43,6 +43,7 @@ function ActionButton({
             disabled={disabled}
             style={{
                 minWidth: "120px",
+                minHeight: "64px",
                 padding: "10px 12px",
                 borderRadius: "10px",
                 border: active
@@ -242,11 +243,13 @@ function ActionBar({
                 <ActionButton
                     icon="🏙️"
                     label="City"
+                    active={canCity}
                     disabled={!canCity}
                 />
                 <ActionButton
                     icon="🎴"
                     label="Buy Dev Card"
+                    active={canBuyDevelopment}
                     disabled={!canBuyDevelopment}
                 />
                 <ActionButton

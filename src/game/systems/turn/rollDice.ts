@@ -34,10 +34,15 @@ export function rollDice(
       sheep: 0,
       ore: 0,
     };
-    for (const settlement of player.settlements) {
+    const ownedNodeIds = [
+      ...player.settlements.map(
+        (settlement) => settlement.nodeId
+      ),
+      ...player.cities,
+    ];
+    for (const nodeId of ownedNodeIds) {
       const node = game.board.nodes.find(
-        (node) =>
-          node.id === settlement.nodeId
+        (node) => node.id === nodeId
       );
       if (!node) {
         continue;
@@ -64,9 +69,67 @@ export function rollDice(
       requestedResources
     );
   }
+  /*
+   * Calculate the total requested amount of each
+   * resource across ALL players before distributing.
+   */
+  const resourceTypes: (keyof Resources)[] = [
+    "brick",
+    "lumber",
+    "wheat",
+    "sheep",
+    "ore",
+  ];
+  const totalRequested: Resources = {
+    brick: 0,
+    lumber: 0,
+    wheat: 0,
+    sheep: 0,
+    ore: 0,
+  };
+  for (const requested of requestedResourcesByPlayer.values()) {
+    for (const resource of resourceTypes) {
+      totalRequested[resource] +=
+        requested[resource];
+    }
+  }
+  /*
+   * A resource is distributed only if the bank can
+   * satisfy the ENTIRE request for that resource.
+   */
+  const canDistribute: Record<
+    keyof Resources,
+    boolean
+  > = {
+    brick:
+      totalRequested.brick <=
+      game.resourceBank.brick,
+    lumber:
+      totalRequested.lumber <=
+      game.resourceBank.lumber,
+    wheat:
+      totalRequested.wheat <=
+      game.resourceBank.wheat,
+    sheep:
+      totalRequested.sheep <=
+      game.resourceBank.sheep,
+    ore:
+      totalRequested.ore <=
+      game.resourceBank.ore,
+  };
   const updatedBank: Resources = {
     ...game.resourceBank,
   };
+  /*
+   * Remove the full requested amount from the bank
+   * only when the entire request can be fulfilled.
+   */
+  for (const resource of resourceTypes) {
+    if (canDistribute[resource]) {
+      updatedBank[resource] -=
+        totalRequested[resource];
+    }
+  }
   const updatedPlayers =
     game.players.map((player) => {
       const requested =
@@ -76,38 +139,32 @@ export function rollDice(
       if (!requested) {
         return player;
       }
+      /*
+       * If the bank cannot fulfill the total request,
+       * every player receives zero of that resource.
+       */
       const granted: Resources = {
-        brick: Math.min(
-          requested.brick,
-          updatedBank.brick
-        ),
-        lumber: Math.min(
-          requested.lumber,
-          updatedBank.lumber
-        ),
-        wheat: Math.min(
-          requested.wheat,
-          updatedBank.wheat
-        ),
-        sheep: Math.min(
-          requested.sheep,
-          updatedBank.sheep
-        ),
-        ore: Math.min(
-          requested.ore,
-          updatedBank.ore
-        ),
+        brick:
+          canDistribute.brick
+            ? requested.brick
+            : 0,
+        lumber:
+          canDistribute.lumber
+            ? requested.lumber
+            : 0,
+        wheat:
+          canDistribute.wheat
+            ? requested.wheat
+            : 0,
+        sheep:
+          canDistribute.sheep
+            ? requested.sheep
+            : 0,
+        ore:
+          canDistribute.ore
+            ? requested.ore
+            : 0,
       };
-      updatedBank.brick -=
-        granted.brick;
-      updatedBank.lumber -=
-        granted.lumber;
-      updatedBank.wheat -=
-        granted.wheat;
-      updatedBank.sheep -=
-        granted.sheep;
-      updatedBank.ore -=
-        granted.ore;
       return {
         ...player,
         resources: {
@@ -135,6 +192,25 @@ export function rollDice(
       `${currentPlayer.name} rolled ${dieOne} + ${dieTwo} = ${total}.`
     ),
   ];
+  /*
+   * Log resources that could not be distributed.
+   */
+  for (const resource of resourceTypes) {
+    if (
+      totalRequested[resource] > 0 &&
+      !canDistribute[resource]
+    ) {
+      events.push(
+        createEvent(
+          "RESOURCES_COLLECTED",
+          `No ${resource} was given. \n${totalRequested[resource]} needed but the bank had ${game.resourceBank[resource]}.`
+        )
+      );
+    }
+  }
+  /*
+   * Log resources actually received by each player.
+   */
   for (const player of updatedPlayers) {
     const before =
       game.players.find(
