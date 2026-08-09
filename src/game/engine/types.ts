@@ -17,6 +17,7 @@ export interface Player {
   guild?: GuildType;
   vp: number;
   resources: Resources;
+  tradeRatios: Resources;
   roads: string[];
   settlements: Settlement[];
   cities: string[];

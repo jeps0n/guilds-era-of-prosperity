@@ -25,7 +25,10 @@ import {
 import {
     rollDice,
 } from "./game/systems/turn/rollDice";
-import type { GuildType } from "./game/engine/types";
+import type {
+    GuildType,
+    Resources,
+} from "./game/engine/types";
 import {
     savePhaseCheckpoint,
     restorePhaseCheckpoint,
@@ -40,6 +43,9 @@ import {
 import {
     buildSettlement,
 } from "./game/systems/building/buildSettlement";
+import {
+    bankTrade,
+} from "./game/systems/trading/bankTrade";
 const initialGame = createInitialState();
 if (import.meta.env.DEV) {
     validateBoard(initialGame.board);
@@ -117,6 +123,57 @@ function App() {
             return;
         }
         setGame(nextGame);
+    }
+    function handleBankTrade(
+        giveResource: keyof Resources,
+        receiveResource: keyof Resources
+    ) {
+        const nextGame = bankTrade(
+            game,
+            game.currentPlayerId,
+            giveResource,
+            receiveResource
+        );
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
+    }
+    function handleTrade() {
+        const player = game.players.find(
+            (candidate) =>
+                candidate.id === game.currentPlayerId
+        );
+        if (!player) {
+            return;
+        }
+        const resources: (keyof Resources)[] = [
+            "brick",
+            "lumber",
+            "wheat",
+            "sheep",
+            "ore",
+        ];
+        const giveResource = resources.find(
+            (resource) =>
+                player.tradeRatios[resource] === 4 &&
+                player.resources[resource] >= 4
+        );
+        if (!giveResource) {
+            return;
+        }
+        const receiveResource = resources.find(
+            (resource) =>
+                resource !== giveResource &&
+                game.resourceBank[resource] >= 1
+        );
+        if (!receiveResource) {
+            return;
+        }
+        handleBankTrade(
+            giveResource,
+            receiveResource
+        );
     }
     function handleRollDice() {
         const nextGame = rollDice(game);
@@ -200,6 +257,9 @@ function App() {
                 onEndTurn={
                     handleEndTurn
                 }
+                onTrade={
+                    handleTrade
+                }
                 {...options}
             />
         );
@@ -263,8 +323,10 @@ function App() {
                         )}
                         roads={roads}
                         onSelectNode={
-                            game.phase === "initial_placement" &&
-                                game.placementAction === "settlement"
+                            game.phase ===
+                                "initial_placement" &&
+                                game.placementAction ===
+                                "settlement"
                                 ? handlePlaceSettlement
                                 : game.phase === "playing"
                                     ? (nodeId) =>
@@ -278,7 +340,8 @@ function App() {
                                     : undefined
                         }
                         onSelectEdge={
-                            game.phase === "initial_placement" &&
+                            game.phase ===
+                                "initial_placement" &&
                                 game.placementAction === "road"
                                 ? handlePlaceRoad
                                 : game.phase === "playing" &&

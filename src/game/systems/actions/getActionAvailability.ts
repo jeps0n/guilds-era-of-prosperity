@@ -43,6 +43,12 @@ export function getActionAvailability(
         resources.wheat >= 1 &&
         resources.sheep >= 1 &&
         game.developmentDeck.length > 0;
+    const canTrade =
+        resources.brick >= 4 ||
+        resources.lumber >= 4 ||
+        resources.wheat >= 4 ||
+        resources.sheep >= 4 ||
+        resources.ore >= 4;
     const hasRolled =
         game.lastDiceRoll !== undefined;
     return {
@@ -51,7 +57,8 @@ export function getActionAvailability(
             !hasRolled,
         canTrade:
             game.phase === "playing" &&
-            hasRolled,
+            hasRolled &&
+            canTrade,
         canRoad:
             game.phase === "playing" &&
             hasRolled &&

@@ -2,6 +2,7 @@ import type { ActionAvailability } from "../game/systems/actions/getActionAvaila
 interface ActionBarProps {
     onRollDice?: () => void;
     onEndTurn?: () => void;
+    onTrade?: () => void;
     phase:
     | "guild_selection"
     | "initial_placement"
@@ -106,6 +107,7 @@ function hexToRgba(
 function ActionBar({
     onRollDice,
     onEndTurn,
+    onTrade,
     phase,
     placementAction,
     lastDiceRoll,
@@ -170,7 +172,8 @@ function ActionBar({
         >
             <div
                 style={{
-                    background: actionBarBackground,
+                    background:
+                        actionBarBackground,
                     border: "1px solid #374151",
                     borderRadius: "14px",
                     padding: "10px",
@@ -197,9 +200,11 @@ function ActionBar({
                     />
                 )}
                 <ActionButton
-                    icon="🤝"
+                    icon="💱"
                     label="Trade"
+                    active={canTrade}
                     disabled={!canTrade}
+                    onClick={onTrade}
                 />
                 <ActionButton
                     icon="🛣️"

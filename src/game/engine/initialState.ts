@@ -1,7 +1,7 @@
 import type { GameState } from "./GameState";
 import { STARTER_BOARD } from "../data/starterBoard";
 import {
-  DEVELOPMENT_CARD_DECK
+  DEVELOPMENT_CARD_DECK,
 } from "../data/developmentCards";
 export function createInitialState(): GameState {
   const players = [
@@ -16,6 +16,13 @@ export function createInitialState(): GameState {
         wheat: 0,
         sheep: 0,
         ore: 0,
+      },
+      tradeRatios: {
+        brick: 4,
+        lumber: 4,
+        wheat: 4,
+        sheep: 4,
+        ore: 4,
       },
       roads: [],
       settlements: [],
@@ -37,6 +44,13 @@ export function createInitialState(): GameState {
         sheep: 0,
         ore: 0,
       },
+      tradeRatios: {
+        brick: 4,
+        lumber: 4,
+        wheat: 4,
+        sheep: 4,
+        ore: 4,
+      },
       roads: [],
       settlements: [],
       cities: [],
@@ -47,9 +61,7 @@ export function createInitialState(): GameState {
     },
   ];
   const shuffledPlayers =
-    [
-      ...players,
-    ].sort(() => Math.random() - 0.5);
+    [...players].sort(() => Math.random() - 0.5);
   const placementOrder = [
     shuffledPlayers[0].id,
     shuffledPlayers[1].id,
@@ -58,14 +70,13 @@ export function createInitialState(): GameState {
   ];
   const guildSelectionPlayer =
     players[
-    Math.floor(
-      Math.random() * players.length
-    )
+      Math.floor(
+        Math.random() * players.length
+      )
     ];
   return {
     players,
-    board:
-      STARTER_BOARD,
+    board: STARTER_BOARD,
     resourceBank: {
       brick: 19,
       lumber: 19,
@@ -81,14 +92,10 @@ export function createInitialState(): GameState {
       placementOrder[0],
     placementStep: 0,
     placementOrder,
-    placementAction:
-      "settlement",
-    phase:
-      "guild_selection",
-    turnNumber:
-      0,
-    eraOfProsperity:
-      false,
+    placementAction: "settlement",
+    phase: "guild_selection",
+    turnNumber: 0,
+    eraOfProsperity: false,
     eventLog: [],
   };
 }
