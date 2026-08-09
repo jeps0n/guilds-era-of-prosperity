@@ -54,6 +54,7 @@ import { getTradeRatio } from "./game/systems/trading/getTradeRatio";
 function App() {
     const [game, setGame] = useState(initialGame);
     const [tradeOpen, setTradeOpen] = useState(false);
+    const [tradeCloseHovered, setTradeCloseHovered] = useState(false);
     const [selectedGiveResource, setSelectedGiveResource] =
         useState<keyof Resources | undefined>(undefined);
     useEffect(() => {
@@ -241,6 +242,38 @@ function App() {
         "sheep",
         "ore",
     ];
+    const resourceColors: Record<keyof Resources, string> = {
+        brick: "#b45309",
+        lumber: "#166534",
+        wheat: "#eab308",
+        sheep: "#65a30d",
+        ore: "#6b7280",
+    };
+    function renderResourceBadge(
+        resource: keyof Resources,
+        amount: number
+    ) {
+        return (
+            <span
+                style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minWidth: "22px",
+                    height: "22px",
+                    padding: "0 5px",
+                    borderRadius: "6px",
+                    backgroundColor: resourceColors[resource],
+                    color: "#000000",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    verticalAlign: "middle",
+                }}
+            >
+                {amount}
+            </span>
+        );
+    }
     const tradeGiveOptions =
         currentPlayer
             ? tradeResources.filter((resource) => {
@@ -421,27 +454,41 @@ function App() {
                                             "12px",
                                     }}
                                 >
-                                    Bank / Port Trade
+                                    <strong>Trade Menu</strong>
                                     <button
                                         type="button"
-                                        onClick={
-                                            handleCloseTrade
-                                        }
+                                        onClick={handleCloseTrade}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.background = "#1d4ed8";
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.background = "#1f2937";
+                                        }}
                                         style={{
-                                            border:
-                                                "none",
-                                            background:
-                                                "transparent",
-                                            color:
-                                                "#9ca3af",
-                                            cursor:
-                                                "pointer",
-                                            fontSize:
-                                                "18px",
+                                            border: "none",
+                                            background: "#1f2937",
+                                            color: "white",
+                                            cursor: "pointer",
+                                            fontSize: "18px",
+                                            width: "30px",
+                                            height: "30px",
+                                            borderRadius: "6px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
                                         }}
                                     >
                                         ×
                                     </button>
+                                </div>
+                                <div
+                                    style={{
+                                        fontSize: "13px",
+                                        color: "#d1d5db",
+                                        marginBottom: "10px",
+                                    }}
+                                >
+                                    <span>Give:</span>
                                 </div>
                                 <div
                                     style={{
@@ -476,12 +523,17 @@ function App() {
                                                 textAlign: "left",
                                             }}
                                         >
-                                            {getTradeRatio(
-                                                game,
-                                                currentPlayer!.id,
-                                                resource
-                                            )}{" "}
-                                            {resource}
+                                            <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                                                {renderResourceBadge(
+                                                    resource,
+                                                    getTradeRatio(
+                                                        game,
+                                                        currentPlayer!.id,
+                                                        resource
+                                                    )
+                                                )}
+                                                <span>{resource}</span>
+                                            </span>
                                         </button>
                                     ))}
                                     {tradeGiveOptions.length ===
@@ -514,7 +566,7 @@ function App() {
                                                     "10px",
                                             }}
                                         >
-                                            Receive 1 of:
+                                            <span>Receive:</span>
                                         </div>
                                         <div
                                             style={{
@@ -558,10 +610,10 @@ function App() {
                                                                 "left",
                                                         }}
                                                     >
-                                                        1{" "}
-                                                        {
-                                                            resource
-                                                        }
+                                                        <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                                                            {renderResourceBadge(resource, 1)}
+                                                            <span>{resource}</span>
+                                                        </span>
                                                     </button>
                                                 )
                                             )}

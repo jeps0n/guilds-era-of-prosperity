@@ -1,4 +1,9 @@
 import type { ActionAvailability } from "../game/systems/actions/getActionAvailability";
+const ACTIVE_BUTTON_BACKGROUND = "#1d4ed8";
+const DISABLED_BUTTON_BACKGROUND = "#1f2937";
+const DEFAULT_BUTTON_BACKGROUND = "#111827";
+const ACTIVE_BUTTON_BORDER = "#60a5fa";
+const DEFAULT_BUTTON_BORDER = "#374151";
 interface ActionBarProps {
     onRollDice?: () => void;
     onEndTurn?: () => void;
@@ -41,13 +46,13 @@ function ActionButton({
                 padding: "10px 12px",
                 borderRadius: "10px",
                 border: active
-                    ? "2px solid #60a5fa"
-                    : "1px solid #374151",
+                    ? `2px solid ${ACTIVE_BUTTON_BORDER}`
+                    : `1px solid ${DEFAULT_BUTTON_BORDER}`,
                 background: active
-                    ? "#1d4ed8"
+                    ? ACTIVE_BUTTON_BACKGROUND
                     : disabled
-                        ? "#1f2937"
-                        : "#111827",
+                        ? DISABLED_BUTTON_BACKGROUND
+                        : DEFAULT_BUTTON_BACKGROUND,
                 color: disabled
                     ? "#6b7280"
                     : "white",
@@ -114,7 +119,7 @@ function ActionBar({
     availability,
     diceOnly = false,
     hideDice = false,
-    playerColor = "#111827",
+    playerColor = "DEFAULT_BUTTON_BACKGROUND",
 }: ActionBarProps) {
     const isInitialPlacement =
         phase === "initial_placement";
@@ -174,7 +179,7 @@ function ActionBar({
                 style={{
                     background:
                         actionBarBackground,
-                    border: "1px solid #374151",
+                    border: `1px solid ${DEFAULT_BUTTON_BORDER}`,
                     borderRadius: "14px",
                     padding: "10px",
                     display: "flex",
@@ -210,8 +215,9 @@ function ActionBar({
                     icon="🛣️"
                     label="Road"
                     active={
-                        isInitialPlacement &&
-                        placementAction === "road"
+                        isInitialPlacement
+                            ? placementAction === "road"
+                            : canRoad
                     }
                     disabled={
                         isInitialPlacement
@@ -223,8 +229,9 @@ function ActionBar({
                     icon="🏠"
                     label="Settlement"
                     active={
-                        isInitialPlacement &&
-                        placementAction === "settlement"
+                        isInitialPlacement
+                            ? placementAction === "settlement"
+                            : canSettlement
                     }
                     disabled={
                         isInitialPlacement

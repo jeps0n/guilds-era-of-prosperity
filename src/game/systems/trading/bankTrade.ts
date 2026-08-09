@@ -71,7 +71,7 @@ export function bankTrade(
       ...game.eventLog,
       createEvent(
         "BANK_TRADE",
-        `${player.name} traded ${ratio} ${giveResource} for 1 ${receiveResource}.`
+        `${player.name} traded [${giveResource}] ${ratio} for [${receiveResource}] 1.`
       ),
     ],
   };
