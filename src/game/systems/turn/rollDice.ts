@@ -45,7 +45,6 @@ export function rollDice(
         `${currentPlayer.name} rolled ${dieOne} + ${dieTwo} = ${total}.`
       ),
     ];
-
     return {
       ...game,
       lastDiceRoll: total,

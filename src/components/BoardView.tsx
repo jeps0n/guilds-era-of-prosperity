@@ -34,12 +34,6 @@ function BoardView({
   robberTileId,
   onSelectTile,
 }: BoardViewProps) {
-  console.log("=== BOARD VIEW ROBBER STATE ===");
-  console.log({
-    robberPending,
-    robberTileId,
-    tileCount: board.tiles.length,
-  });
   const [hoveredEdge, setHoveredEdge] =
     useState<string | null>(null);
   const [hoveredNode, setHoveredNode] =
