@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ActionBar from "./components/ActionBar";
 import BoardView from "./components/BoardView";
 import GameStatus from "./components/GameStatus";
@@ -37,12 +37,40 @@ import {
 import {
     buildRoad,
 } from "./game/systems/building/buildRoad";
+import {
+    buildSettlement,
+} from "./game/systems/building/buildSettlement";
 const initialGame = createInitialState();
 if (import.meta.env.DEV) {
     validateBoard(initialGame.board);
 }
 function App() {
     const [game, setGame] = useState(initialGame);
+    useEffect(() => {
+        console.log("========== GAME STATE UPDATED ==========");
+
+        console.log("Phase:", game.phase);
+        console.log("Current Player:", game.currentPlayerId);
+        console.log("Placement Action:", game.placementAction);
+        console.log("Last Dice Roll:", game.lastDiceRoll);
+
+        console.log("Players:", game.players);
+
+        game.players.forEach((player) => {
+            console.log(`--- ${player.name} (${player.id}) ---`);
+            console.log("Resources:", player.resources);
+            console.log("Settlements:", player.settlements);
+            console.log("Roads:", player.roads);
+            console.log("Cities:", player.cities);
+            console.log("VP:", player.vp);
+        });
+
+        console.log("Board:", game.board);
+        console.log("Resource Bank:", game.resourceBank);
+        console.log("Event Log:", game.eventLog);
+
+        console.log("========================================");
+    }, [game]);
     function handleGuildSelection(guild: GuildType) {
         const nextGame = selectGuild(
             game,
@@ -90,11 +118,9 @@ function App() {
             game.currentPlayerId,
             edgeId
         );
-
         if (nextGame === game) {
             return;
         }
-
         setGame(nextGame);
     }
     function handleRollDice() {
@@ -242,12 +268,19 @@ function App() {
                         )}
                         roads={roads}
                         onSelectNode={
-                            game.phase ===
-                                "initial_placement" &&
-                                game.placementAction ===
-                                "settlement"
+                            game.phase === "initial_placement" &&
+                                game.placementAction === "settlement"
                                 ? handlePlaceSettlement
-                                : undefined
+                                : game.phase === "playing"
+                                    ? (nodeId) =>
+                                        setGame(
+                                            buildSettlement(
+                                                game,
+                                                game.currentPlayerId,
+                                                nodeId
+                                            )
+                                        )
+                                    : undefined
                         }
                         onSelectEdge={
                             game.phase === "initial_placement" &&

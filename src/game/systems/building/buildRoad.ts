@@ -1,11 +1,9 @@
 import type { GameState } from "../../engine/GameState";
 import { createEvent } from "../../engine/createEvent";
-
 const ROAD_COST = {
   brick: 1,
   lumber: 1,
 };
-
 export function buildRoad(
   game: GameState,
   playerId: string,
@@ -14,52 +12,41 @@ export function buildRoad(
   if (game.phase !== "playing") {
     return game;
   }
-
   if (game.currentPlayerId !== playerId) {
     return game;
   }
-
   const player = game.players.find(
     (candidate) => candidate.id === playerId
   );
-
   if (!player) {
     return game;
   }
-
   if (
     player.resources.brick < ROAD_COST.brick ||
     player.resources.lumber < ROAD_COST.lumber
   ) {
     return game;
   }
-
   const edge = game.board.edges.find(
     (candidate) => candidate.id === edgeId
   );
-
   if (!edge) {
     return game;
   }
-
   const edgeAlreadyOccupied = game.players.some(
     (candidate) => candidate.roads.includes(edgeId)
   );
-
   if (edgeAlreadyOccupied) {
     return game;
   }
-
   if (!connectsToPlayerNetwork(game, playerId, edgeId)) {
     return game;
   }
-
   const updatedPlayers = game.players.map(
     (candidate) => {
       if (candidate.id !== playerId) {
         return candidate;
       }
-
       return {
         ...candidate,
         resources: {
@@ -78,7 +65,6 @@ export function buildRoad(
       };
     }
   );
-
   const updatedResourceBank = {
     ...game.resourceBank,
     brick:
@@ -88,7 +74,6 @@ export function buildRoad(
       game.resourceBank.lumber +
       ROAD_COST.lumber,
   };
-
   return {
     ...game,
     players: updatedPlayers,
@@ -102,7 +87,6 @@ export function buildRoad(
     ],
   };
 }
-
 function connectsToPlayerNetwork(
   game: GameState,
   playerId: string,
@@ -111,26 +95,21 @@ function connectsToPlayerNetwork(
   const player = game.players.find(
     (candidate) => candidate.id === playerId
   );
-
   if (!player) {
     return false;
   }
-
   const candidateEdge = game.board.edges.find(
     (edge) => edge.id === edgeId
   );
-
   if (!candidateEdge) {
     return false;
   }
-
   const playerStructureNodes = new Set([
     ...player.settlements.map(
       (settlement) => settlement.nodeId
     ),
     ...player.cities,
   ]);
-
   const opponentStructureNodes = new Set(
     game.players
       .filter(
@@ -143,41 +122,33 @@ function connectsToPlayerNetwork(
         ...candidate.cities,
       ])
   );
-
   const candidateNodes = [
     candidateEdge.nodeA,
     candidateEdge.nodeB,
   ];
-
   for (const nodeId of candidateNodes) {
     if (playerStructureNodes.has(nodeId)) {
       return true;
     }
-
     if (opponentStructureNodes.has(nodeId)) {
       continue;
     }
-
     const connectedToPlayerRoad =
       game.board.edges.some((edge) => {
         if (edge.id === candidateEdge.id) {
           return false;
         }
-
         if (!player.roads.includes(edge.id)) {
           return false;
         }
-
         return (
           edge.nodeA === nodeId ||
           edge.nodeB === nodeId
         );
       });
-
     if (connectedToPlayerRoad) {
       return true;
     }
   }
-
   return false;
 }
