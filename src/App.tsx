@@ -52,6 +52,9 @@ if (import.meta.env.DEV) {
 }
 function App() {
     const [game, setGame] = useState(initialGame);
+    const [tradeOpen, setTradeOpen] = useState(false);
+    const [selectedGiveResource, setSelectedGiveResource] =
+        useState<keyof Resources | undefined>(undefined);
     useEffect(() => {
         console.log("========== GAME STATE UPDATED ==========");
         console.log("Phase:", game.phase);
@@ -147,33 +150,29 @@ function App() {
         if (!player) {
             return;
         }
-        const resources: (keyof Resources)[] = [
-            "brick",
-            "lumber",
-            "wheat",
-            "sheep",
-            "ore",
-        ];
-        const giveResource = resources.find(
-            (resource) =>
-                player.tradeRatios[resource] === 4 &&
-                player.resources[resource] >= 4
-        );
-        if (!giveResource) {
-            return;
-        }
-        const receiveResource = resources.find(
-            (resource) =>
-                resource !== giveResource &&
-                game.resourceBank[resource] >= 1
-        );
-        if (!receiveResource) {
+        setSelectedGiveResource(undefined);
+        setTradeOpen(true);
+    }
+    function handleSelectGiveResource(
+        resource: keyof Resources
+    ) {
+        setSelectedGiveResource(resource);
+    }
+    function handleSelectReceiveResource(
+        resource: keyof Resources
+    ) {
+        if (!selectedGiveResource) {
             return;
         }
         handleBankTrade(
-            giveResource,
-            receiveResource
+            selectedGiveResource,
+            resource
         );
+        handleCloseTrade();
+    }
+    function handleCloseTrade() {
+        setTradeOpen(false);
+        setSelectedGiveResource(undefined);
     }
     function handleRollDice() {
         const nextGame = rollDice(game);
@@ -187,6 +186,7 @@ function App() {
         if (nextGame === game) {
             return;
         }
+        handleCloseTrade();
         setGame(nextGame);
         savePhaseCheckpoint(nextGame);
     }
@@ -232,6 +232,29 @@ function App() {
         canRestorePhaseCheckpoint(game);
     const actionAvailability =
         getActionAvailability(game);
+    const tradeResources: (keyof Resources)[] = [
+        "brick",
+        "lumber",
+        "wheat",
+        "sheep",
+        "ore",
+    ];
+    const tradeGiveOptions =
+        currentPlayer
+            ? tradeResources.filter(
+                (resource) =>
+                    currentPlayer.tradeRatios[resource] === 4 &&
+                    currentPlayer.resources[resource] >= 4
+            )
+            : [];
+    const tradeReceiveOptions =
+        selectedGiveResource
+            ? tradeResources.filter(
+                (resource) =>
+                    resource !== selectedGiveResource &&
+                    game.resourceBank[resource] >= 1
+            )
+            : [];
     function renderActionBar(
         options: {
             diceOnly?: boolean;
@@ -277,8 +300,12 @@ function App() {
                 header="Guilds: Era of Prosperity"
                 board={
                     <GuildSelection
-                        playerName={currentPlayer.name}
-                        availableGuilds={availableGuilds}
+                        playerName={
+                            currentPlayer.name
+                        }
+                        availableGuilds={
+                            availableGuilds
+                        }
                         onSelectGuild={
                             handleGuildSelection
                         }
@@ -328,7 +355,8 @@ function App() {
                                 game.placementAction ===
                                 "settlement"
                                 ? handlePlaceSettlement
-                                : game.phase === "playing"
+                                : game.phase ===
+                                    "playing"
                                     ? (nodeId) =>
                                         setGame(
                                             buildSettlement(
@@ -342,18 +370,231 @@ function App() {
                         onSelectEdge={
                             game.phase ===
                                 "initial_placement" &&
-                                game.placementAction === "road"
+                                game.placementAction ===
+                                "road"
                                 ? handlePlaceRoad
-                                : game.phase === "playing" &&
+                                : game.phase ===
+                                    "playing" &&
                                     actionAvailability.canRoad
                                     ? handleBuildRoad
                                     : undefined
                         }
                     />
+                    {tradeOpen &&
+                        game.phase === "playing" && (
+                            <div
+                                style={{
+                                    position:
+                                        "absolute",
+                                    bottom: "16px",
+                                    left: "16px",
+                                    width: "280px",
+                                    padding: "16px",
+                                    borderRadius:
+                                        "14px",
+                                    border:
+                                        "1px solid #374151",
+                                    background:
+                                        "#111827",
+                                    color: "white",
+                                    boxShadow:
+                                        "0 12px 30px rgba(0,0,0,0.35)",
+                                    zIndex: 10,
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        display:
+                                            "flex",
+                                        justifyContent:
+                                            "space-between",
+                                        alignItems:
+                                            "center",
+                                        marginBottom:
+                                            "12px",
+                                    }}
+                                >
+                                    Bank / Port Trade
+                                    <button
+                                        type="button"
+                                        onClick={
+                                            handleCloseTrade
+                                        }
+                                        style={{
+                                            border:
+                                                "none",
+                                            background:
+                                                "transparent",
+                                            color:
+                                                "#9ca3af",
+                                            cursor:
+                                                "pointer",
+                                            fontSize:
+                                                "18px",
+                                        }}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                                <div
+                                    style={{
+                                        display:
+                                            "flex",
+                                        flexDirection:
+                                            "column",
+                                        gap: "8px",
+                                    }}
+                                >
+                                    {tradeGiveOptions.map(
+                                        (resource) => (
+                                            <button
+                                                key={
+                                                    resource
+                                                }
+                                                type="button"
+                                                onClick={() =>
+                                                    handleSelectGiveResource(
+                                                        resource
+                                                    )
+                                                }
+                                                style={{
+                                                    padding:
+                                                        "10px",
+                                                    borderRadius:
+                                                        "10px",
+                                                    border:
+                                                        selectedGiveResource ===
+                                                            resource
+                                                            ? "2px solid #60a5fa"
+                                                            : "1px solid #374151",
+                                                    background:
+                                                        selectedGiveResource ===
+                                                            resource
+                                                            ? "#1d4ed8"
+                                                            : "#1f2937",
+                                                    color:
+                                                        "white",
+                                                    cursor:
+                                                        "pointer",
+                                                    fontWeight:
+                                                        "bold",
+                                                    textAlign:
+                                                        "left",
+                                                }}
+                                            >
+                                                4{" "}
+                                                {resource}
+                                            </button>
+                                        )
+                                    )}
+                                    {tradeGiveOptions.length ===
+                                        0 && (
+                                            <div
+                                                style={{
+                                                    color:
+                                                        "#9ca3af",
+                                                    fontSize:
+                                                        "13px",
+                                                }}
+                                            >
+                                                No valid
+                                                4:1 trades
+                                                available.
+                                            </div>
+                                        )}
+                                </div>
+                                {selectedGiveResource && (
+                                    <>
+                                        <div
+                                            style={{
+                                                fontSize:
+                                                    "13px",
+                                                color:
+                                                    "#d1d5db",
+                                                marginTop:
+                                                    "16px",
+                                                marginBottom:
+                                                    "10px",
+                                            }}
+                                        >
+                                            Receive 1 of:
+                                        </div>
+                                        <div
+                                            style={{
+                                                display:
+                                                    "flex",
+                                                flexDirection:
+                                                    "column",
+                                                gap: "8px",
+                                            }}
+                                        >
+                                            {tradeReceiveOptions.map(
+                                                (
+                                                    resource
+                                                ) => (
+                                                    <button
+                                                        key={
+                                                            resource
+                                                        }
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleSelectReceiveResource(
+                                                                resource
+                                                            )
+                                                        }
+                                                        style={{
+                                                            padding:
+                                                                "10px",
+                                                            borderRadius:
+                                                                "10px",
+                                                            border:
+                                                                "1px solid #374151",
+                                                            background:
+                                                                "#1f2937",
+                                                            color:
+                                                                "white",
+                                                            cursor:
+                                                                "pointer",
+                                                            fontWeight:
+                                                                "bold",
+                                                            textAlign:
+                                                                "left",
+                                                        }}
+                                                    >
+                                                        1{" "}
+                                                        {
+                                                            resource
+                                                        }
+                                                    </button>
+                                                )
+                                            )}
+                                            {tradeReceiveOptions.length ===
+                                                0 && (
+                                                    <div
+                                                        style={{
+                                                            color:
+                                                                "#9ca3af",
+                                                            fontSize:
+                                                                "13px",
+                                                        }}
+                                                    >
+                                                        No
+                                                        resources
+                                                        available
+                                                        from the
+                                                        bank.
+                                                    </div>
+                                                )}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
                     {game.phase === "playing" && (
                         <div
                             style={{
-                                position: "absolute",
+                                position:
+                                    "absolute",
                                 right: "16px",
                                 bottom: "16px",
                             }}

@@ -200,7 +200,7 @@ function ActionBar({
                     />
                 )}
                 <ActionButton
-                    icon="💱"
+                    icon="💰"
                     label="Trade"
                     active={canTrade}
                     disabled={!canTrade}
