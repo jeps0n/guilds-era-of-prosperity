@@ -36,7 +36,7 @@ function ActionButton({
             onClick={onClick}
             disabled={disabled}
             style={{
-                minWidth: "92px",
+                minWidth: "120px",
                 padding: "10px 12px",
                 borderRadius: "10px",
                 border: active
@@ -234,7 +234,7 @@ function ActionBar({
                 />
                 <ActionButton
                     icon="🎴"
-                    label="Buy Development"
+                    label="Buy Dev Card"
                     disabled={!canBuyDevelopment}
                 />
                 <ActionButton

@@ -48,14 +48,11 @@ function App() {
     const [game, setGame] = useState(initialGame);
     useEffect(() => {
         console.log("========== GAME STATE UPDATED ==========");
-
         console.log("Phase:", game.phase);
         console.log("Current Player:", game.currentPlayerId);
         console.log("Placement Action:", game.placementAction);
         console.log("Last Dice Roll:", game.lastDiceRoll);
-
         console.log("Players:", game.players);
-
         game.players.forEach((player) => {
             console.log(`--- ${player.name} (${player.id}) ---`);
             console.log("Resources:", player.resources);
@@ -64,11 +61,9 @@ function App() {
             console.log("Cities:", player.cities);
             console.log("VP:", player.vp);
         });
-
         console.log("Board:", game.board);
         console.log("Resource Bank:", game.resourceBank);
         console.log("Event Log:", game.eventLog);
-
         console.log("========================================");
     }, [game]);
     function handleGuildSelection(guild: GuildType) {
