@@ -440,6 +440,11 @@ function App() {
                         roads={roads}
                         robberPending={game.robberPending}
                         robberTileId={game.robberTileId}
+                        onSelectTile={
+                            game.phase === "playing" && game.robberPending
+                                ? handleSelectRobberTile
+                                : undefined
+                        }
                         onSelectNode={
                             game.phase ===
                                 "initial_placement" &&
