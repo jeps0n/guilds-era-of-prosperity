@@ -24,6 +24,38 @@ export function rollDice(
   const dieOne = rollDie();
   const dieTwo = rollDie();
   const total = dieOne + dieTwo;
+  console.log("=== ROLL DICE ===");
+  console.log("Player:", currentPlayer.name);
+  console.log("Die 1:", dieOne);
+  console.log("Die 2:", dieTwo);
+  console.log("Total:", total);
+  console.log("Before robber state:", {
+    robberPending: game.robberPending,
+    robberTileId: game.robberTileId,
+  });
+  if (total === 7) {
+    console.log("=== SEVEN DETECTED ===");
+    console.log("Returning game with robber state:", {
+      robberPending: game.robberPending,
+      robberTileId: game.robberTileId,
+    });
+    const events = [
+      createEvent(
+        "DICE_ROLLED",
+        `${currentPlayer.name} rolled ${dieOne} + ${dieTwo} = ${total}.`
+      ),
+    ];
+
+    return {
+      ...game,
+      lastDiceRoll: total,
+      robberPending: true,
+      eventLog: [
+        ...game.eventLog,
+        ...events,
+      ],
+    };
+  }
   const requestedResourcesByPlayer =
     new Map<string, Resources>();
   for (const player of game.players) {

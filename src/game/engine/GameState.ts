@@ -47,11 +47,11 @@ export interface GameState {
   developmentDeck: {
     id: string;
     type:
-      | "knight"
-      | "victory_point"
-      | "road_building"
-      | "year_of_plenty"
-      | "monopoly";
+    | "knight"
+    | "victory_point"
+    | "road_building"
+    | "year_of_plenty"
+    | "monopoly";
   }[];
   placementStep: number;
   placementOrder: string[];
@@ -59,6 +59,8 @@ export interface GameState {
   lastPlacedSettlementNodeId?: string;
   turnNumber: number;
   lastDiceRoll?: number;
+  robberPending: boolean;
+  robberTileId?: string;
   phase: GamePhase;
   eraOfProsperity: boolean;
   prosperityTriggeredBy?: string;

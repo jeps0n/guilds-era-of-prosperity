@@ -19,6 +19,9 @@ interface BoardViewProps {
   }[];
   onSelectNode?: (nodeId: string) => void;
   onSelectEdge?: (edgeId: string) => void;
+  robberPending?: boolean;
+  robberTileId?: string;
+  onSelectTile?: (tileId: string) => void;
 }
 function BoardView({
   board,
@@ -27,7 +30,16 @@ function BoardView({
   roads,
   onSelectNode,
   onSelectEdge,
+  robberPending = false,
+  robberTileId,
+  onSelectTile,
 }: BoardViewProps) {
+  console.log("=== BOARD VIEW ROBBER STATE ===");
+  console.log({
+    robberPending,
+    robberTileId,
+    tileCount: board.tiles.length,
+  });
   const [hoveredEdge, setHoveredEdge] =
     useState<string | null>(null);
   const [hoveredNode, setHoveredNode] =
@@ -49,6 +61,9 @@ function BoardView({
         <HexTileView
           key={tile.id}
           tile={tile}
+          robberPending={robberPending}
+          robberTileId={robberTileId}
+          onSelectTile={onSelectTile}
         />
       ))}
       {/* EDGES */}
@@ -93,12 +108,12 @@ function BoardView({
       {board.ports.map((port) => {
         const a =
           board.nodes.find(
-            n =>
+            (n) =>
               n.id === port.nodeIds[0]
           );
         const b =
           board.nodes.find(
-            n =>
+            (n) =>
               n.id === port.nodeIds[1]
           );
         if (!a || !b) {
@@ -159,7 +174,9 @@ function BoardView({
         const isPortNode =
           board.ports.some(
             (p) =>
-              p.nodeIds.includes(node.id)
+              p.nodeIds.includes(
+                node.id
+              )
           );
         return (
           <BoardNodeView
@@ -168,9 +185,13 @@ function BoardView({
             settlement={settlement}
             city={city}
             isPortNode={isPortNode}
-            hovered={hoveredNode === node.id}
+            hovered={
+              hoveredNode === node.id
+            }
             onHover={setHoveredNode}
-            onSelectNode={onSelectNode}
+            onSelectNode={
+              onSelectNode
+            }
           />
         );
       })}

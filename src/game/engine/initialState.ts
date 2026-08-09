@@ -70,13 +70,18 @@ export function createInitialState(): GameState {
   ];
   const guildSelectionPlayer =
     players[
-      Math.floor(
-        Math.random() * players.length
-      )
+    Math.floor(
+      Math.random() * players.length
+    )
     ];
+  const desertTile = STARTER_BOARD.tiles.find(
+    (tile) => tile.resource === "desert"
+  );
   return {
     players,
     board: STARTER_BOARD,
+    robberTileId: desertTile!.id,
+    robberPending: false,
     resourceBank: {
       brick: 19,
       lumber: 19,

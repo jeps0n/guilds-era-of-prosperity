@@ -2,6 +2,9 @@ import type { HexTile } from "../game/domain/HexTile";
 import NumberToken from "./NumberToken";
 interface HexTileViewProps {
     tile: HexTile;
+    robberPending?: boolean;
+    robberTileId?: string;
+    onSelectTile?: (tileId: string) => void;
 }
 const SIZE = 75;
 function hexPoints(x: number, y: number) {
@@ -24,23 +27,52 @@ const RESOURCE_COLORS = {
 };
 export default function HexTileView({
     tile,
+    robberPending = false,
+    robberTileId,
+    onSelectTile,
 }: HexTileViewProps) {
+    console.log("@@@[ROBBER UI]@@@", {
+        tileId: tile.id,
+        robberPending,
+        robberTileId,
+        isRobberTile: robberTileId === tile.id,
+    });
+    const isRobberTile = robberTileId === tile.id;
     return (
-        <g>
+        <g
+            onClick={() => {
+                if (robberPending) {
+                    onSelectTile?.(tile.id);
+                }
+            }}
+            style={{
+                cursor: robberPending
+                    ? "pointer"
+                    : "default",
+            }}
+        >
             {/* HEX */}
             <polygon
                 points={hexPoints(tile.x, tile.y)}
                 fill={RESOURCE_COLORS[tile.resource]}
-                stroke="#111827"
-                strokeWidth="2"
+                stroke={
+                    isRobberTile
+                        ? "#ef4444"
+                        : "#111827"
+                }
+                strokeWidth={
+                    isRobberTile
+                        ? 6
+                        : 2
+                }
             />
             {/* NUMBER TOKEN */}
             {tile.numberToken && (
-            <NumberToken
-                x={tile.x}
-                y={tile.y}
-                value={tile.numberToken}
-            />
+                <NumberToken
+                    x={tile.x}
+                    y={tile.y}
+                    value={tile.numberToken}
+                />
             )}
             {/* RESOURCE LABEL */}
             <text
@@ -53,6 +85,50 @@ export default function HexTileView({
             >
                 {tile.resource}
             </text>
+            {/* ROBBER */}
+            {isRobberTile && (
+                <g pointerEvents="none">
+                    <circle
+                        cx={tile.x}
+                        cy={tile.y}
+                        r="18"
+                        fill="#111827"
+                        stroke="#ffffff"
+                        strokeWidth="3"
+                    />
+
+                    <circle
+                        cx={tile.x}
+                        cy={tile.y - 8}
+                        r="6"
+                        fill="#ffffff"
+                    />
+
+                    <path
+                        d={`
+                M ${tile.x - 9} ${tile.y + 12}
+                Q ${tile.x} ${tile.y + 2}
+                  ${tile.x + 9} ${tile.y + 12}
+                Z
+            `}
+                        fill="#ffffff"
+                    />
+                </g>
+            )}
+
+            {/* ROBBER SELECTION INDICATOR */}
+            {robberPending && !isRobberTile && (
+                <text
+                    x={tile.x}
+                    y={tile.y - 38}
+                    textAnchor="middle"
+                    fontSize="14"
+                    fill="#111827"
+                    fontWeight="bold"
+                >
+                    ?
+                </text>
+            )}
         </g>
     );
 }

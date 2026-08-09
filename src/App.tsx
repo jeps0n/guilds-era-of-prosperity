@@ -65,6 +65,8 @@ function App() {
         console.log("Current Player:", game.currentPlayerId);
         console.log("Placement Action:", game.placementAction);
         console.log("Last Dice Roll:", game.lastDiceRoll);
+        console.log("+++Robber Pending+++:", game.robberPending);
+        console.log("+++Robber Tile ID+++:", game.robberTileId);
         console.log("Players:", game.players);
         game.players.forEach((player) => {
             console.log(`--- ${player.name} (${player.id}) ---`);
@@ -191,10 +193,30 @@ function App() {
         setSelectedGiveResource(undefined);
     }
     function handleRollDice() {
+        console.log("=== UI ROLL CLICK ===");
+
+        console.log("Game BEFORE roll:", {
+            phase: game.phase,
+            currentPlayerId: game.currentPlayerId,
+            lastDiceRoll: game.lastDiceRoll,
+            robberPending: game.robberPending,
+            robberTileId: game.robberTileId,
+        });
+
         const nextGame = rollDice(game);
+
+        console.log("Game AFTER rollDice():", {
+            sameObject: nextGame === game,
+            lastDiceRoll: nextGame.lastDiceRoll,
+            robberPending: nextGame.robberPending,
+            robberTileId: nextGame.robberTileId,
+        });
+
         if (nextGame === game) {
+            console.log("ROLL REJECTED — same game object returned");
             return;
         }
+
         setGame(nextGame);
     }
     function handleEndTurn() {
@@ -391,6 +413,12 @@ function App() {
     /*
      * INITIAL PLACEMENT / PLAYING
      */
+    console.log("### APP → BOARDVIEW ###", {
+        gameRobberPending: game.robberPending,
+        gameRobberTileId: game.robberTileId,
+        gameLastDiceRoll: game.lastDiceRoll,
+        boardTileCount: game.board?.tiles?.length,
+    });
     return (
         <GameLayout
             header="Guilds: Era of Prosperity"
@@ -402,6 +430,7 @@ function App() {
                         height: "600px",
                     }}
                 >
+
                     <BoardView
                         board={game.board}
                         settlements={game.players.flatMap(
@@ -410,6 +439,10 @@ function App() {
                         )}
                         cities={cities}
                         roads={roads}
+
+                        robberPending={game.robberPending}
+                        robberTileId={game.robberTileId}
+
                         onSelectNode={
                             game.phase ===
                                 "initial_placement" &&
@@ -424,10 +457,12 @@ function App() {
                                                 (settlement) =>
                                                     settlement.nodeId === nodeId
                                             );
+
                                         if (ownsSettlement) {
                                             handleBuildCity(nodeId);
                                             return;
                                         }
+
                                         setGame(
                                             buildSettlement(
                                                 game,
@@ -438,6 +473,7 @@ function App() {
                                     }
                                     : undefined
                         }
+
                         onSelectEdge={
                             game.phase ===
                                 "initial_placement" &&
