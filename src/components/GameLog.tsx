@@ -117,8 +117,6 @@ function GameLog({
                 part === "Player A" ||
                 part === "Player B"
             ) {
-
-
                 const color =
                     part === "Player A"
                         ? "#f97316"
@@ -136,7 +134,6 @@ function GameLog({
             }
             if (part === "(?)[desert]") {
                 console.log("[GAME LOG] Desert robber location detected:", part);
-
                 return renderResourceBadge(
                     "desert",
                     index + 2000

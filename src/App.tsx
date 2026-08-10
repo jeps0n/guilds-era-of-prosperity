@@ -212,28 +212,149 @@ function App() {
         const tile = game.board.tiles.find(
             (candidate) => candidate.id === tileId
         );
+        if (!tile) {
+            return;
+        }
+        const currentPlayer = game.players.find(
+            (player) => player.id === game.currentPlayerId
+        );
+        if (!currentPlayer) {
+            return;
+        }
+        /*
+         * Find all board nodes touching the robber tile.
+         */
+        const adjacentNodes = game.board.nodes.filter(
+            (node) => node.adjacentTiles.includes(tileId)
+        );
+        /*
+         * Find opponents who have a settlement or city
+         * adjacent to the robber tile.
+         */
+        const eligibleOpponents = game.players.filter(
+            (player) => {
+                if (player.id === currentPlayer.id) {
+                    return false;
+                }
+                const hasBuildingAdjacent = adjacentNodes.some(
+                    (node) => {
+                        const hasSettlement =
+                            player.settlements.some(
+                                (settlement) =>
+                                    settlement.nodeId === node.id
+                            );
+                        const hasCity =
+                            player.cities.includes(node.id);
+                        return hasSettlement || hasCity;
+                    }
+                );
+                return hasBuildingAdjacent;
+            }
+        );
+        /*
+         * Choose one eligible opponent.
+         */
+        const opponent =
+            eligibleOpponents.length > 0
+                ? eligibleOpponents[
+                Math.floor(
+                    Math.random() *
+                    eligibleOpponents.length
+                )
+                ]
+                : undefined;
+        /*
+         * Find resources the opponent actually has.
+         */
+        const stealableResources = opponent
+            ? (
+                [
+                    "brick",
+                    "lumber",
+                    "wheat",
+                    "sheep",
+                    "ore",
+                ] as (keyof Resources)[]
+            ).filter(
+                (resource) =>
+                    opponent.resources[resource] > 0
+            )
+            : [];
+        /*
+         * Randomly steal one resource if possible.
+         */
+        const stolenResource =
+            stealableResources.length > 0
+                ? stealableResources[
+                Math.floor(
+                    Math.random() *
+                    stealableResources.length
+                )
+                ]
+                : undefined;
+        /*
+         * Move the robber and resolve the optional steal.
+         */
+        const nextPlayers = game.players.map(
+            (player) => {
+                if (
+                    stolenResource &&
+                    opponent &&
+                    player.id === opponent.id
+                ) {
+                    return {
+                        ...player,
+                        resources: {
+                            ...player.resources,
+                            [stolenResource]:
+                                player.resources[stolenResource] - 1,
+                        },
+                    };
+                }
+                if (
+                    stolenResource &&
+                    player.id === currentPlayer.id
+                ) {
+                    return {
+                        ...player,
+                        resources: {
+                            ...player.resources,
+                            [stolenResource]:
+                                player.resources[stolenResource] + 1,
+                        },
+                    };
+                }
+                return player;
+            }
+        );
+        const robberMovedEvent = {
+            id: `robber-moved-${Date.now()}`,
+            type: "ROBBER_MOVED" as const,
+            message: `${currentPlayer.name} moved the robber to (${tile.numberToken ?? "?"})[${tile.resource}]`,
+            timestamp: Date.now(),
+        };
+        const stealEvent =
+            stolenResource && opponent
+                ? {
+                    id: `resource-stolen-${Date.now()}`,
+                    type: "RESOURCE_STOLEN" as const,
+                    message: `${currentPlayer.name} stole [${stolenResource}] 1 from ${opponent.name}.`,
+                    timestamp: Date.now(),
+                }
+                : undefined;
         const nextGame = {
             ...game,
+            players: nextPlayers,
             robberTileId: tileId,
             robberPending: false,
-            eventLog: tile
-                ? [
+            eventLog: [
                     ...game.eventLog,
-                    {
-                        id: `robber-moved-${Date.now()}`,
-                        type: "ROBBER_MOVED" as const,
-                        message: `${currentPlayer?.name} moved the robber to (${tile.numberToken ?? "?"})[${tile.resource}]`,
-                        timestamp: Date.now(),
-                    },
-                ]
-                : game.eventLog,
+                    robberMovedEvent,
+                    ...(stealEvent
+                        ? [stealEvent]
+                        : []),
+                ],
         };
-        console.log("[PUMPKIN] Robber moved:", {
-            robberTileId: nextGame.robberTileId,
-            robberPending: nextGame.robberPending,
-            tileResource: tile?.resource,
-            tileNumberToken: tile?.numberToken,
-        });
         setGame(nextGame);
     }
     function handleEndTurn() {
