@@ -8,6 +8,7 @@ interface ActionBarProps {
     onRollDice?: () => void;
     onEndTurn?: () => void;
     onTrade?: () => void;
+    onBuyDevelopmentCard?: () => void;
     phase:
     | "guild_selection"
     | "initial_placement"
@@ -114,6 +115,7 @@ function ActionBar({
     onRollDice,
     onEndTurn,
     onTrade,
+    onBuyDevelopmentCard,
     phase,
     placementAction,
     lastDiceRoll,
@@ -146,8 +148,8 @@ function ActionBar({
     const canCity =
         availability?.canCity ??
         false;
-    const canBuyDevelopment =
-        availability?.canBuyDevelopment ??
+    const canBuyDevelopmentCard =
+        availability?.canBuyDevelopmentCard ??
         false;
     const actionBarBackground =
         hexToRgba(playerColor, 0.50);
@@ -249,8 +251,9 @@ function ActionBar({
                 <ActionButton
                     icon="🎴"
                     label="Buy Dev Card"
-                    active={canBuyDevelopment}
-                    disabled={!canBuyDevelopment}
+                    active={canBuyDevelopmentCard}
+                    disabled={!canBuyDevelopmentCard}
+                    onClick={onBuyDevelopmentCard}
                 />
                 <ActionButton
                     icon="⏭️"

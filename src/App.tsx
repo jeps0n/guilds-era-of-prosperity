@@ -49,6 +49,9 @@ import {
 import {
     bankTrade,
 } from "./game/systems/trading/bankTrade";
+import {
+    buyDevelopmentCard
+} from "./game/systems/developmentCards/buyDevelopmentCard";
 const initialGame = createInitialState();
 if (import.meta.env.DEV) {
     validateBoard(initialGame.board);
@@ -144,6 +147,62 @@ function App() {
         if (nextGame === game) {
             return;
         }
+        setGame(nextGame);
+    }
+    function handleBuyDevelopmentCard() {
+        const nextGame = buyDevelopmentCard(
+            game,
+            game.currentPlayerId
+        );
+        if (nextGame === game) {
+            console.warn(
+                "[Development Card] Purchase attempted but was rejected."
+            );
+            return;
+        }
+        console.log(
+            "========== DEVELOPMENT CARD PURCHASED =========="
+        );
+        console.log(
+            "Player:",
+            game.currentPlayerId
+        );
+        console.log(
+            "Purchased Card:",
+            nextGame.players.find(
+                (player) =>
+                    player.id === game.currentPlayerId
+            )?.developmentCards.at(-1)
+        );
+        console.log(
+            "Remaining Development Deck:",
+            nextGame.developmentDeck.length
+        );
+        console.log(
+            "Player Resources:",
+            nextGame.players.find(
+                (player) =>
+                    player.id === game.currentPlayerId
+            )?.resources
+        );
+        console.log(
+            "Player Development Cards:",
+            nextGame.players.find(
+                (player) =>
+                    player.id === game.currentPlayerId
+            )?.developmentCards
+        );
+        console.log(
+            "Event Log:",
+            nextGame.eventLog
+        );
+        console.log(
+            "FULL GAME STATE:",
+            nextGame
+        );
+        console.log(
+            "==============================================="
+        );
         setGame(nextGame);
     }
     function handleBankTrade(
@@ -477,24 +536,13 @@ function App() {
             <ActionBar
                 playerColor={currentPlayerColor}
                 phase={game.phase}
-                placementAction={
-                    game.placementAction
-                }
-                lastDiceRoll={
-                    game.lastDiceRoll
-                }
-                availability={
-                    actionAvailability
-                }
-                onRollDice={
-                    handleRollDice
-                }
-                onEndTurn={
-                    handleEndTurn
-                }
-                onTrade={
-                    handleTrade
-                }
+                placementAction={game.placementAction}
+                lastDiceRoll={game.lastDiceRoll}
+                availability={actionAvailability}
+                onRollDice={handleRollDice}
+                onEndTurn={handleEndTurn}
+                onTrade={handleTrade}
+                onBuyDevelopmentCard={handleBuyDevelopmentCard}
                 {...options}
             />
         );

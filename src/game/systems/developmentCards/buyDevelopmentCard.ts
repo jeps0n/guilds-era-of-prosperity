@@ -1,62 +1,66 @@
 import type { GameState } from "../../engine/GameState";
-const DEVELOPMENT_CARD_COST = {
-  ore: 1,
-  wheat: 1,
-  sheep: 1,
-};
+import { createEvent } from "../../engine/createEvent";
 export function buyDevelopmentCard(
-  state: GameState,
+  game: GameState,
   playerId: string
 ): GameState {
-  const player =
-    state.players.find(
-      p => p.id === playerId
-    );
+  if (game.phase !== "playing") {
+    return game;
+  }
+  if (game.currentPlayerId !== playerId) {
+    return game;
+  }
+  if (game.lastDiceRoll === undefined) {
+    return game;
+  }
+  if (game.developmentDeck.length === 0) {
+    return game;
+  }
+  const player = game.players.find(
+    (candidate) => candidate.id === playerId
+  );
   if (!player) {
-    throw new Error(
-      "Player not found"
-    );
+    return game;
   }
-  const canAfford =
-    player.resources.ore >= 1 &&
-    player.resources.wheat >= 1 &&
-    player.resources.sheep >= 1;
-  if (!canAfford) {
-    throw new Error(
-      "Not enough resources"
-    );
+  if (
+    player.resources.ore < 1 ||
+    player.resources.wheat < 1 ||
+    player.resources.sheep < 1
+  ) {
+    return game;
   }
-  const card =
-    state.developmentDeck[0];
-  if (!card) {
-    throw new Error(
-      "No development cards remaining"
-    );
-  }
+  const [purchasedCard, ...remainingDeck] =
+    game.developmentDeck;
+  const updatedPlayers = game.players.map(
+    (candidate) => {
+      if (candidate.id !== playerId) {
+        return candidate;
+      }
+      return {
+        ...candidate,
+        resources: {
+          ...candidate.resources,
+          ore: candidate.resources.ore - 1,
+          wheat: candidate.resources.wheat - 1,
+          sheep: candidate.resources.sheep - 1,
+        },
+        developmentCards: [
+          ...candidate.developmentCards,
+          purchasedCard,
+        ],
+      };
+    }
+  );
   return {
-    ...state,
-    players:
-      state.players.map(p =>
-        p.id === playerId
-          ? {
-              ...p,
-              resources:{
-                ...p.resources,
-                ore:
-                  p.resources.ore - 1,
-                wheat:
-                  p.resources.wheat - 1,
-                sheep:
-                  p.resources.sheep - 1,
-              },
-              developmentCards:[
-                ...p.developmentCards,
-                card,
-              ],
-            }
-          : p
+    ...game,
+    players: updatedPlayers,
+    developmentDeck: remainingDeck,
+    eventLog: [
+      ...game.eventLog,
+      createEvent(
+        "DEVELOPMENT_CARD_PURCHASED",
+        `${player.name} purchased a development card.`
       ),
-    developmentDeck:
-      state.developmentDeck.slice(1),
+    ],
   };
 }

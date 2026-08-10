@@ -5,7 +5,7 @@ export interface ActionAvailability {
     canRoad: boolean;
     canSettlement: boolean;
     canCity: boolean;
-    canBuyDevelopment: boolean;
+    canBuyDevelopmentCard: boolean;
     canEndTurn: boolean;
 }
 export function getActionAvailability(
@@ -22,7 +22,7 @@ export function getActionAvailability(
             canRoad: false,
             canSettlement: false,
             canCity: false,
-            canBuyDevelopment: false,
+            canBuyDevelopmentCard: false,
             canEndTurn: false,
         };
     }
@@ -38,7 +38,7 @@ export function getActionAvailability(
     const canCity =
         resources.ore >= 3 &&
         resources.wheat >= 2;
-    const canBuyDevelopment =
+    const canBuyDevelopmentCard =
         resources.ore >= 1 &&
         resources.wheat >= 1 &&
         resources.sheep >= 1 &&
@@ -65,10 +65,10 @@ export function getActionAvailability(
             game.phase === "playing" &&
             hasRolled &&
             canCity,
-        canBuyDevelopment:
+        canBuyDevelopmentCard:
             game.phase === "playing" &&
             hasRolled &&
-            canBuyDevelopment,
+            canBuyDevelopmentCard,
         canEndTurn:
             game.phase === "playing" &&
             hasRolled,
