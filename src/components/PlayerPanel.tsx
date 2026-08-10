@@ -5,16 +5,16 @@ interface PlayerPanelProps {
   game: GameState;
 }
 interface ResourceBadgeProps {
-    color: string;
-    value: number;
-    label: string;
+  color: string;
+  value: number;
+  label: string;
 }
 const RESOURCE_COLORS = {
-    brick: "#b45309",
-    lumber: "#166534",
-    wheat: "#eab308",
-    sheep: "#65a30d",
-    ore: "#6b7280",
+  brick: "#b45309",
+  lumber: "#166534",
+  wheat: "#eab308",
+  sheep: "#65a30d",
+  ore: "#6b7280",
 };
 function ResourceBadge({
   color,
@@ -77,7 +77,7 @@ function PlayerPanel({
             fontSize: "18px",
           }}
         >
-{renderResourceBadges(game.resourceBank)}
+          {renderResourceBadges(game.resourceBank)}
         </div>
       </Panel>
       <div style={{ marginTop: "12px" }}>
@@ -152,7 +152,7 @@ function PlayerPanel({
                   marginBottom: "8px",
                 }}
               >
-{renderResourceBadges(player.resources)}
+                {renderResourceBadges(player.resources)}
               </div>
               <hr
                 style={{

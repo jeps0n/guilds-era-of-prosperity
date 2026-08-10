@@ -21,7 +21,6 @@ function discardRandomResources(
   const updatedResources: Resources = {
     ...resources,
   };
-
   const discarded: Resources = {
     brick: 0,
     lumber: 0,
@@ -29,10 +28,8 @@ function discardRandomResources(
     sheep: 0,
     ore: 0,
   };
-
   for (let i = 0; i < amount; i++) {
     const availableResources: (keyof Resources)[] = [];
-
     // Add one entry for every actual card.
     // This makes the random selection card-weighted.
     for (const resource of resourceTypes) {
@@ -40,22 +37,18 @@ function discardRandomResources(
         availableResources.push(resource);
       }
     }
-
     if (availableResources.length === 0) {
       break;
     }
-
     const randomResource =
       availableResources[
       Math.floor(
         Math.random() * availableResources.length
       )
       ];
-
     updatedResources[randomResource] -= 1;
     discarded[randomResource] += 1;
   }
-
   return {
     resources: updatedResources,
     discarded,
@@ -93,11 +86,9 @@ export function rollDice(
         `${currentPlayer.name} rolled ${dieOne} + ${dieTwo} = ${total}.`
       ),
     ];
-
     const updatedBank: Resources = {
       ...game.resourceBank,
     };
-
     const updatedPlayers = game.players.map((player) => {
       const totalCards =
         player.resources.brick +
@@ -105,14 +96,11 @@ export function rollDice(
         player.resources.wheat +
         player.resources.sheep +
         player.resources.ore;
-
       if (totalCards <= 9) {
         return player;
       }
-
       const discardAmount =
         Math.floor(totalCards / 2);
-
       const {
         resources: updatedResources,
         discarded,
@@ -120,13 +108,10 @@ export function rollDice(
         player.resources,
         discardAmount
       );
-
       for (const resource of resourceTypes) {
         updatedBank[resource] += discarded[resource];
       }
-
       const discardedParts: string[] = [];
-
       for (const resource of resourceTypes) {
         if (discarded[resource] > 0) {
           discardedParts.push(
@@ -134,20 +119,17 @@ export function rollDice(
           );
         }
       }
-
       events.push(
         createEvent(
           "RESOURCES_DISCARDED",
           `${player.name} discarded ${discardedParts.join(", ")} because they had more than 9 cards.`
         )
       );
-
       return {
         ...player,
         resources: updatedResources,
       };
     });
-
     return {
       ...game,
       players: updatedPlayers,

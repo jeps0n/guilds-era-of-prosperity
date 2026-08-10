@@ -24,6 +24,9 @@ export function buildCity(
     if (!player) {
         return game;
     }
+    if (player.cities.length >= 4) {
+        return game;
+    }
     // The node must contain one of this player's settlements.
     const settlement = player.settlements.find(
         (candidate) => candidate.nodeId === nodeId

@@ -25,11 +25,14 @@ export function buildRoad(
     if (!player) {
         return game;
     }
+    if (player.roads.length >= 15) {
+        return game;
+    }
     if (
         player.resources.brick <
-            ROAD_COST.brick ||
+        ROAD_COST.brick ||
         player.resources.lumber <
-            ROAD_COST.lumber
+        ROAD_COST.lumber
     ) {
         return game;
     }
