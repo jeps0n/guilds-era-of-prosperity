@@ -22,6 +22,9 @@ export function buyDevelopmentCard(
   if (!player) {
     return game;
   }
+  console.log("=== BUY DEVELOPMENT CARD ===");
+  console.log("Current Player:", player);
+  console.log("Current Player Guild:", player.guild);
   if (
     player.resources.ore < 1 ||
     player.resources.wheat < 1 ||
@@ -48,12 +51,27 @@ export function buyDevelopmentCard(
           ...candidate.developmentCards,
           purchasedCard,
         ],
+        developmentCardsPurchasedThisTurn: [
+          ...candidate.developmentCardsPurchasedThisTurn,
+          purchasedCard.id,
+        ],
+        vp:
+          purchasedCard.type === "victory_point"
+            ? candidate.vp + 1
+            : candidate.vp,
       };
     }
   );
+  const updatedResourceBank = {
+    ...game.resourceBank,
+    ore: game.resourceBank.ore + 1,
+    wheat: game.resourceBank.wheat + 1,
+    sheep: game.resourceBank.sheep + 1,
+  };
   return {
     ...game,
     players: updatedPlayers,
+    resourceBank: updatedResourceBank,
     developmentDeck: remainingDeck,
     eventLog: [
       ...game.eventLog,

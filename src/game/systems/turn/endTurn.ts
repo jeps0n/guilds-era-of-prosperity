@@ -15,8 +15,21 @@ export function endTurn(
   if (!nextPlayer) {
     return game;
   }
+  const updatedPlayers = game.players.map(
+    (player) => {
+      if (player.id !== game.currentPlayerId) {
+        return player;
+      }
+      return {
+        ...player,
+        developmentCardsPurchasedThisTurn: [],
+        developmentCardPlayedThisTurn: false,
+      };
+    }
+  );
   return {
     ...game,
+    players: updatedPlayers,
     currentPlayerId: nextPlayer.id,
     turnNumber: game.turnNumber + 1,
     lastDiceRoll: undefined,

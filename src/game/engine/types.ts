@@ -22,6 +22,8 @@ export interface Player {
   settlements: Settlement[];
   cities: string[];
   developmentCards: DevelopmentCard[];
+  developmentCardsPurchasedThisTurn: string[];
+  developmentCardPlayedThisTurn: boolean;
   superUnlocked: boolean;
   superUsed: boolean;
   secondaryRolls: number[];

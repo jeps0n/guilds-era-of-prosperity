@@ -160,6 +160,50 @@ function PlayerPanel({
                   borderColor: "#374151",
                 }}
               />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "8px",
+              }}
+            >
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  color: "#f9fafb",
+                  fontWeight: "bold",
+                }}
+              >
+                <span
+                  style={{
+                    width: "28px",
+                    height: "20px",
+                    borderRadius: "4px",
+                    border: "1px solid #60a5fa",
+                    background:
+                      "linear-gradient(135deg, #1e3a8a, #312e81)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "12px",
+                  }}
+                >
+                  🎴
+                </span>
+                Development Cards
+              </span>
+              <strong
+                style={{
+                  color: "#f9fafb",
+                  fontSize: "16px",
+                }}
+              >
+                {player.developmentCards.length}
+              </strong>
+            </div>
               <div>
                 🏠 Settlements Remaining:{" "}
                 {5 - player.settlements.length}
