@@ -209,14 +209,30 @@ function App() {
         setGame(nextGame);
     }
     function handleSelectRobberTile(tileId: string) {
+        const tile = game.board.tiles.find(
+            (candidate) => candidate.id === tileId
+        );
         const nextGame = {
             ...game,
             robberTileId: tileId,
             robberPending: false,
+            eventLog: tile
+                ? [
+                    ...game.eventLog,
+                    {
+                        id: `robber-moved-${Date.now()}`,
+                        type: "ROBBER_MOVED" as const,
+                        message: `${currentPlayer?.name} moved the robber to (${tile.numberToken ?? "?"})[${tile.resource}]`,
+                        timestamp: Date.now(),
+                    },
+                ]
+                : game.eventLog,
         };
         console.log("[PUMPKIN] Robber moved:", {
             robberTileId: nextGame.robberTileId,
             robberPending: nextGame.robberPending,
+            tileResource: tile?.resource,
+            tileNumberToken: tile?.numberToken,
         });
         setGame(nextGame);
     }

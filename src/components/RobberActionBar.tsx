@@ -50,7 +50,7 @@ export default function RobberActionBar({
             >
                 <div
                     style={{
-                        minWidth: "782px",
+                        minWidth: "760px",
                         minHeight: "64px",
                         padding: "10px 12px",
                         boxSizing: "border-box",

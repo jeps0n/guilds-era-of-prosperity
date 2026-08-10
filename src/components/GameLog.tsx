@@ -20,17 +20,105 @@ function GameLog({
         log.scrollTop =
             log.scrollHeight;
     }, [game.eventLog.length]);
+    const resourceColors: Record<
+        string,
+        string
+    > = {
+        brick: "#b45309",
+        lumber: "#166534",
+        wheat: "#eab308",
+        sheep: "#65a30d",
+        ore: "#6b7280",
+        desert: "#d2b48c",
+    };
+    function renderNumberToken(
+        value: string,
+        key: number
+    ) {
+        return (
+            <span
+                key={key}
+                style={{
+                    display:
+                        "inline-flex",
+                    alignItems:
+                        "center",
+                    justifyContent:
+                        "center",
+                    width: "22px",
+                    height: "22px",
+                    margin: "0 3px",
+                    borderRadius: "10px",
+                    backgroundColor:
+                        "#f9fafb",
+                    border:
+                        "1px solid #c0c0c0",
+                    color: "#000000",
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    lineHeight: "1",
+                    verticalAlign:
+                        "middle",
+                    boxSizing:
+                        "border-box",
+                }}
+            >
+                {value}
+            </span>
+        );
+    }
+    function renderResourceBadge(
+        resource: string,
+        key: number
+    ) {
+        return (
+            <span
+                key={key}
+                style={{
+                    display:
+                        "inline-flex",
+                    alignItems:
+                        "center",
+                    justifyContent:
+                        "center",
+                    width: "22px",
+                    height: "22px",
+                    margin: "0 3px",
+                    borderRadius: "6px",
+                    backgroundColor:
+                        resourceColors[
+                        resource
+                        ],
+                    color: "#000000",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    lineHeight: "1",
+                    verticalAlign:
+                        "middle",
+                    boxSizing:
+                        "border-box",
+                }}
+            >
+            </span>
+        );
+    }
     function renderEventMessage(
         message: string
     ) {
+        // const parts = message.split(
+        //     /(Player A|Player B|\(\d+\)\[(?:brick|lumber|wheat|sheep|ore)\]|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/g
+        // );
         const parts = message.split(
-            /(Player A|Player B|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/g
+            /(Player A|Player B|\(\d+\)\[(?:brick|lumber|wheat|sheep|ore)\]|\(\?\)\[desert\]|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/g
         );
         return parts.map((part, index) => {
+            console.log("[GAME LOG] PART:", JSON.stringify(part));
             if (
                 part === "Player A" ||
                 part === "Player B"
             ) {
+
+
                 const color =
                     part === "Player A"
                         ? "#f97316"
@@ -46,24 +134,56 @@ function GameLog({
                     </strong>
                 );
             }
-            const resourceMatch = part.match(
-                /^\[(brick|lumber|wheat|sheep|ore)\] (\d+)$/
-            );
+            if (part === "(?)[desert]") {
+                console.log("[GAME LOG] Desert robber location detected:", part);
+
+                return renderResourceBadge(
+                    "desert",
+                    index + 2000
+                );
+            }
+            const robberMatch =
+                part.match(
+                    /^\((\d+)\)\[(brick|lumber|wheat|sheep|ore)\]$/
+                );
+            if (robberMatch) {
+                const number =
+                    robberMatch[1];
+                const resource =
+                    robberMatch[2];
+                return (
+                    <span
+                        key={index}
+                        style={{
+                            display:
+                                "inline-flex",
+                            alignItems:
+                                "center",
+                            verticalAlign:
+                                "middle",
+                        }}
+                    >
+                        {renderNumberToken(
+                            number,
+                            index
+                        )}
+                        {renderResourceBadge(
+                            resource,
+                            index +
+                            1000
+                        )}
+                    </span>
+                );
+            }
+            const resourceMatch =
+                part.match(
+                    /^\[(brick|lumber|wheat|sheep|ore)\] (\d+)$/
+                );
             if (resourceMatch) {
                 const resource =
                     resourceMatch[1];
                 const amount =
                     resourceMatch[2];
-                const resourceColors: Record<
-                    string,
-                    string
-                > = {
-                    brick: "#b45309",
-                    lumber: "#166534",
-                    wheat: "#eab308",
-                    sheep: "#65a30d",
-                    ore: "#6b7280",
-                };
                 return (
                     <span
                         key={index}
@@ -88,6 +208,10 @@ function GameLog({
                                 "middle",
                             fontSize: "12px",
                             fontWeight: "bold",
+                            // lineHeight:
+                            //     "1",
+                            // boxSizing:
+                            //     "border-box",
                         }}
                     >
                         {amount}
@@ -121,10 +245,13 @@ function GameLog({
                     ref={logRef}
                     style={{
                         height: "180px",
-                        overflowY: "auto",
+                        overflowY:
+                            "auto",
                         fontSize: "14px",
-                        textAlign: "left",
-                        paddingRight: "4px",
+                        textAlign:
+                            "left",
+                        paddingRight:
+                            "4px",
                     }}
                 >
                     {game.eventLog.length ===

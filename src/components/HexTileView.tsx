@@ -32,7 +32,7 @@ export default function HexTileView({
     onSelectTile,
 }: HexTileViewProps) {
     const isRobberTile = robberTileId === tile.id;
-    const isValidRobberTarget = robberPending && !isRobberTile;
+    // const isValidRobberTarget = robberPending && !isRobberTile;
     return (
         <g
             onClick={() => {
