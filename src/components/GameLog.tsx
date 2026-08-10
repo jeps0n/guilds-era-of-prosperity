@@ -106,6 +106,9 @@ function GameLog({
         message: string
     ) {
         // console.log("[GAME LOG] RAW MESSAGE:", JSON.stringify(message));
+        // const parts = message.split(
+        //     /(Player A|Player B|\(\d+\)\s*\[(?:brick|lumber|wheat|sheep|ore)\]|\(\?\)\[desert\]|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/g
+        // );
         const parts = message.split(
             /(Player A|Player B|\(\d+\)\s*\[(?:brick|lumber|wheat|sheep|ore)\]|\(\?\)\[desert\]|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/g
         );
@@ -139,7 +142,7 @@ function GameLog({
             const robberMatch =
                 part.match(
                     /^\((\d+)\)\s*\[(brick|lumber|wheat|sheep|ore)\]$/
-            );
+                );
             // console.log("[GAME LOG] ROBBER MATCH:", part, robberMatch);
             if (robberMatch) {
                 const number =
@@ -170,6 +173,10 @@ function GameLog({
                     </span>
                 );
             }
+            // const resourceMatch =
+            //     part.match(
+            //         /^\[(brick|lumber|wheat|sheep|ore)\] (\d+)$/
+            //     );
             const resourceMatch =
                 part.match(
                     /^\[(brick|lumber|wheat|sheep|ore)\] (\d+)$/

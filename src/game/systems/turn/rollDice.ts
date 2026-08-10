@@ -4,6 +4,63 @@ import { createEvent } from "../../engine/createEvent";
 function rollDie(): number {
   return Math.floor(Math.random() * 6) + 1;
 }
+const resourceTypes: (keyof Resources)[] = [
+  "brick",
+  "lumber",
+  "wheat",
+  "sheep",
+  "ore",
+];
+function discardRandomResources(
+  resources: Resources,
+  amount: number
+): {
+  resources: Resources;
+  discarded: Resources;
+} {
+  const updatedResources: Resources = {
+    ...resources,
+  };
+
+  const discarded: Resources = {
+    brick: 0,
+    lumber: 0,
+    wheat: 0,
+    sheep: 0,
+    ore: 0,
+  };
+
+  for (let i = 0; i < amount; i++) {
+    const availableResources: (keyof Resources)[] = [];
+
+    // Add one entry for every actual card.
+    // This makes the random selection card-weighted.
+    for (const resource of resourceTypes) {
+      for (let count = 0; count < updatedResources[resource]; count++) {
+        availableResources.push(resource);
+      }
+    }
+
+    if (availableResources.length === 0) {
+      break;
+    }
+
+    const randomResource =
+      availableResources[
+      Math.floor(
+        Math.random() * availableResources.length
+      )
+      ];
+
+    updatedResources[randomResource] -= 1;
+    discarded[randomResource] += 1;
+  }
+
+  return {
+    resources: updatedResources,
+    discarded,
+  };
+}
 export function rollDice(
   game: GameState
 ): GameState {
@@ -36,8 +93,65 @@ export function rollDice(
         `${currentPlayer.name} rolled ${dieOne} + ${dieTwo} = ${total}.`
       ),
     ];
+
+    const updatedBank: Resources = {
+      ...game.resourceBank,
+    };
+
+    const updatedPlayers = game.players.map((player) => {
+      const totalCards =
+        player.resources.brick +
+        player.resources.lumber +
+        player.resources.wheat +
+        player.resources.sheep +
+        player.resources.ore;
+
+      if (totalCards <= 9) {
+        return player;
+      }
+
+      const discardAmount =
+        Math.floor(totalCards / 2);
+
+      const {
+        resources: updatedResources,
+        discarded,
+      } = discardRandomResources(
+        player.resources,
+        discardAmount
+      );
+
+      for (const resource of resourceTypes) {
+        updatedBank[resource] += discarded[resource];
+      }
+
+      const discardedParts: string[] = [];
+
+      for (const resource of resourceTypes) {
+        if (discarded[resource] > 0) {
+          discardedParts.push(
+            `[${resource}] ${discarded[resource]}`
+          );
+        }
+      }
+
+      events.push(
+        createEvent(
+          "RESOURCES_DISCARDED",
+          `${player.name} discarded ${discardedParts.join(", ")} because they had more than 9 cards.`
+        )
+      );
+
+      return {
+        ...player,
+        resources: updatedResources,
+      };
+    });
+
     return {
       ...game,
+      players: updatedPlayers,
+      resourceBank: updatedBank,
       lastDiceRoll: total,
       robberPending: true,
       eventLog: [
@@ -102,13 +216,6 @@ export function rollDice(
    * Calculate the total requested amount of each
    * resource across ALL players before distributing.
    */
-  const resourceTypes: (keyof Resources)[] = [
-    "brick",
-    "lumber",
-    "wheat",
-    "sheep",
-    "ore",
-  ];
   const totalRequested: Resources = {
     brick: 0,
     lumber: 0,
@@ -246,7 +353,7 @@ export function rollDice(
       events.push(
         createEvent(
           "RESOURCES_COLLECTED",
-          `No ${resource} was given. \n${totalRequested[resource]} needed but the bank had ${game.resourceBank[resource]}.`
+          `No ${resource} was given. ${totalRequested[resource]} needed but the bank had ${game.resourceBank[resource]}.`
         )
       );
     }

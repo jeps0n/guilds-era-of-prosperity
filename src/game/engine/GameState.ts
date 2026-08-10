@@ -18,6 +18,7 @@ export type GameEventType =
   | "CITY_BUILT"
   | "DICE_ROLLED"
   | "RESOURCES_COLLECTED"
+  | "RESOURCES_DISCARDED"
   | "BANK_TRADE"
   | "PORT_TRADE"
   | "DEVELOPMENT_CARD_PURCHASED"
@@ -59,6 +60,7 @@ export interface GameState {
   lastPlacedSettlementNodeId?: string;
   turnNumber: number;
   lastDiceRoll?: number;
+  discardPendingPlayerIds?: string[];
   robberPending: boolean;
   robberTileId?: string;
   phase: GamePhase;
