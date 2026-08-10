@@ -52,20 +52,6 @@ export default function HexTileView({
             <polygon
                 points={hexPoints(tile.x, tile.y)}
                 fill={RESOURCE_COLORS[tile.resource]}
-                stroke={
-                    isRobberTile
-                        ? "#000000"
-                        : isValidRobberTarget
-                            ? "#000000"
-                            : "#000000"
-                }
-                strokeWidth={
-                    isRobberTile
-                        ? 6
-                        : isValidRobberTarget
-                            ? 10
-                            : 2
-                }
                 filter={
                     isRobberTile
                         ? "drop-shadow(0 0 31px rgba(0, 0, 0, 1))"
@@ -232,16 +218,28 @@ export default function HexTileView({
             )}
             {/* ROBBER SELECTION INDICATOR */}
             {robberPending && !isRobberTile && (
-                <text
-                    x={tile.x}
-                    y={tile.y - 38}
-                    textAnchor="middle"
-                    fontSize="14"
-                    fill="#111827"
-                    fontWeight="bold"
-                >
-                    ?
-                </text>
+                <g>
+                    <circle
+                        cx={tile.x}
+                        cy={tile.y - 38}
+                        r="11"
+                        fill="#ef4444"
+                        stroke="#111827"
+                        strokeWidth="2"
+                        pointerEvents="none"
+                    />
+                    <text
+                        x={tile.x}
+                        y={tile.y - 33}
+                        textAnchor="middle"
+                        fontSize="14"
+                        fill="#111827"
+                        fontWeight="bold"
+                        pointerEvents="none"
+                    >
+                        ?
+                    </text>
+                </g>
             )}
         </g>
     );

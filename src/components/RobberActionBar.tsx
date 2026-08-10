@@ -1,24 +1,19 @@
 interface RobberActionBarProps {
     playerColor?: string;
 }
-
 function hexToRgba(
     hex: string,
     alpha: number
 ): string {
     const normalized = hex.replace("#", "");
-
     if (normalized.length !== 6) {
         return `rgba(17, 24, 39, ${alpha})`;
     }
-
     const red = parseInt(normalized.slice(0, 2), 16);
     const green = parseInt(normalized.slice(2, 4), 16);
     const blue = parseInt(normalized.slice(4, 6), 16);
-
     return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }
-
 export default function RobberActionBar({
     playerColor = "#f97316",
 }: RobberActionBarProps) {
@@ -26,7 +21,6 @@ export default function RobberActionBar({
         playerColor,
         0.50
     );
-
     return (
         <div
             style={{
@@ -78,7 +72,6 @@ export default function RobberActionBar({
                     >
                         MOVE THE ROBBER
                     </span>
-
                     <span
                         style={{
                             fontSize: "13px",
@@ -87,8 +80,6 @@ export default function RobberActionBar({
                     >
                         Click a different tile to move the robber
                     </span>
-
-
                 </div>
             </div>
         </div>
