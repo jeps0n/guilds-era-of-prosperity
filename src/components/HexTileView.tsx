@@ -32,18 +32,20 @@ export default function HexTileView({
     onSelectTile,
 }: HexTileViewProps) {
     const isRobberTile = robberTileId === tile.id;
+    const isValidRobberTarget = robberPending && !isRobberTile;
     return (
         <g
             onClick={() => {
-                if (robberPending) {
+                if (robberPending && !isRobberTile) {
                     console.log("---[ROBBER] Tile selected:", tile.id);
                     onSelectTile?.(tile.id);
                 }
             }}
             style={{
-                cursor: robberPending
-                    ? "pointer"
-                    : "default",
+                cursor:
+                    robberPending && !isRobberTile
+                        ? "pointer"
+                        : "default",
             }}
         >
             {/* HEX */}
@@ -52,15 +54,32 @@ export default function HexTileView({
                 fill={RESOURCE_COLORS[tile.resource]}
                 stroke={
                     isRobberTile
-                        ? "#ef4444"
-                        : "#111827"
+                        ? "#000000"
+                        : isValidRobberTarget
+                            ? "#000000"
+                            : "#000000"
                 }
                 strokeWidth={
                     isRobberTile
                         ? 6
-                        : 2
+                        : isValidRobberTarget
+                            ? 10
+                            : 2
+                }
+                filter={
+                    isRobberTile
+                        ? "drop-shadow(0 0 31px rgba(0, 0, 0, 1))"
+                        : undefined
                 }
             />
+            {isRobberTile && (
+                <polygon
+                    points={hexPoints(tile.x, tile.y)}
+                    fill="#000000"
+                    fillOpacity={0.75}
+                    pointerEvents="none"
+                />
+            )}
             {/* NUMBER TOKEN */}
             {tile.numberToken && (
                 <NumberToken

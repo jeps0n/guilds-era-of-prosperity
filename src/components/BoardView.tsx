@@ -44,7 +44,9 @@ function BoardView({
       height="600"
       viewBox="-450 -400 900 800"
       style={{
-        background: "#3b82f6",
+        background: robberPending
+          ? "linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), #3b82f6"
+          : "#3b82f6",
         borderRadius: "18px",
         boxShadow:
           "0 12px 30px rgba(0,0,0,0.35)",

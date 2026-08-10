@@ -54,6 +54,7 @@ if (import.meta.env.DEV) {
     validateBoard(initialGame.board);
 }
 import { getTradeRatio } from "./game/systems/trading/getTradeRatio";
+import RobberActionBar from "./components/RobberActionBar";
 function App() {
     const [game, setGame] = useState(initialGame);
     const [tradeOpen, setTradeOpen] = useState(false);
@@ -736,9 +737,17 @@ function App() {
                     <PlayerPanel game={game} />
                 </>
             }
-            bottom={renderActionBar({
-                hideDice: true,
-            })}
+            bottom={
+                game.robberPending ? (
+                    <RobberActionBar
+                        playerColor={currentPlayerColor}
+                    />
+                ) : (
+                    renderActionBar({
+                        hideDice: true,
+                    })
+                )
+            }
         />
     );
 }
