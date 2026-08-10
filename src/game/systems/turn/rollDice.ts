@@ -29,16 +29,7 @@ export function rollDice(
   console.log("Die 1:", dieOne);
   console.log("Die 2:", dieTwo);
   console.log("Total:", total);
-  console.log("Before robber state:", {
-    robberPending: game.robberPending,
-    robberTileId: game.robberTileId,
-  });
   if (total === 7) {
-    console.log("=== SEVEN DETECTED ===");
-    console.log("Returning game with robber state:", {
-      robberPending: game.robberPending,
-      robberTileId: game.robberTileId,
-    });
     const events = [
       createEvent(
         "DICE_ROLLED",
@@ -55,6 +46,7 @@ export function rollDice(
       ],
     };
   }
+  const blockedTiles = new Set<string>();
   const requestedResourcesByPlayer =
     new Map<string, Resources>();
   for (const player of game.players) {
@@ -87,6 +79,12 @@ export function rollDice(
           tile.resource === "desert" ||
           tile.numberToken !== total
         ) {
+          continue;
+        }
+        if (tile.id === game.robberTileId) {
+          // Log this tile as blocked.
+          // Game Log output: "Do not produce resources".
+          blockedTiles.add(tile.id);
           continue;
         }
         requestedResources[tile.resource] +=
@@ -226,6 +224,20 @@ export function rollDice(
   /*
    * Log resources that could not be distributed.
    */
+  for (const tileId of blockedTiles) {
+    const tile = game.board.tiles.find(
+      (candidate) => candidate.id === tileId
+    );
+    if (!tile) {
+      continue;
+    }
+    events.push(
+      createEvent(
+        "RESOURCES_COLLECTED",
+        `(${tile.numberToken}) [${tile.resource}] is blocked by the Robber. No resources produced.`
+      )
+    );
+  }
   for (const resource of resourceTypes) {
     if (
       totalRequested[resource] > 0 &&

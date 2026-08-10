@@ -61,27 +61,27 @@ function App() {
     const [selectedGiveResource, setSelectedGiveResource] =
         useState<keyof Resources | undefined>(undefined);
     useEffect(() => {
-        // console.log("========== GAME STATE UPDATED ==========");
-        // console.log("Phase:", game.phase);
-        // console.log("Current Player:", game.currentPlayerId);
-        // console.log("Placement Action:", game.placementAction);
-        // console.log("Last Dice Roll:", game.lastDiceRoll);
-        // console.log("+++Robber Pending+++:", game.robberPending);
-        // console.log("+++Robber Tile ID+++:", game.robberTileId);
-        // console.log("Players:", game.players);
-        // game.players.forEach((player) => {
-        //     console.log(`--- ${player.name} (${player.id}) ---`);
-        //     console.log("Resources:", player.resources);
-        //     console.log("Settlements:", player.settlements);
-        //     console.log("Roads:", player.roads);
-        //     console.log("Cities:", player.cities);
-        //     console.log("VP:", player.vp);
-        // });
-        // console.log("----------------------------------------");
-        // console.log("Board:", game.board);
-        // console.log("Resource Bank:", game.resourceBank);
-        // console.log("Event Log:", game.eventLog);
-        // console.log("========================================");
+        console.log("========== GAME STATE UPDATED ==========");
+        console.log("Phase:", game.phase);
+        console.log("Current Player:", game.currentPlayerId);
+        console.log("Placement Action:", game.placementAction);
+        console.log("Last Dice Roll:", game.lastDiceRoll);
+        console.log("+++Robber Pending+++:", game.robberPending);
+        console.log("+++Robber Tile ID+++:", game.robberTileId);
+        console.log("Players:", game.players);
+        game.players.forEach((player) => {
+            console.log(`--- ${player.name} (${player.id}) ---`);
+            console.log("Resources:", player.resources);
+            console.log("Settlements:", player.settlements);
+            console.log("Roads:", player.roads);
+            console.log("Cities:", player.cities);
+            console.log("VP:", player.vp);
+        });
+        console.log("----------------------------------------");
+        console.log("Board:", game.board);
+        console.log("Resource Bank:", game.resourceBank);
+        console.log("Event Log:", game.eventLog);
+        console.log("========================================");
     }, [game]);
     function handleGuildSelection(guild: GuildType) {
         const nextGame = selectGuild(
@@ -194,16 +194,8 @@ function App() {
         setSelectedGiveResource(undefined);
     }
     function handleRollDice() {
-        console.log("=== UI ROLL CLICK ===");
         const nextGame = rollDice(game);
-        console.log("---[ROBBER] Roll---:", {
-            player: game.currentPlayerId,
-            roll: nextGame.lastDiceRoll,
-            robberPending: nextGame.robberPending,
-            robberTileId: nextGame.robberTileId,
-        });
         if (nextGame === game) {
-            console.log("ROLL REJECTED — same game object returned");
             return;
         }
         setGame(nextGame);
@@ -348,12 +340,12 @@ function App() {
             robberTileId: tileId,
             robberPending: false,
             eventLog: [
-                    ...game.eventLog,
-                    robberMovedEvent,
-                    ...(stealEvent
-                        ? [stealEvent]
-                        : []),
-                ],
+                ...game.eventLog,
+                robberMovedEvent,
+                ...(stealEvent
+                    ? [stealEvent]
+                    : []),
+            ],
         };
         setGame(nextGame);
     }
@@ -551,12 +543,6 @@ function App() {
     /*
      * INITIAL PLACEMENT / PLAYING
      */
-    console.log("### APP → BOARDVIEW ###", {
-        gameRobberPending: game.robberPending,
-        gameRobberTileId: game.robberTileId,
-        gameLastDiceRoll: game.lastDiceRoll,
-        boardTileCount: game.board?.tiles?.length,
-    });
     return (
         <GameLayout
             header="Guilds: Era of Prosperity"

@@ -105,14 +105,12 @@ function GameLog({
     function renderEventMessage(
         message: string
     ) {
-        // const parts = message.split(
-        //     /(Player A|Player B|\(\d+\)\[(?:brick|lumber|wheat|sheep|ore)\]|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/g
-        // );
+        // console.log("[GAME LOG] RAW MESSAGE:", JSON.stringify(message));
         const parts = message.split(
-            /(Player A|Player B|\(\d+\)\[(?:brick|lumber|wheat|sheep|ore)\]|\(\?\)\[desert\]|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/g
+            /(Player A|Player B|\(\d+\)\s*\[(?:brick|lumber|wheat|sheep|ore)\]|\(\?\)\[desert\]|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/g
         );
+        // console.log("[GAME LOG] PARSED PARTS:", parts);
         return parts.map((part, index) => {
-            console.log("[GAME LOG] PART:", JSON.stringify(part));
             if (
                 part === "Player A" ||
                 part === "Player B"
@@ -133,7 +131,6 @@ function GameLog({
                 );
             }
             if (part === "(?)[desert]") {
-                console.log("[GAME LOG] Desert robber location detected:", part);
                 return renderResourceBadge(
                     "desert",
                     index + 2000
@@ -141,8 +138,9 @@ function GameLog({
             }
             const robberMatch =
                 part.match(
-                    /^\((\d+)\)\[(brick|lumber|wheat|sheep|ore)\]$/
-                );
+                    /^\((\d+)\)\s*\[(brick|lumber|wheat|sheep|ore)\]$/
+            );
+            // console.log("[GAME LOG] ROBBER MATCH:", part, robberMatch);
             if (robberMatch) {
                 const number =
                     robberMatch[1];

@@ -37,7 +37,6 @@ export default function HexTileView({
         <g
             onClick={() => {
                 if (robberPending && !isRobberTile) {
-                    console.log("---[ROBBER] Tile selected:", tile.id);
                     onSelectTile?.(tile.id);
                 }
             }}
