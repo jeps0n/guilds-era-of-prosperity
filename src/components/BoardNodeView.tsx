@@ -111,8 +111,9 @@ export default function BoardNodeView({
             hovered
               ? "#ef4444"
               : isPortNode
+              // #CD7F32
                 ? "#CD7F32"
-                : "#557C99"
+                : "#78350f"
           }
           stroke="#c0c0c0"
           strokeWidth="2"

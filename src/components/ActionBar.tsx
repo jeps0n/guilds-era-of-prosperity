@@ -9,6 +9,7 @@ interface ActionBarProps {
     onEndTurn?: () => void;
     onTrade?: () => void;
     onBuyDevelopmentCard?: () => void;
+    onPlayDevelopmentCard?: () => void;
     phase:
     | "guild_selection"
     | "initial_placement"
@@ -43,7 +44,7 @@ function ActionButton({
             onClick={onClick}
             disabled={disabled}
             style={{
-                minWidth: "120px",
+                minWidth: "100px",
                 minHeight: "64px",
                 padding: "10px 12px",
                 borderRadius: "10px",
@@ -116,6 +117,7 @@ function ActionBar({
     onEndTurn,
     onTrade,
     onBuyDevelopmentCard,
+    onPlayDevelopmentCard,
     phase,
     placementAction,
     lastDiceRoll,
@@ -150,6 +152,9 @@ function ActionBar({
         false;
     const canBuyDevelopmentCard =
         availability?.canBuyDevelopmentCard ??
+        false;
+    const canPlayDevelopmentCard =
+        availability?.canPlayDevelopmentCard ??
         false;
     const actionBarBackground =
         hexToRgba(playerColor, 0.50);
@@ -215,6 +220,20 @@ function ActionBar({
                     onClick={onTrade}
                 />
                 <ActionButton
+                    icon="🎴"
+                    label="Buy Dev Card"
+                    active={canBuyDevelopmentCard}
+                    disabled={!canBuyDevelopmentCard}
+                    onClick={onBuyDevelopmentCard}
+                />
+                <ActionButton
+                    icon="🃏"
+                    label="Play Dev Card"
+                    active={canPlayDevelopmentCard}
+                    disabled={!canPlayDevelopmentCard}
+                    onClick={onPlayDevelopmentCard}
+                />
+                <ActionButton
                     icon="🛣️"
                     label="Road"
                     active={
@@ -247,13 +266,6 @@ function ActionBar({
                     label="City"
                     active={canCity}
                     disabled={!canCity}
-                />
-                <ActionButton
-                    icon="🎴"
-                    label="Buy Dev Card"
-                    active={canBuyDevelopmentCard}
-                    disabled={!canBuyDevelopmentCard}
-                    onClick={onBuyDevelopmentCard}
                 />
                 <ActionButton
                     icon="⏭️"

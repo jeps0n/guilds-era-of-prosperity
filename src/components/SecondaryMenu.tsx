@@ -43,8 +43,16 @@ export function SecondaryMenu({
         <button
           type="button"
           onClick={onClose}
+          onMouseEnter={(event) => {
+            event.currentTarget.style.background = "#1d4ed8";
+            event.currentTarget.style.borderColor = "#60a5fa";
+          }}
+          onMouseLeave={(event) => {
+            event.currentTarget.style.background = "#1f2937";
+            event.currentTarget.style.borderColor = "transparent";
+          }}
           style={{
-            border: "none",
+            border: "1px solid transparent",
             background: "#1f2937",
             color: "white",
             cursor: "pointer",
@@ -55,6 +63,8 @@ export function SecondaryMenu({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            transition:
+              "background 0.15s ease, border-color 0.15s ease",
           }}
         >
           ×
@@ -85,8 +95,8 @@ export function SecondaryMenuButton({
         background: active
           ? "#1d4ed8"
           : disabled
-          ? "#1f2937"
-          : "#1f2937",
+            ? "#1f2937"
+            : "#1f2937",
         color: disabled ? "#6b7280" : "white",
         cursor: disabled ? "not-allowed" : "pointer",
         fontWeight: "bold",

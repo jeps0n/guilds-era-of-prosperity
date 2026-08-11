@@ -6,6 +6,7 @@ export interface ActionAvailability {
     canSettlement: boolean;
     canCity: boolean;
     canBuyDevelopmentCard: boolean;
+    canPlayDevelopmentCard: boolean;
     canEndTurn: boolean;
 }
 export function getActionAvailability(
@@ -23,6 +24,7 @@ export function getActionAvailability(
             canSettlement: false,
             canCity: false,
             canBuyDevelopmentCard: false,
+            canPlayDevelopmentCard: false,
             canEndTurn: false,
         };
     }
@@ -48,6 +50,14 @@ export function getActionAvailability(
     const canTrade =
         game.phase === "playing" &&
         hasRolled;
+    const hasPlayableDevelopmentCard =
+        currentPlayer.developmentCards.some(
+            (card) => card.type !== "victory_point"
+        );
+    const canPlayDevelopmentCard =
+        game.phase === "playing" &&
+        hasRolled &&
+        hasPlayableDevelopmentCard;
     return {
         canRollDice:
             game.phase === "playing" &&
@@ -69,6 +79,7 @@ export function getActionAvailability(
             game.phase === "playing" &&
             hasRolled &&
             canBuyDevelopmentCard,
+        canPlayDevelopmentCard,
         canEndTurn:
             game.phase === "playing" &&
             hasRolled,

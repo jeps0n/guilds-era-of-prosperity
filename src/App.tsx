@@ -6,65 +6,34 @@ import GuildSelection from "./components/GuildSelection";
 import GameLayout from "./components/layout/GameLayout";
 import GameLog from "./components/GameLog";
 import PlayerPanel from "./components/PlayerPanel";
+import RobberActionBar from "./components/RobberActionBar";
 import { createInitialState } from "./game/engine/initialState";
-import {
-    validateBoard,
-} from "./game/engine/boardValidation/validateBoard";
-import {
-    selectGuild,
-} from "./game/systems/guildSelection";
-import {
-    placeSettlement,
-} from "./game/systems/initialPlacement/placeSettlement";
-import {
-    placeRoad,
-} from "./game/systems/initialPlacement/placeRoad";
-import {
-    endTurn,
-} from "./game/systems/turn/endTurn";
-import {
-    rollDice,
-} from "./game/systems/turn/rollDice";
-import type {
-    GuildType,
-    Resources,
-} from "./game/engine/types";
+import { validateBoard, } from "./game/engine/boardValidation/validateBoard";
+import { selectGuild, } from "./game/systems/guildSelection";
+import { placeSettlement, } from "./game/systems/initialPlacement/placeSettlement";
+import { placeRoad, } from "./game/systems/initialPlacement/placeRoad";
+import { endTurn, } from "./game/systems/turn/endTurn";
+import { rollDice, } from "./game/systems/turn/rollDice";
+import type { GuildType, Resources, } from "./game/engine/types";
+import { getActionAvailability, } from "./game/systems/actions/getActionAvailability";
+import { buildRoad, } from "./game/systems/building/buildRoad";
+import { buildSettlement, } from "./game/systems/building/buildSettlement";
+import { buildCity, } from "./game/systems/building/buildCity";
+import { bankTrade, } from "./game/systems/trading/bankTrade";
+import { buyDevelopmentCard } from "./game/systems/developmentCards/buyDevelopmentCard";
+import { getTradeRatio } from "./game/systems/trading/getTradeRatio";
+import { SecondaryMenu, SecondaryMenuButton, } from "./components/SecondaryMenu";
 import {
     savePhaseCheckpoint,
     restorePhaseCheckpoint,
     canRestorePhaseCheckpoint,
 } from "./store/gameStore";
-import {
-    getActionAvailability,
-} from "./game/systems/actions/getActionAvailability";
-import {
-    buildRoad,
-} from "./game/systems/building/buildRoad";
-import {
-    buildSettlement,
-} from "./game/systems/building/buildSettlement";
-import {
-    buildCity,
-} from "./game/systems/building/buildCity";
-import {
-    bankTrade,
-} from "./game/systems/trading/bankTrade";
-import {
-    buyDevelopmentCard
-} from "./game/systems/developmentCards/buyDevelopmentCard";
 const initialGame = createInitialState();
 if (import.meta.env.DEV) {
     validateBoard(initialGame.board);
 }
-import { getTradeRatio } from "./game/systems/trading/getTradeRatio";
-import RobberActionBar from "./components/RobberActionBar";
-import {
-    SecondaryMenu,
-    SecondaryMenuButton,
-} from "./components/SecondaryMenu";
 function App() {
     const [game, setGame] = useState(initialGame);
-    // const [tradeOpen, setTradeOpen] = useState(false);
     type SecondaryMenuMode =
         | "trade"
         | "development"
@@ -196,6 +165,9 @@ function App() {
             "==============================================="
         );
         setGame(nextGame);
+    }
+    function handlePlayDevelopmentCard() {
+        setSecondaryMenu("development");
     }
     function handleBankTrade(
         giveResource: keyof Resources,
@@ -414,6 +386,7 @@ function App() {
         if (!restoredGame) {
             return;
         }
+        handleCloseTrade();
         setGame(restoredGame);
     }
     const currentPlayer = game.players.find(
@@ -535,6 +508,7 @@ function App() {
                 onEndTurn={handleEndTurn}
                 onTrade={handleTrade}
                 onBuyDevelopmentCard={handleBuyDevelopmentCard}
+                onPlayDevelopmentCard={handlePlayDevelopmentCard}
                 {...options}
             />
         );
@@ -650,6 +624,7 @@ function App() {
                                     : undefined
                         }
                     />
+                    {/* SECONDARY MENU: TRADE */}
                     {secondaryMenu === "trade" && game.phase === "playing" && (
                         <SecondaryMenu
                             title="Trade"
@@ -772,6 +747,23 @@ function App() {
                             )}
                         </SecondaryMenu>
                     )}
+                    {/* SECONDARY MENU: DEV CARD */}
+                    {secondaryMenu === "development" &&
+                        game.phase === "playing" && (
+                            <SecondaryMenu
+                                title="Play Development Card"
+                                onClose={() => setSecondaryMenu(undefined)}
+                            >
+                                <div
+                                    style={{
+                                        color: "#9ca3af",
+                                        fontSize: "13px",
+                                    }}
+                                >
+                                    Development cards will appear here.
+                                </div>
+                            </SecondaryMenu>
+                        )}
                     {game.phase === "playing" && (
                         <div
                             style={{
