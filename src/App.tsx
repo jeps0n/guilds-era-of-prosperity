@@ -21,6 +21,7 @@ import { buildSettlement, } from "./game/systems/building/buildSettlement";
 import { buildCity, } from "./game/systems/building/buildCity";
 import { bankTrade, } from "./game/systems/trading/bankTrade";
 import { buyDevelopmentCard } from "./game/systems/developmentCards/buyDevelopmentCard";
+import type { DevelopmentCardType } from "./game/domain/DevelopmentCard";
 import { getTradeRatio } from "./game/systems/trading/getTradeRatio";
 import { SecondaryMenu, SecondaryMenuButton, } from "./components/SecondaryMenu";
 import {
@@ -110,6 +111,22 @@ function App() {
         }
         setGame(nextGame);
     }
+    function getDevelopmentCardName(type: DevelopmentCardType) {
+        switch (type) {
+            case "knight":
+                return "Knight";
+            case "road_building":
+                return "Road Building";
+            case "year_of_plenty":
+                return "Year of Plenty";
+            case "monopoly":
+                return "Monopoly";
+            case "victory_point":
+                return "Victory Point";
+            default:
+                return type;
+        }
+    }
     function handleBuyDevelopmentCard() {
         const nextGame = buyDevelopmentCard(
             game,
@@ -121,49 +138,6 @@ function App() {
             );
             return;
         }
-        console.log(
-            "========== DEVELOPMENT CARD PURCHASED =========="
-        );
-        console.log(
-            "Player:",
-            game.currentPlayerId
-        );
-        console.log(
-            "Purchased Card:",
-            nextGame.players.find(
-                (player) =>
-                    player.id === game.currentPlayerId
-            )?.developmentCards.at(-1)
-        );
-        console.log(
-            "Remaining Development Deck:",
-            nextGame.developmentDeck.length
-        );
-        console.log(
-            "Player Resources:",
-            nextGame.players.find(
-                (player) =>
-                    player.id === game.currentPlayerId
-            )?.resources
-        );
-        console.log(
-            "Player Development Cards:",
-            nextGame.players.find(
-                (player) =>
-                    player.id === game.currentPlayerId
-            )?.developmentCards
-        );
-        console.log(
-            "Event Log:",
-            nextGame.eventLog
-        );
-        console.log(
-            "FULL GAME STATE:",
-            nextGame
-        );
-        console.log(
-            "==============================================="
-        );
         setGame(nextGame);
     }
     function handlePlayDevelopmentCard() {
@@ -748,22 +722,42 @@ function App() {
                         </SecondaryMenu>
                     )}
                     {/* SECONDARY MENU: DEV CARD */}
-                    {secondaryMenu === "development" &&
-                        game.phase === "playing" && (
-                            <SecondaryMenu
-                                title="Play Development Card"
-                                onClose={() => setSecondaryMenu(undefined)}
-                            >
+                    {secondaryMenu === "development" && game.phase === "playing" && (
+                        <SecondaryMenu
+                            title="Play Development Card"
+                            onClose={() => setSecondaryMenu(undefined)}
+                        >
+                            {!currentPlayer || currentPlayer.developmentCards.length === 0 ? (
                                 <div
                                     style={{
                                         color: "#9ca3af",
                                         fontSize: "13px",
                                     }}
                                 >
-                                    Development cards will appear here.
+                                    You have no development cards to play.
                                 </div>
-                            </SecondaryMenu>
-                        )}
+                            ) : (
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        gap: "8px",
+                                    }}
+                                >
+                                    {currentPlayer.developmentCards.map((card) => (
+                                        <SecondaryMenuButton
+                                            key={card.id}
+                                            onClick={() => {
+                                                console.log("Development card selected:", card);
+                                            }}
+                                        >
+                                            {getDevelopmentCardName(card.type)}
+                                        </SecondaryMenuButton>
+                                    ))}
+                                </div>
+                            )}
+                        </SecondaryMenu>
+                    )}
                     {game.phase === "playing" && (
                         <div
                             style={{
