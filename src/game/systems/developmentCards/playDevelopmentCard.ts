@@ -51,6 +51,8 @@ export function playDevelopmentCard(
     if (card.type === "victory_point") {
         return game;
     }
+    const isYearOfPlenty =
+        card.type === "year_of_plenty";
     const updatedPlayers = game.players.map(
         (candidate) => {
             if (candidate.id !== playerId) {
@@ -58,11 +60,19 @@ export function playDevelopmentCard(
             }
             return {
                 ...candidate,
-                developmentCardPlayedThisTurn: true,
-                playedDevelopmentCardIds: [
-                    ...candidate.playedDevelopmentCardIds,
-                    card.id,
-                ],
+                // YOP is not considered played until both
+                // resource selections have been completed.
+                developmentCardPlayedThisTurn:
+                    isYearOfPlenty
+                        ? candidate.developmentCardPlayedThisTurn
+                        : true,
+                playedDevelopmentCardIds:
+                    isYearOfPlenty
+                        ? candidate.playedDevelopmentCardIds
+                        : [
+                            ...candidate.playedDevelopmentCardIds,
+                            card.id,
+                        ],
                 knightsPlayed:
                     card.type === "knight"
                         ? candidate.knightsPlayed + 1
@@ -73,13 +83,24 @@ export function playDevelopmentCard(
     return {
         ...game,
         players: updatedPlayers,
-        robberPending: card.type === "knight",
-        eventLog: [
-            ...game.eventLog,
-            createEvent(
-                "DEVELOPMENT_CARD_PLAYED",
-                `${player.name} played a ${card.type.replaceAll("_", " ")} card.`
-            ),
-        ],
+        robberPending:
+            card.type === "knight",
+        yearOfPlentyPending:
+            isYearOfPlenty,
+        yearOfPlentyCardId:
+            isYearOfPlenty
+                ? card.id
+                : undefined,
+        yearOfPlentyFirstResource:
+            undefined,
+        eventLog: isYearOfPlenty
+            ? game.eventLog
+            : [
+                ...game.eventLog,
+                createEvent(
+                    "DEVELOPMENT_CARD_PLAYED",
+                    `${player.name} played a ${card.type.replaceAll("_", " ")} card.`
+                ),
+            ],
     };
 }

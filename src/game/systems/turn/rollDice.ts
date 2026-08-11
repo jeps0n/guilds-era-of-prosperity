@@ -75,10 +75,9 @@ export function rollDice(
   const dieTwo = rollDie();
   const total = dieOne + dieTwo;
   console.log("=== ROLL DICE ===");
-  console.log("Player:", currentPlayer.name);
-  console.log("Die 1:", dieOne);
-  console.log("Die 2:", dieTwo);
-  console.log("Total:", total);
+  console.log("Player: ", currentPlayer.name);
+  console.log("Die 1: ", dieOne, " Die 2:", dieTwo);
+  console.log("TOTAL: ", total);
   if (total === 7) {
     const events = [
       createEvent(

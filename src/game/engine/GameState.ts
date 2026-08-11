@@ -62,6 +62,9 @@ export interface GameState {
   lastDiceRoll?: number;
   discardPendingPlayerIds?: string[];
   robberPending: boolean;
+  yearOfPlentyPending: boolean;
+  yearOfPlentyFirstResource?: keyof Resources;
+  yearOfPlentyCardId?: string;
   robberTileId?: string;
   phase: GamePhase;
   eraOfProsperity: boolean;

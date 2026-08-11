@@ -90,6 +90,8 @@ export function createInitialState(): GameState {
     board: STARTER_BOARD,
     robberTileId: desertTile!.id,
     robberPending: false,
+    yearOfPlentyPending: false,
+    yearOfPlentyFirstResource: undefined,
     resourceBank: {
       brick: 19,
       lumber: 19,

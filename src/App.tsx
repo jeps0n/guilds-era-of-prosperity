@@ -8,23 +8,27 @@ import GameLog from "./components/GameLog";
 import PlayerPanel from "./components/PlayerPanel";
 import RobberActionBar from "./components/RobberActionBar";
 import { createInitialState } from "./game/engine/initialState";
-import { validateBoard, } from "./game/engine/boardValidation/validateBoard";
-import { selectGuild, } from "./game/systems/guildSelection";
-import { placeSettlement, } from "./game/systems/initialPlacement/placeSettlement";
-import { placeRoad, } from "./game/systems/initialPlacement/placeRoad";
-import { endTurn, } from "./game/systems/turn/endTurn";
-import { rollDice, } from "./game/systems/turn/rollDice";
-import type { GuildType, Resources, } from "./game/engine/types";
-import { getActionAvailability, } from "./game/systems/actions/getActionAvailability";
-import { buildRoad, } from "./game/systems/building/buildRoad";
-import { buildSettlement, } from "./game/systems/building/buildSettlement";
-import { buildCity, } from "./game/systems/building/buildCity";
-import { tradeWithBank, } from "./game/systems/trading/tradeWithBank";
+import { validateBoard } from "./game/engine/boardValidation/validateBoard";
+import { selectGuild } from "./game/systems/guildSelection";
+import { placeSettlement } from "./game/systems/initialPlacement/placeSettlement";
+import { placeRoad } from "./game/systems/initialPlacement/placeRoad";
+import { endTurn } from "./game/systems/turn/endTurn";
+import { rollDice } from "./game/systems/turn/rollDice";
+import type { GuildType, Resources } from "./game/engine/types";
+import { getActionAvailability } from "./game/systems/actions/getActionAvailability";
+import { buildRoad } from "./game/systems/building/buildRoad";
+import { buildSettlement } from "./game/systems/building/buildSettlement";
+import { buildCity } from "./game/systems/building/buildCity";
+import { tradeWithBank } from "./game/systems/trading/tradeWithBank";
 import { buyDevelopmentCard } from "./game/systems/developmentCards/buyDevelopmentCard";
 import { playDevelopmentCard } from "./game/systems/developmentCards/playDevelopmentCard";
+import { resolveYearOfPlenty } from "./game/systems/developmentCards/resolveYearOfPlenty";
 import type { DevelopmentCardType } from "./game/domain/DevelopmentCard";
 import { getTradeRatio } from "./game/systems/trading/getTradeRatio";
-import { SecondaryMenu, SecondaryMenuButton, } from "./components/SecondaryMenu";
+import {
+    SecondaryMenu,
+    SecondaryMenuButton,
+} from "./components/SecondaryMenu";
 import {
     savePhaseCheckpoint,
     restorePhaseCheckpoint,
@@ -44,11 +48,28 @@ function App() {
         useState<SecondaryMenuMode>(undefined);
     const [selectedGiveResource, setSelectedGiveResource] =
         useState<keyof Resources | undefined>(undefined);
-    // const [selectedDevelopmentCard, setSelectedDevelopmentCard] =
-    //     useState<string | undefined>(undefined);
+    /*
+     * Year of Plenty selection tracks BOTH:
+     * - the resource selected
+     * - the unique slot/button that was clicked
+     *
+     * This is important because the 2 x 5 grid contains duplicate
+     * resources. Tracking only the resource would cause both duplicate
+     * buttons to highlight.
+     */
+    const [yearOfPlentySelection, setYearOfPlentySelection] =
+        useState<{
+            resource: keyof Resources;
+            slot: number;
+        } | undefined>(undefined);
     useEffect(() => {
-        console.log("===== GAME STATE UPDATED [Turn: " + game.turnNumber + "] =====");
-        console.log("Game:", game);
+        console.log(
+            "===== GAME STATE UPDATED [Turn: " +
+            game.turnNumber +
+            "] ====="
+        );
+        console.log("Game: ", game);
+        console.log("Deck: ", game.developmentDeck);
         console.log("========================================");
     }, [game]);
     function handleGuildSelection(guild: GuildType) {
@@ -114,8 +135,9 @@ function App() {
         }
         setGame(nextGame);
     }
-    // helper
-    function getDevelopmentCardName(type: DevelopmentCardType) {
+    function getDevelopmentCardName(
+        type: DevelopmentCardType
+    ) {
         switch (type) {
             case "knight":
                 return "Knight";
@@ -145,9 +167,6 @@ function App() {
     function handlePlayDevelopmentCard() {
         setSecondaryMenu("development");
     }
-    // function handleSelectDevelopmentCard(cardId: string) {
-    //     setSelectedDevelopmentCard(cardId);
-    // }
     function handleSelectDevelopmentCard(cardId: string) {
         console.log(
             "handleSelectDevelopmentCard -[cardId]: ",
@@ -164,11 +183,6 @@ function App() {
         setGame(nextGame);
         setSecondaryMenu(undefined);
     }
-    // XYZ
-    // function handleCloseDevelopmentMenu() {
-    //     setSecondaryMenu(undefined);
-    //     setSelectedDevelopmentCard(undefined);
-    // }
     // ABC - OPEN TRADE MENU
     function handleTrade() {
         const player = game.players.find(
@@ -181,13 +195,11 @@ function App() {
         setSelectedGiveResource(undefined);
         setSecondaryMenu("trade");
     }
-    // MNO-1
     function handleSelectGiveResource(
         resource: keyof Resources
     ) {
         setSelectedGiveResource(resource);
     }
-    // MNO-2
     function handleSelectReceiveResource(
         resource: keyof Resources
     ) {
@@ -200,7 +212,6 @@ function App() {
         );
         handleCloseTrade();
     }
-    // MNO-3
     function executeTrade(
         giveResource: keyof Resources,
         receiveResource: keyof Resources
@@ -216,7 +227,61 @@ function App() {
         }
         setGame(nextGame);
     }
-    // XYZ
+    /*
+     * YEAR OF PLENTY
+     *
+     * Each button has a unique slot.
+     * The first click stores both the resource and slot.
+     */
+    function handleSelectYearOfPlentyResource(
+        resource: keyof Resources,
+        slot: number
+    ) {
+        if (yearOfPlentySelection === undefined) {
+            setYearOfPlentySelection({
+                resource,
+                slot,
+            });
+            return;
+        }
+        executeYearOfPlenty(
+            yearOfPlentySelection.resource,
+            resource
+        );
+    }
+    /*
+     * Close Year of Plenty without completing it.
+     *
+     * Clear the local selection and close the menu so the player
+     * can start the selection process over.
+     */
+    function handleCloseYearOfPlenty() {
+        setYearOfPlentySelection(undefined);
+        setSecondaryMenu(undefined);
+        setGame((currentGame) => ({
+            ...currentGame,
+            yearOfPlentyPending: false,
+            yearOfPlentyCardId: undefined,
+            yearOfPlentyFirstResource: undefined,
+        }));
+    }
+    function executeYearOfPlenty(
+        firstResource: keyof Resources,
+        secondResource: keyof Resources
+    ) {
+        const nextGame = resolveYearOfPlenty(
+            game,
+            game.currentPlayerId,
+            firstResource,
+            secondResource
+        );
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
+        setYearOfPlentySelection(undefined);
+        setSecondaryMenu(undefined);
+    }
     function handleCloseTrade() {
         setSecondaryMenu(undefined);
         setSelectedGiveResource(undefined);
@@ -236,7 +301,8 @@ function App() {
             return;
         }
         const currentPlayer = game.players.find(
-            (player) => player.id === game.currentPlayerId
+            (player) =>
+                player.id === game.currentPlayerId
         );
         if (!currentPlayer) {
             return;
@@ -245,7 +311,8 @@ function App() {
          * Find all board nodes touching the robber tile.
          */
         const adjacentNodes = game.board.nodes.filter(
-            (node) => node.adjacentTiles.includes(tileId)
+            (node) =>
+                node.adjacentTiles.includes(tileId)
         );
         /*
          * Find opponents who have a settlement or city
@@ -256,18 +323,25 @@ function App() {
                 if (player.id === currentPlayer.id) {
                     return false;
                 }
-                const hasBuildingAdjacent = adjacentNodes.some(
-                    (node) => {
-                        const hasSettlement =
-                            player.settlements.some(
-                                (settlement) =>
-                                    settlement.nodeId === node.id
+                const hasBuildingAdjacent =
+                    adjacentNodes.some(
+                        (node) => {
+                            const hasSettlement =
+                                player.settlements.some(
+                                    (settlement) =>
+                                        settlement.nodeId ===
+                                        node.id
+                                );
+                            const hasCity =
+                                player.cities.includes(
+                                    node.id
+                                );
+                            return (
+                                hasSettlement ||
+                                hasCity
                             );
-                        const hasCity =
-                            player.cities.includes(node.id);
-                        return hasSettlement || hasCity;
-                    }
-                );
+                        }
+                    );
                 return hasBuildingAdjacent;
             }
         );
@@ -327,7 +401,9 @@ function App() {
                         resources: {
                             ...player.resources,
                             [stolenResource]:
-                                player.resources[stolenResource] - 1,
+                                player.resources[
+                                stolenResource
+                                ] - 1,
                         },
                     };
                 }
@@ -340,7 +416,9 @@ function App() {
                         resources: {
                             ...player.resources,
                             [stolenResource]:
-                                player.resources[stolenResource] + 1,
+                                player.resources[
+                                stolenResource
+                                ] + 1,
                         },
                     };
                 }
@@ -378,16 +456,32 @@ function App() {
         setGame(nextGame);
     }
     function handleEndTurn() {
+        console.log("===== END TURN CLICKED =====");
+        console.log("BEFORE END TURN:", {
+            yearOfPlentyPending: game.yearOfPlentyPending,
+            yearOfPlentyCardId: game.yearOfPlentyCardId,
+            yearOfPlentySelection,
+            secondaryMenu,
+        });
+        handleCloseTrade();
+        handleCloseYearOfPlenty();
         const nextGame = endTurn(game);
+        console.log("AFTER endTurn():", {
+            yearOfPlentyPending: nextGame.yearOfPlentyPending,
+            yearOfPlentyCardId: nextGame.yearOfPlentyCardId,
+            yearOfPlentyFirstResource: nextGame.yearOfPlentyFirstResource,
+        });
         if (nextGame === game) {
+            console.log("END TURN REJECTED");
             return;
         }
-        handleCloseTrade();
         setGame(nextGame);
         savePhaseCheckpoint(nextGame);
+        console.log("===== END TURN COMPLETE =====");
     }
     function handleRestoreCheckpoint() {
-        const restoredGame = restorePhaseCheckpoint(game);
+        const restoredGame =
+            restorePhaseCheckpoint(game);
         if (!restoredGame) {
             return;
         }
@@ -443,7 +537,10 @@ function App() {
         "sheep",
         "ore",
     ];
-    const resourceColors: Record<keyof Resources, string> = {
+    const resourceColors: Record<
+        keyof Resources,
+        string
+    > = {
         brick: "#b45309",
         lumber: "#166534",
         wheat: "#eab308",
@@ -464,7 +561,8 @@ function App() {
                     height: "22px",
                     padding: "0 5px",
                     borderRadius: "6px",
-                    backgroundColor: resourceColors[resource],
+                    backgroundColor:
+                        resourceColors[resource],
                     color: "#000000",
                     fontSize: "12px",
                     fontWeight: "bold",
@@ -477,23 +575,30 @@ function App() {
     }
     const tradeGiveOptions =
         currentPlayer
-            ? tradeResources.filter((resource) => {
-                const ratio = getTradeRatio(
-                    game,
-                    currentPlayer.id,
-                    resource
-                );
-                return (
-                    currentPlayer.resources[resource] >= ratio
-                );
-            })
+            ? tradeResources.filter(
+                (resource) => {
+                    const ratio =
+                        getTradeRatio(
+                            game,
+                            currentPlayer.id,
+                            resource
+                        );
+                    return (
+                        currentPlayer.resources[
+                        resource
+                        ] >= ratio
+                    );
+                }
+            )
             : [];
     const tradeReceiveOptions =
         selectedGiveResource
             ? tradeResources.filter(
                 (resource) =>
-                    resource !== selectedGiveResource &&
-                    game.resourceBank[resource] >= 1
+                    resource !==
+                    selectedGiveResource &&
+                    game.resourceBank[resource] >=
+                    1
             )
             : [];
     function renderActionBar(
@@ -504,16 +609,34 @@ function App() {
     ) {
         return (
             <ActionBar
-                playerColor={currentPlayerColor}
+                playerColor={
+                    currentPlayerColor
+                }
                 phase={game.phase}
-                placementAction={game.placementAction}
-                lastDiceRoll={game.lastDiceRoll}
-                availability={actionAvailability}
-                onRollDice={handleRollDice}
-                onEndTurn={handleEndTurn}
-                onTrade={handleTrade}
-                onBuyDevelopmentCard={handleBuyDevelopmentCard}
-                onPlayDevelopmentCard={handlePlayDevelopmentCard}
+                placementAction={
+                    game.placementAction
+                }
+                lastDiceRoll={
+                    game.lastDiceRoll
+                }
+                availability={
+                    actionAvailability
+                }
+                onRollDice={
+                    handleRollDice
+                }
+                onEndTurn={
+                    handleEndTurn
+                }
+                onTrade={
+                    handleTrade
+                }
+                onBuyDevelopmentCard={
+                    handleBuyDevelopmentCard
+                }
+                onPlayDevelopmentCard={
+                    handlePlayDevelopmentCard
+                }
                 {...options}
             />
         );
@@ -581,10 +704,16 @@ function App() {
                         )}
                         cities={cities}
                         roads={roads}
-                        robberPending={game.robberPending}
-                        robberTileId={game.robberTileId}
+                        robberPending={
+                            game.robberPending
+                        }
+                        robberTileId={
+                            game.robberTileId
+                        }
                         onSelectTile={
-                            game.phase === "playing" && game.robberPending
+                            game.phase ===
+                                "playing" &&
+                                game.robberPending
                                 ? handleSelectRobberTile
                                 : undefined
                         }
@@ -599,11 +728,18 @@ function App() {
                                     ? (nodeId) => {
                                         const ownsSettlement =
                                             currentPlayer?.settlements.some(
-                                                (settlement) =>
-                                                    settlement.nodeId === nodeId
+                                                (
+                                                    settlement
+                                                ) =>
+                                                    settlement.nodeId ===
+                                                    nodeId
                                             );
-                                        if (ownsSettlement) {
-                                            handleBuildCity(nodeId);
+                                        if (
+                                            ownsSettlement
+                                        ) {
+                                            handleBuildCity(
+                                                nodeId
+                                            );
                                             return;
                                         }
                                         setGame(
@@ -630,85 +766,214 @@ function App() {
                         }
                     />
                     {/* SECONDARY MENU: TRADE */}
-                    {secondaryMenu === "trade" && game.phase === "playing" && (
-                        <SecondaryMenu
-                            title="Trade"
-                            onClose={handleCloseTrade}
-                        >
-                            {tradeGiveOptions.length !== 0 && (
+                    {secondaryMenu ===
+                        "trade" &&
+                        game.phase ===
+                        "playing" && (
+                            <SecondaryMenu
+                                title="Trade"
+                                onClose={
+                                    handleCloseTrade
+                                }
+                            >
+                                {tradeGiveOptions.length !==
+                                    0 && (
+                                        <div
+                                            style={{
+                                                fontSize:
+                                                    "13px",
+                                                color:
+                                                    "#d1d5db",
+                                                marginBottom:
+                                                    "10px",
+                                            }}
+                                        >
+                                            <span>
+                                                Give:
+                                            </span>
+                                        </div>
+                                    )}
                                 <div
                                     style={{
-                                        fontSize: "13px",
-                                        color: "#d1d5db",
-                                        marginBottom: "10px",
+                                        display:
+                                            "flex",
+                                        flexDirection:
+                                            "column",
+                                        gap: "8px",
                                     }}
                                 >
-                                    <span>Give:</span>
+                                    {tradeGiveOptions.map(
+                                        (
+                                            resource
+                                        ) => (
+                                            <SecondaryMenuButton
+                                                key={
+                                                    resource
+                                                }
+                                                active={
+                                                    selectedGiveResource ===
+                                                    resource
+                                                }
+                                                onClick={() =>
+                                                    handleSelectGiveResource(
+                                                        resource
+                                                    )
+                                                }
+                                            >
+                                                <span
+                                                    style={{
+                                                        display:
+                                                            "inline-flex",
+                                                        alignItems:
+                                                            "center",
+                                                        gap: "8px",
+                                                    }}
+                                                >
+                                                    {renderResourceBadge(
+                                                        resource,
+                                                        getTradeRatio(
+                                                            game,
+                                                            currentPlayer!.id,
+                                                            resource
+                                                        )
+                                                    )}
+                                                    <span>
+                                                        {
+                                                            resource
+                                                        }
+                                                    </span>
+                                                </span>
+                                            </SecondaryMenuButton>
+                                        )
+                                    )}
+                                    {tradeGiveOptions.length ===
+                                        0 && (
+                                            <div
+                                                style={{
+                                                    color:
+                                                        "#9ca3af",
+                                                    fontSize:
+                                                        "13px",
+                                                }}
+                                            >
+                                                No valid trades
+                                                available.
+                                            </div>
+                                        )}
                                 </div>
-                            )}
-                            <div
-                                style={{
-                                    display:
-                                        "flex",
-                                    flexDirection:
-                                        "column",
-                                    gap: "8px",
-                                }}
-                            >
-                                {tradeGiveOptions.map((resource) => (
-                                    <SecondaryMenuButton
-                                        key={resource}
-                                        active={selectedGiveResource === resource}
-                                        onClick={() =>
-                                            handleSelectGiveResource(resource)
-                                        }
-                                    >
-                                        <span
+                                {selectedGiveResource && (
+                                    <>
+                                        <div
                                             style={{
-                                                display: "inline-flex",
-                                                alignItems: "center",
+                                                fontSize:
+                                                    "13px",
+                                                color:
+                                                    "#d1d5db",
+                                                marginTop:
+                                                    "16px",
+                                                marginBottom:
+                                                    "10px",
+                                            }}
+                                        >
+                                            Receive:
+                                        </div>
+                                        <div
+                                            style={{
+                                                display:
+                                                    "flex",
+                                                flexDirection:
+                                                    "column",
                                                 gap: "8px",
                                             }}
                                         >
-                                            {renderResourceBadge(
-                                                resource,
-                                                getTradeRatio(
-                                                    game,
-                                                    currentPlayer!.id,
+                                            {tradeReceiveOptions.map(
+                                                (
                                                     resource
+                                                ) => (
+                                                    <SecondaryMenuButton
+                                                        key={
+                                                            resource
+                                                        }
+                                                        onClick={() =>
+                                                            handleSelectReceiveResource(
+                                                                resource
+                                                            )
+                                                        }
+                                                    >
+                                                        <span
+                                                            style={{
+                                                                display:
+                                                                    "inline-flex",
+                                                                alignItems:
+                                                                    "center",
+                                                                gap: "8px",
+                                                            }}
+                                                        >
+                                                            {renderResourceBadge(
+                                                                resource,
+                                                                1
+                                                            )}
+                                                            <span>
+                                                                {
+                                                                    resource
+                                                                }
+                                                            </span>
+                                                        </span>
+                                                    </SecondaryMenuButton>
                                                 )
                                             )}
-                                            <span>{resource}</span>
-                                        </span>
-                                    </SecondaryMenuButton>
-                                ))}
-                                {tradeGiveOptions.length === 0 && (
-                                    <div
-                                        style={{
-                                            color: "#9ca3af",
-                                            fontSize: "13px",
-                                        }}
-                                    >
-                                        No valid trades available.
-                                    </div>
+                                            {tradeReceiveOptions.length ===
+                                                0 && (
+                                                    <div
+                                                        style={{
+                                                            color:
+                                                                "#9ca3af",
+                                                            fontSize:
+                                                                "13px",
+                                                        }}
+                                                    >
+                                                        No resources
+                                                        available
+                                                        from the
+                                                        bank.
+                                                    </div>
+                                                )}
+                                        </div>
+                                    </>
                                 )}
-                            </div>
-                            {selectedGiveResource && (
-                                <>
+                            </SecondaryMenu>
+                        )}
+                    {/* SECONDARY MENU: DEV CARD */}
+                    {secondaryMenu ===
+                        "development" &&
+                        game.phase ===
+                        "playing" && (
+                            <SecondaryMenu
+                                title="Play Development Card"
+                                onClose={() =>
+                                    setSecondaryMenu(
+                                        undefined
+                                    )
+                                }
+                            >
+                                {!currentPlayer ||
+                                    currentPlayer
+                                        .developmentCards
+                                        .length ===
+                                    0 ? (
                                     <div
                                         style={{
+                                            color:
+                                                "#9ca3af",
                                             fontSize:
                                                 "13px",
-                                            color:
-                                                "#d1d5db",
-                                            marginTop:
-                                                "16px",
-                                            marginBottom:
-                                                "10px",
                                         }}
                                     >
-                                        Receive:
+                                        You have no
+                                        development
+                                        cards to play.
                                     </div>
+                                ) : (
                                     <div
                                         style={{
                                             display:
@@ -718,112 +983,183 @@ function App() {
                                             gap: "8px",
                                         }}
                                     >
-                                        {tradeReceiveOptions.map((resource) => (
-                                            <SecondaryMenuButton
-                                                key={resource}
-                                                onClick={() =>
-                                                    handleSelectReceiveResource(resource)
-                                                }
-                                            >
-                                                <span
-                                                    style={{
-                                                        display: "inline-flex",
-                                                        alignItems: "center",
-                                                        gap: "8px",
-                                                    }}
-                                                >
-                                                    {renderResourceBadge(resource, 1)}
-                                                    <span>{resource}</span>
-                                                </span>
-                                            </SecondaryMenuButton>
-                                        ))}
-                                        {tradeReceiveOptions.length === 0 && (
-                                            <div
-                                                style={{
-                                                    color: "#9ca3af",
-                                                    fontSize: "13px",
-                                                }}
-                                            >
-                                                No resources available from the bank.
-                                            </div>
+                                        {currentPlayer.developmentCards.map(
+                                            (
+                                                card
+                                            ) => {
+                                                const isPlayed =
+                                                    currentPlayer.playedDevelopmentCardIds.includes(
+                                                        card.id
+                                                    );
+                                                const isPurchasedThisTurn =
+                                                    currentPlayer.developmentCardsPurchasedThisTurn.includes(
+                                                        card.id
+                                                    );
+                                                const isVictoryPoint =
+                                                    card.type ===
+                                                    "victory_point";
+                                                const isPlayable =
+                                                    card.type !==
+                                                    "victory_point" &&
+                                                    !isPlayed &&
+                                                    !isPurchasedThisTurn &&
+                                                    !currentPlayer.developmentCardPlayedThisTurn;
+                                                return (
+                                                    <SecondaryMenuButton
+                                                        key={
+                                                            card.id
+                                                        }
+                                                        disabled={
+                                                            !isPlayable
+                                                        }
+                                                        onClick={() => {
+                                                            if (
+                                                                !isPlayable
+                                                            ) {
+                                                                return;
+                                                            }
+                                                            handleSelectDevelopmentCard(
+                                                                card.id
+                                                            );
+                                                        }}
+                                                    >
+                                                        {getDevelopmentCardName(
+                                                            card.type
+                                                        )}
+                                                        {isVictoryPoint &&
+                                                            " (+1 VP)"}
+                                                    </SecondaryMenuButton>
+                                                );
+                                            }
                                         )}
                                     </div>
-                                </>
-                            )}
-                        </SecondaryMenu>
-                    )}
-                    {/* SECONDARY MENU: DEV CARD */}
-                    {secondaryMenu === "development" && game.phase === "playing" && (
-                        <SecondaryMenu
-                            title="Play Development Card"
-                            onClose={() => setSecondaryMenu(undefined)}
-                        >
-                            {!currentPlayer || currentPlayer.developmentCards.length === 0 ? (
+                                )}
+                            </SecondaryMenu>
+                        )}
+                    {/* SECONDARY MENU: YEAR OF PLENTY */}
+                    {game.phase ===
+                        "playing" &&
+                        game.yearOfPlentyPending &&
+                        secondaryMenu !==
+                        "development" &&
+                        secondaryMenu !==
+                        "trade" && (
+                            <SecondaryMenu
+                                title="Year of Plenty"
+                                onClose={
+                                    handleCloseYearOfPlenty
+                                }
+                            >
                                 <div
                                     style={{
-                                        color: "#9ca3af",
-                                        fontSize: "13px",
+                                        fontSize:
+                                            "13px",
+                                        color:
+                                            "#d1d5db",
+                                        marginBottom:
+                                            "12px",
                                     }}
                                 >
-                                    You have no development cards to play.
+                                    {yearOfPlentySelection ===
+                                        undefined
+                                        ? "Select your first resource:"
+                                        : "Select your second resource:"}
                                 </div>
-                            ) : (
+                                {/*
+                                 * 2 x 5 grid.
+                                 *
+                                 * There are exactly 10 unique button
+                                 * instances:
+                                 *
+                                 * brick  | brick
+                                 * lumber | lumber
+                                 * wheat  | wheat
+                                 * sheep  | sheep
+                                 * ore    | ore
+                                 *
+                                 * The slot number makes each button
+                                 * independently selectable/highlightable.
+                                 */}
                                 <div
                                     style={{
-                                        display: "flex",
-                                        flexDirection: "column",
+                                        display:
+                                            "grid",
+                                        gridTemplateColumns:
+                                            "1fr 1fr",
                                         gap: "8px",
                                     }}
                                 >
-                                    {/* (select) development-card menu */}
-                                    {currentPlayer.developmentCards.map((card) => {
-                                        const isPlayed =
-                                            currentPlayer.playedDevelopmentCardIds.includes(card.id);
-                                        const isPurchasedThisTurn =
-                                            currentPlayer.developmentCardsPurchasedThisTurn.includes(
-                                                card.id
-                                            );
-                                        const isVictoryPoint =
-                                            card.type === "victory_point";
-                                        const isPlayable =
-                                            card.type === "knight" &&
-                                            !isPlayed &&
-                                            !isPurchasedThisTurn &&
-                                            !currentPlayer.developmentCardPlayedThisTurn;
-                                        return (
-                                            <SecondaryMenuButton
-                                                key={card.id}
-                                                disabled={!isPlayable}
-                                                onClick={() => {
-                                                    if (!isPlayable) {
-                                                        return;
-                                                    }
-                                                    handleSelectDevelopmentCard(card.id);
-                                                }}
-                                            >
-                                                {getDevelopmentCardName(card.type)}
-                                                {isVictoryPoint && " (+1 VP)"}
-                                            </SecondaryMenuButton>
-                                        );
-                                    })}
+                                    {tradeResources.flatMap(
+                                        (
+                                            resource
+                                        ) =>
+                                            [0, 1].map(
+                                                (
+                                                    slot
+                                                ) => {
+                                                    const isFirstSelection =
+                                                        yearOfPlentySelection?.resource ===
+                                                        resource &&
+                                                        yearOfPlentySelection?.slot ===
+                                                        slot;
+                                                    return (
+                                                        <SecondaryMenuButton
+                                                            key={`${resource}-${slot}`}
+                                                            active={
+                                                                isFirstSelection
+                                                            }
+                                                            onClick={() =>
+                                                                handleSelectYearOfPlentyResource(
+                                                                    resource,
+                                                                    slot
+                                                                )
+                                                            }
+                                                        >
+                                                            <span
+                                                                style={{
+                                                                    display:
+                                                                        "inline-flex",
+                                                                    alignItems:
+                                                                        "center",
+                                                                    gap: "8px",
+                                                                    width: "100%",
+                                                                    justifyContent:
+                                                                        "flex-start",
+                                                                }}
+                                                            >
+                                                                {renderResourceBadge(
+                                                                    resource,
+                                                                    1
+                                                                )}
+                                                                <span>
+                                                                    {
+                                                                        resource
+                                                                    }
+                                                                </span>
+                                                            </span>
+                                                        </SecondaryMenuButton>
+                                                    );
+                                                }
+                                            )
+                                    )}
                                 </div>
-                            )}
-                        </SecondaryMenu>
-                    )}
-                    {game.phase === "playing" && (
-                        <div
-                            style={{
-                                position:
-                                    "absolute",
-                                right: "16px",
-                                bottom: "16px",
-                            }}
-                        >
-                            {renderActionBar({
-                                diceOnly: true,
-                            })}
-                        </div>
-                    )}
+                            </SecondaryMenu>
+                        )}
+                    {game.phase ===
+                        "playing" && (
+                            <div
+                                style={{
+                                    position:
+                                        "absolute",
+                                    right: "16px",
+                                    bottom: "16px",
+                                }}
+                            >
+                                {renderActionBar({
+                                    diceOnly: true,
+                                })}
+                            </div>
+                        )}
                 </div>
             }
             rightSidebar={
@@ -844,7 +1180,9 @@ function App() {
             bottom={
                 game.robberPending ? (
                     <RobberActionBar
-                        playerColor={currentPlayerColor}
+                        playerColor={
+                            currentPlayerColor
+                        }
                     />
                 ) : (
                     renderActionBar({

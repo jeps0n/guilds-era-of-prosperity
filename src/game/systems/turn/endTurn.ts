@@ -33,5 +33,10 @@ export function endTurn(
     currentPlayerId: nextPlayer.id,
     turnNumber: game.turnNumber + 1,
     lastDiceRoll: undefined,
+    // Cancel any unfinished Year of Plenty selection
+    // when the player ends their turn.
+    yearOfPlentyPending: false,
+    yearOfPlentyCardId: undefined,
+    yearOfPlentyFirstResource: undefined,
   };
 }
