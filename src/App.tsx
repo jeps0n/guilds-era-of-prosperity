@@ -48,6 +48,7 @@ function App() {
         useState<SecondaryMenuMode>(undefined);
     const [selectedGiveResource, setSelectedGiveResource] =
         useState<keyof Resources | undefined>(undefined);
+    useState<number | undefined>(undefined);
     /*
      * Year of Plenty selection tracks BOTH:
      * - the resource selected
@@ -1062,8 +1063,8 @@ function App() {
                                 >
                                     {yearOfPlentySelection ===
                                         undefined
-                                        ? "Select your first resource:"
-                                        : "Select your second resource:"}
+                                        ? "Select your two resources:"
+                                        : "Select your two resources:"}
                                 </div>
                                 {/*
                                  * 2 x 5 grid.
@@ -1105,9 +1106,8 @@ function App() {
                                                     return (
                                                         <SecondaryMenuButton
                                                             key={`${resource}-${slot}`}
-                                                            active={
-                                                                isFirstSelection
-                                                            }
+                                                            active={isFirstSelection}
+                                                            disabled={isFirstSelection}
                                                             onClick={() =>
                                                                 handleSelectYearOfPlentyResource(
                                                                     resource,
@@ -1117,14 +1117,11 @@ function App() {
                                                         >
                                                             <span
                                                                 style={{
-                                                                    display:
-                                                                        "inline-flex",
-                                                                    alignItems:
-                                                                        "center",
+                                                                    display: "inline-flex",
+                                                                    alignItems: "center",
                                                                     gap: "8px",
                                                                     width: "100%",
-                                                                    justifyContent:
-                                                                        "flex-start",
+                                                                    justifyContent: "flex-start",
                                                                 }}
                                                             >
                                                                 {renderResourceBadge(
@@ -1132,9 +1129,7 @@ function App() {
                                                                     1
                                                                 )}
                                                                 <span>
-                                                                    {
-                                                                        resource
-                                                                    }
+                                                                    {resource}
                                                                 </span>
                                                             </span>
                                                         </SecondaryMenuButton>
