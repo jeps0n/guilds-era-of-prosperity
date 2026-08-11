@@ -162,6 +162,7 @@ function App() {
             return;
         }
         setGame(nextGame);
+        setSecondaryMenu(undefined);
     }
     // XYZ
     // function handleCloseDevelopmentMenu() {

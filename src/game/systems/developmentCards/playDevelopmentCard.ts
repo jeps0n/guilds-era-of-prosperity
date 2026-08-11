@@ -73,6 +73,7 @@ export function playDevelopmentCard(
     return {
         ...game,
         players: updatedPlayers,
+        robberPending: card.type === "knight",
         eventLog: [
             ...game.eventLog,
             createEvent(

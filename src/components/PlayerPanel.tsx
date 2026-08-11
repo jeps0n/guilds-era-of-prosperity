@@ -206,15 +206,19 @@ function PlayerPanel({
                   {player.developmentCards.length}
                 </strong>
               </div>
-              <div>
-                🏠 Settlements Remaining:{" "}
-                {5 - player.settlements.length}
+              <div style={{ fontSize: "12px" }}>
+                🛣️ Knights Played:{" "}
+                {player.knightsPlayed}
               </div>
-              <div>
+              <div style={{ fontSize: "12px" }}>
                 🛣️ Roads Remaining:{" "}
                 {15 - player.roads.length}
               </div>
-              <div>
+              <div style={{ fontSize: "12px" }}>
+                🏠 Settlements Remaining:{" "}
+                {5 - player.settlements.length}
+              </div>
+              <div style={{ fontSize: "12px" }}>
                 🏙️ Cities Remaining:{" "}
                 {4 - player.cities.length}
               </div>
