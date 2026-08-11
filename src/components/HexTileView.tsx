@@ -84,20 +84,20 @@ export default function HexTileView({
             >
                 {tile.resource}
             </text>
-            {/* ROBBER — JACK-O-LANTERN ICON */}
+            {/* ROBBER / PUMPKIN */}
             {isRobberTile && (
                 <g>
-                    {/* Purple circle behind pumpkin */}
+                    {/* TOKEN BACKGROUND COLOR */}
                     <circle
                         cx={tile.x}
                         cy={tile.y}
                         r="25"
-                        fill="#7c3aed"
+                        fill="#1c1c1c"
                         stroke="#000000"
                         strokeWidth="2"
                     />
                     <g transform="translate(0 1)">
-                        {/* Black pumpkin body — slightly elongated horizontally */}
+                        {/* PUMPKIN: HEAD */}
                         <path
                             d={`
                                 M ${tile.x} ${tile.y - 14}
@@ -123,7 +123,7 @@ export default function HexTileView({
                             `}
                             fill="#000000"
                         />
-                        {/* Subtle pumpkin center indentation */}
+                        {/* PUMPKIN: INDENT */}
                         <path
                             d={`
                                 M ${tile.x} ${tile.y - 17}
@@ -135,7 +135,7 @@ export default function HexTileView({
                             stroke="#111111"
                             strokeWidth="2"
                         />
-                        {/* Sharp pointed stem */}
+                        {/* PUMPKIN: STEM */}
                         <path
                             d={`
                                 M ${tile.x - 3} ${tile.y - 15}
@@ -146,33 +146,34 @@ export default function HexTileView({
                             `}
                             fill="#000000"
                         />
-                        {/* Orange triangle eyes */}
+                        {/* PUMPKIN: LEFT EYE */}
                         <polygon
                             points={`
                             ${tile.x - 10},${tile.y - 6}
                             ${tile.x - 3},${tile.y - 2}
                             ${tile.x - 11},${tile.y + 0}
                         `}
-                            fill="#f97316"
+                            fill="green"
                         />
-                        {/* Small orange triangle nose */}
+                        {/* PUMPIN: TRIANGLE NOSE */}
                         <polygon
                             points={`
                                 ${tile.x},${tile.y - 1}
                                 ${tile.x - 3},${tile.y + 3}
                                 ${tile.x + 3},${tile.y + 3}
                             `}
-                            fill="#f97316"
+                            fill="green"
                         />
+                        {/* PUMPIN: RIGHT EYE */}
                         <polygon
                             points={`
                                 ${tile.x + 3},${tile.y - 2}
                                 ${tile.x + 10},${tile.y - 6}
                                 ${tile.x + 11},${tile.y + 0}
                             `}
-                            fill="#f97316"
+                            fill="green"
                         />
-                        {/* Slightly closed jack-o-lantern smile */}
+                        {/* PUMPKIN: MOUTH */}
                         <path
                             d={`
                             M ${tile.x - 13} ${tile.y + 4}
@@ -185,32 +186,34 @@ export default function HexTileView({
                             ${tile.x - 10} ${tile.y + 11}
                             Z
                         `}
-                            fill="#f97316"
+                            fill="green"
                         />
-                        {/* Square-ish black tooth cuts */}
+                        {/* PUMPKIN: LEFT TOOTH */}
                         <rect
                             x={tile.x - 8}
                             y={tile.y + 6}
                             width="4"
                             height="4"
                             rx="0.5"
-                            fill="#000000"
+                            fill="black"
                         />
+                        {/* PUMPKIN: BOTTOM TOOTH */}
                         <rect
                             x={tile.x + 4}
                             y={tile.y + 6}
                             width="4"
                             height="4"
                             rx="0.5"
-                            fill="#000000"
+                            fill="black"
                         />
+                        {/* PUMPKIN: RIGHT TOOTH */}
                         <rect
                             x={tile.x - 2}
                             y={tile.y + 9}
                             width="4"
                             height="5"
                             rx="0.5"
-                            fill="#000000"
+                            fill="black"
                         />
                     </g>
                 </g>

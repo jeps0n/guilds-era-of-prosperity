@@ -45,7 +45,9 @@ function ActionButton({
             disabled={disabled}
             style={{
                 minWidth: "100px",
+                maxWidth: "100px",
                 minHeight: "64px",
+                maxHeight: "64px",
                 padding: "10px 12px",
                 borderRadius: "10px",
                 border: active
