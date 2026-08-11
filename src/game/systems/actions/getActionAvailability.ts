@@ -50,14 +50,12 @@ export function getActionAvailability(
     const canTrade =
         game.phase === "playing" &&
         hasRolled;
-    const hasPlayableDevelopmentCard =
-        currentPlayer.developmentCards.some(
-            (card) => card.type !== "victory_point"
-        );
+    const hasDevelopmentCard =
+        currentPlayer.developmentCards.length > 0;
     const canPlayDevelopmentCard =
         game.phase === "playing" &&
         hasRolled &&
-        hasPlayableDevelopmentCard;
+        hasDevelopmentCard;
     return {
         canRollDice:
             game.phase === "playing" &&

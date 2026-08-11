@@ -19,8 +19,9 @@ import { getActionAvailability, } from "./game/systems/actions/getActionAvailabi
 import { buildRoad, } from "./game/systems/building/buildRoad";
 import { buildSettlement, } from "./game/systems/building/buildSettlement";
 import { buildCity, } from "./game/systems/building/buildCity";
-import { bankTrade, } from "./game/systems/trading/bankTrade";
+import { tradeWithBank, } from "./game/systems/trading/tradeWithBank";
 import { buyDevelopmentCard } from "./game/systems/developmentCards/buyDevelopmentCard";
+import { playDevelopmentCard } from "./game/systems/developmentCards/playDevelopmentCard";
 import type { DevelopmentCardType } from "./game/domain/DevelopmentCard";
 import { getTradeRatio } from "./game/systems/trading/getTradeRatio";
 import { SecondaryMenu, SecondaryMenuButton, } from "./components/SecondaryMenu";
@@ -43,6 +44,8 @@ function App() {
         useState<SecondaryMenuMode>(undefined);
     const [selectedGiveResource, setSelectedGiveResource] =
         useState<keyof Resources | undefined>(undefined);
+    // const [selectedDevelopmentCard, setSelectedDevelopmentCard] =
+    //     useState<string | undefined>(undefined);
     useEffect(() => {
         console.log("===== GAME STATE UPDATED [Turn: " + game.turnNumber + "] =====");
         console.log("Game:", game);
@@ -111,6 +114,7 @@ function App() {
         }
         setGame(nextGame);
     }
+    // helper
     function getDevelopmentCardName(type: DevelopmentCardType) {
         switch (type) {
             case "knight":
@@ -133,31 +137,38 @@ function App() {
             game.currentPlayerId
         );
         if (nextGame === game) {
-            console.warn(
-                "[Development Card] Purchase attempted but was rejected."
-            );
             return;
         }
         setGame(nextGame);
     }
+    // ABC - OPEN DEV CARD MENU
     function handlePlayDevelopmentCard() {
         setSecondaryMenu("development");
     }
-    function handleBankTrade(
-        giveResource: keyof Resources,
-        receiveResource: keyof Resources
-    ) {
-        const nextGame = bankTrade(
+    // function handleSelectDevelopmentCard(cardId: string) {
+    //     setSelectedDevelopmentCard(cardId);
+    // }
+    function handleSelectDevelopmentCard(cardId: string) {
+        console.log(
+            "handleSelectDevelopmentCard -[cardId]: ",
+            cardId
+        );
+        const nextGame = playDevelopmentCard(
             game,
             game.currentPlayerId,
-            giveResource,
-            receiveResource
+            cardId
         );
         if (nextGame === game) {
             return;
         }
         setGame(nextGame);
     }
+    // XYZ
+    // function handleCloseDevelopmentMenu() {
+    //     setSecondaryMenu(undefined);
+    //     setSelectedDevelopmentCard(undefined);
+    // }
+    // ABC - OPEN TRADE MENU
     function handleTrade() {
         const player = game.players.find(
             (candidate) =>
@@ -169,23 +180,42 @@ function App() {
         setSelectedGiveResource(undefined);
         setSecondaryMenu("trade");
     }
+    // MNO-1
     function handleSelectGiveResource(
         resource: keyof Resources
     ) {
         setSelectedGiveResource(resource);
     }
+    // MNO-2
     function handleSelectReceiveResource(
         resource: keyof Resources
     ) {
         if (!selectedGiveResource) {
             return;
         }
-        handleBankTrade(
+        executeTrade(
             selectedGiveResource,
             resource
         );
         handleCloseTrade();
     }
+    // MNO-3
+    function executeTrade(
+        giveResource: keyof Resources,
+        receiveResource: keyof Resources
+    ) {
+        const nextGame = tradeWithBank(
+            game,
+            game.currentPlayerId,
+            giveResource,
+            receiveResource
+        );
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
+    }
+    // XYZ
     function handleCloseTrade() {
         setSecondaryMenu(undefined);
         setSelectedGiveResource(undefined);
@@ -744,16 +774,37 @@ function App() {
                                         gap: "8px",
                                     }}
                                 >
-                                    {currentPlayer.developmentCards.map((card) => (
-                                        <SecondaryMenuButton
-                                            key={card.id}
-                                            onClick={() => {
-                                                console.log("Development card selected:", card);
-                                            }}
-                                        >
-                                            {getDevelopmentCardName(card.type)}
-                                        </SecondaryMenuButton>
-                                    ))}
+                                    {/* (select) development-card menu */}
+                                    {currentPlayer.developmentCards.map((card) => {
+                                        const isPlayed =
+                                            currentPlayer.playedDevelopmentCardIds.includes(card.id);
+                                        const isPurchasedThisTurn =
+                                            currentPlayer.developmentCardsPurchasedThisTurn.includes(
+                                                card.id
+                                            );
+                                        const isVictoryPoint =
+                                            card.type === "victory_point";
+                                        const isPlayable =
+                                            card.type === "knight" &&
+                                            !isPlayed &&
+                                            !isPurchasedThisTurn &&
+                                            !currentPlayer.developmentCardPlayedThisTurn;
+                                        return (
+                                            <SecondaryMenuButton
+                                                key={card.id}
+                                                disabled={!isPlayable}
+                                                onClick={() => {
+                                                    if (!isPlayable) {
+                                                        return;
+                                                    }
+                                                    handleSelectDevelopmentCard(card.id);
+                                                }}
+                                            >
+                                                {getDevelopmentCardName(card.type)}
+                                                {isVictoryPoint && " (+1 VP)"}
+                                            </SecondaryMenuButton>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </SecondaryMenu>

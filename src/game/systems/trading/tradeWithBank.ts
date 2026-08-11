@@ -2,7 +2,7 @@ import type { GameState } from "../../engine/GameState";
 import type { Resources } from "../../engine/types";
 import { createEvent } from "../../engine/createEvent";
 import { getTradeRatio } from "./getTradeRatio";
-export function bankTrade(
+export function tradeWithBank(
   game: GameState,
   playerId: string,
   giveResource: keyof Resources,

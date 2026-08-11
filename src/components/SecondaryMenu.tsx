@@ -85,6 +85,25 @@ export function SecondaryMenuButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
+      onMouseEnter={(event) => {
+        if (!disabled) {
+          event.currentTarget.style.background = "#1d4ed8";
+          event.currentTarget.style.borderColor = "#60a5fa";
+          event.currentTarget.style.boxShadow =
+            "0 0 10px rgba(96, 165, 250, 0.35)";
+        }
+      }}
+      onMouseLeave={(event) => {
+        if (!disabled) {
+          event.currentTarget.style.background = active
+            ? "#1d4ed8"
+            : "#1f2937";
+          event.currentTarget.style.borderColor = active
+            ? "#60a5fa"
+            : "#374151";
+          event.currentTarget.style.boxShadow = "none";
+        }
+      }}
       style={{
         width: "100%",
         padding: "10px",
@@ -102,7 +121,7 @@ export function SecondaryMenuButton({
         fontWeight: "bold",
         textAlign: "left",
         transition:
-          "background 0.15s ease, border 0.15s ease",
+          "background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease",
       }}
     >
       {children}
