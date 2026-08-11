@@ -89,10 +89,12 @@ function PlayerPanel({
               borderRadius: "12px",
               boxShadow:
                 player.id === game.currentPlayerId
-                  ? "0 0 18px 4px rgba(239, 68, 68, 0.8)"
+                  ? player.id === "player-1"
+                    ? "0 0 18px 4px #f97316"
+                    : "0 0 18px 4px #9333ea"
                   : "none",
               transition:
-                "box-shadow 0.2s ease",
+                "box-shadow 0.5s ease",
             }}
           >
             <Panel>
@@ -160,50 +162,50 @@ function PlayerPanel({
                   borderColor: "#374151",
                 }}
               />
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "8px",
-              }}
-            >
-              <span
+              <div
                 style={{
-                  display: "inline-flex",
+                  display: "flex",
                   alignItems: "center",
-                  gap: "8px",
-                  color: "#f9fafb",
-                  fontWeight: "bold",
+                  justifyContent: "space-between",
+                  marginBottom: "8px",
                 }}
               >
                 <span
                   style={{
-                    width: "28px",
-                    height: "20px",
-                    borderRadius: "4px",
-                    border: "1px solid #60a5fa",
-                    background:
-                      "linear-gradient(135deg, #1e3a8a, #312e81)",
                     display: "inline-flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "12px",
+                    gap: "8px",
+                    color: "#f9fafb",
+                    fontWeight: "bold",
                   }}
                 >
-                  🎴
+                  <span
+                    style={{
+                      width: "28px",
+                      height: "20px",
+                      borderRadius: "4px",
+                      border: "1px solid #60a5fa",
+                      background:
+                        "linear-gradient(135deg, #1e3a8a, #312e81)",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "12px",
+                    }}
+                  >
+                    🎴
+                  </span>
+                  Development Cards
                 </span>
-                Development Cards
-              </span>
-              <strong
-                style={{
-                  color: "#f9fafb",
-                  fontSize: "16px",
-                }}
-              >
-                {player.developmentCards.length}
-              </strong>
-            </div>
+                <strong
+                  style={{
+                    color: "#f9fafb",
+                    fontSize: "16px",
+                  }}
+                >
+                  {player.developmentCards.length}
+                </strong>
+              </div>
               <div>
                 🏠 Settlements Remaining:{" "}
                 {5 - player.settlements.length}

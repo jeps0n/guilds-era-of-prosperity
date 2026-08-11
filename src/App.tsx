@@ -64,11 +64,17 @@ import {
 } from "./components/SecondaryMenu";
 function App() {
     const [game, setGame] = useState(initialGame);
-    const [tradeOpen, setTradeOpen] = useState(false);
+    // const [tradeOpen, setTradeOpen] = useState(false);
+    type SecondaryMenuMode =
+        | "trade"
+        | "development"
+        | undefined;
+    const [secondaryMenu, setSecondaryMenu] =
+        useState<SecondaryMenuMode>(undefined);
     const [selectedGiveResource, setSelectedGiveResource] =
         useState<keyof Resources | undefined>(undefined);
     useEffect(() => {
-        console.log("===== GAME STATE UPDATED [Turn: " + game.turnNumber +"] =====");
+        console.log("===== GAME STATE UPDATED [Turn: " + game.turnNumber + "] =====");
         console.log("Game:", game);
         console.log("========================================");
     }, [game]);
@@ -215,7 +221,7 @@ function App() {
             return;
         }
         setSelectedGiveResource(undefined);
-        setTradeOpen(true);
+        setSecondaryMenu("trade");
     }
     function handleSelectGiveResource(
         resource: keyof Resources
@@ -235,7 +241,7 @@ function App() {
         handleCloseTrade();
     }
     function handleCloseTrade() {
-        setTradeOpen(false);
+        setSecondaryMenu(undefined);
         setSelectedGiveResource(undefined);
     }
     function handleRollDice() {
@@ -644,7 +650,7 @@ function App() {
                                     : undefined
                         }
                     />
-                    {tradeOpen && game.phase === "playing" && (
+                    {secondaryMenu === "trade" && game.phase === "playing" && (
                         <SecondaryMenu
                             title="Trade"
                             onClose={handleCloseTrade}
@@ -711,14 +717,14 @@ function App() {
                                 <>
                                     <div
                                         style={{
-                                                fontSize:
-                                                    "13px",
-                                                color:
-                                                     "#d1d5db",
-                                                marginTop:
-                                                     "16px",
-                                                marginBottom:
-                                                    "10px",
+                                            fontSize:
+                                                "13px",
+                                            color:
+                                                "#d1d5db",
+                                            marginTop:
+                                                "16px",
+                                            marginBottom:
+                                                "10px",
                                         }}
                                     >
                                         Receive:
@@ -726,9 +732,9 @@ function App() {
                                     <div
                                         style={{
                                             display:
-                                            "flex",
+                                                "flex",
                                             flexDirection:
-                                            "column",
+                                                "column",
                                             gap: "8px",
                                         }}
                                     >
