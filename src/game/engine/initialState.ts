@@ -92,6 +92,10 @@ export function createInitialState(): GameState {
     robberPending: false,
     yearOfPlentyPending: false,
     yearOfPlentyFirstResource: undefined,
+    yearOfPlentyCardId: undefined,
+    monopolyPending: false,
+    monopolyResource: undefined,
+    monopolyCardId: undefined,
     resourceBank: {
       brick: 19,
       lumber: 19,

@@ -39,28 +39,21 @@ function GameLog({
             <span
                 key={key}
                 style={{
-                    display:
-                        "inline-flex",
-                    alignItems:
-                        "center",
-                    justifyContent:
-                        "center",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     width: "22px",
                     height: "22px",
                     margin: "0 3px",
                     borderRadius: "10px",
-                    backgroundColor:
-                        "#f9fafb",
-                    border:
-                        "1px solid #c0c0c0",
+                    backgroundColor: "#f9fafb",
+                    border: "1px solid #c0c0c0",
                     color: "#000000",
                     fontSize: "14px",
                     fontWeight: "bold",
                     lineHeight: "1",
-                    verticalAlign:
-                        "middle",
-                    boxSizing:
-                        "border-box",
+                    verticalAlign: "middle",
+                    boxSizing: "border-box",
                 }}
             >
                 {value}
@@ -69,50 +62,40 @@ function GameLog({
     }
     function renderResourceBadge(
         resource: string,
-        key: number
+        key: number,
+        amount?: string
     ) {
         return (
             <span
                 key={key}
                 style={{
-                    display:
-                        "inline-flex",
-                    alignItems:
-                        "center",
-                    justifyContent:
-                        "center",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     width: "22px",
                     height: "22px",
                     margin: "0 3px",
                     borderRadius: "6px",
                     backgroundColor:
-                        resourceColors[
-                        resource
-                        ],
+                        resourceColors[resource],
                     color: "#000000",
                     fontSize: "12px",
                     fontWeight: "bold",
                     lineHeight: "1",
-                    verticalAlign:
-                        "middle",
-                    boxSizing:
-                        "border-box",
+                    verticalAlign: "middle",
+                    boxSizing: "border-box",
                 }}
             >
+                {amount}
             </span>
         );
     }
     function renderEventMessage(
         message: string
     ) {
-        // console.log("[GAME LOG] RAW MESSAGE:", JSON.stringify(message));
-        // const parts = message.split(
-        //     /(Player A|Player B|\(\d+\)\s*\[(?:brick|lumber|wheat|sheep|ore)\]|\(\?\)\[desert\]|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/g
-        // );
         const parts = message.split(
-            /(Player A|Player B|\(\d+\)\s*\[(?:brick|lumber|wheat|sheep|ore)\]|\(\?\)\[desert\]|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/g
+            /(Player A|Player B|\(\d+\)\s\[(?:brick|lumber|wheat|sheep|ore)\]|\(\?\)\[desert\]|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/
         );
-        // console.log("[GAME LOG] PARSED PARTS:", parts);
         return parts.map((part, index) => {
             if (
                 part === "Player A" ||
@@ -125,9 +108,7 @@ function GameLog({
                 return (
                     <strong
                         key={index}
-                        style={{
-                            color,
-                        }}
+                        style={{ color }}
                     >
                         {part}
                     </strong>
@@ -141,9 +122,8 @@ function GameLog({
             }
             const robberMatch =
                 part.match(
-                    /^\((\d+)\)\s*\[(brick|lumber|wheat|sheep|ore)\]$/
+                    /^\((\d+)\)\s\[(brick|lumber|wheat|sheep|ore)\]$/
                 );
-            // console.log("[GAME LOG] ROBBER MATCH:", part, robberMatch);
             if (robberMatch) {
                 const number =
                     robberMatch[1];
@@ -153,12 +133,9 @@ function GameLog({
                     <span
                         key={index}
                         style={{
-                            display:
-                                "inline-flex",
-                            alignItems:
-                                "center",
-                            verticalAlign:
-                                "middle",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            verticalAlign: "middle",
                         }}
                     >
                         {renderNumberToken(
@@ -167,16 +144,11 @@ function GameLog({
                         )}
                         {renderResourceBadge(
                             resource,
-                            index +
-                            1000
+                            index + 1000
                         )}
                     </span>
                 );
             }
-            // const resourceMatch =
-            //     part.match(
-            //         /^\[(brick|lumber|wheat|sheep|ore)\] (\d+)$/
-            //     );
             const resourceMatch =
                 part.match(
                     /^\[(brick|lumber|wheat|sheep|ore)\] (\d+)$/
@@ -186,38 +158,10 @@ function GameLog({
                     resourceMatch[1];
                 const amount =
                     resourceMatch[2];
-                return (
-                    <span
-                        key={index}
-                        style={{
-                            display:
-                                "inline-flex",
-                            alignItems:
-                                "center",
-                            justifyContent:
-                                "center",
-                            width: "22px",
-                            height: "22px",
-                            margin: "0 3px",
-                            borderRadius: "6px",
-                            backgroundColor:
-                                resourceColors[
-                                resource
-                                ],
-                            color:
-                                "#000000",
-                            verticalAlign:
-                                "middle",
-                            fontSize: "12px",
-                            fontWeight: "bold",
-                            // lineHeight:
-                            //     "1",
-                            // boxSizing:
-                            //     "border-box",
-                        }}
-                    >
-                        {amount}
-                    </span>
+                return renderResourceBadge(
+                    resource,
+                    index,
+                    amount
                 );
             }
             return (
@@ -239,29 +183,23 @@ function GameLog({
                 <hr
                     style={{
                         margin: "8px 0",
-                        borderColor:
-                            "#374151",
+                        borderColor: "#374151",
                     }}
                 />
                 <div
                     ref={logRef}
                     style={{
                         height: "180px",
-                        overflowY:
-                            "auto",
+                        overflowY: "auto",
                         fontSize: "14px",
-                        textAlign:
-                            "left",
-                        paddingRight:
-                            "4px",
+                        textAlign: "left",
+                        paddingRight: "4px",
                     }}
                 >
-                    {game.eventLog.length ===
-                        0 ? (
+                    {game.eventLog.length === 0 ? (
                         <div
                             style={{
-                                color:
-                                    "#6b7280",
+                                color: "#6b7280",
                             }}
                         >
                             No events yet.
@@ -270,16 +208,12 @@ function GameLog({
                         game.eventLog.map(
                             (event) => (
                                 <div
-                                    key={
-                                        event.id
-                                    }
+                                    key={event.id}
                                     style={{
-                                        padding:
-                                            "6px 0",
+                                        padding: "6px 0",
                                         borderBottom:
                                             "1px solid #1f2937",
-                                        color:
-                                            "#d1d5db",
+                                        color: "#d1d5db",
                                     }}
                                 >
                                     {renderEventMessage(

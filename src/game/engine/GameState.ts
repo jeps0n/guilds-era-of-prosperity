@@ -65,6 +65,9 @@ export interface GameState {
   yearOfPlentyPending: boolean;
   yearOfPlentyFirstResource?: keyof Resources;
   yearOfPlentyCardId?: string;
+  monopolyPending: boolean;
+  monopolyResource?: keyof Resources;
+  monopolyCardId?: string;
   robberTileId?: string;
   phase: GamePhase;
   eraOfProsperity: boolean;

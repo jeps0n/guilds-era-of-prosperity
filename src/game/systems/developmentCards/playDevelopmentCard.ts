@@ -51,6 +51,14 @@ export function playDevelopmentCard(
     if (card.type === "victory_point") {
         return game;
     }
+    if (card.type === "monopoly") {
+        return {
+            ...game,
+            monopolyPending: true,
+            monopolyCardId: cardId,
+            monopolyResource: undefined,
+        };
+    }
     const isYearOfPlenty =
         card.type === "year_of_plenty";
     const updatedPlayers = game.players.map(
