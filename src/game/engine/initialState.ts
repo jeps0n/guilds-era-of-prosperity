@@ -96,6 +96,7 @@ export function createInitialState(): GameState {
     monopolyPending: false,
     monopolyResource: undefined,
     monopolyCardId: undefined,
+    roadBuildingPending: false,
     resourceBank: {
       brick: 19,
       lumber: 19,

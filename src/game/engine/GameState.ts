@@ -68,6 +68,9 @@ export interface GameState {
   monopolyPending: boolean;
   monopolyResource?: keyof Resources;
   monopolyCardId?: string;
+  roadBuildingPending: boolean;
+  // roadBuildingCardId?: string;
+  // roadBuildingRoadsPlaced: number;
   robberTileId?: string;
   phase: GamePhase;
   eraOfProsperity: boolean;

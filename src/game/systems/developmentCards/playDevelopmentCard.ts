@@ -61,6 +61,14 @@ export function playDevelopmentCard(
     }
     const isYearOfPlenty =
         card.type === "year_of_plenty";
+    const isRoadBuilding =
+        card.type === "road_building";
+    const canStartRoadBuilding =
+        isRoadBuilding &&
+        hasLegalRoadBuildingPlacement(
+            game,
+            playerId
+        );
     const updatedPlayers = game.players.map(
         (candidate) => {
             if (candidate.id !== playerId) {
@@ -91,8 +99,12 @@ export function playDevelopmentCard(
     return {
         ...game,
         players: updatedPlayers,
+        // Knight starts the robber board action.
         robberPending:
             card.type === "knight",
+        // Road Building starts the road board action.
+        roadBuildingPending:
+            canStartRoadBuilding,
         yearOfPlentyPending:
             isYearOfPlenty,
         yearOfPlentyCardId:
@@ -111,4 +123,98 @@ export function playDevelopmentCard(
                 ),
             ],
     };
+    function hasLegalRoadBuildingPlacement(
+        game: GameState,
+        playerId: string
+    ): boolean {
+        const player = game.players.find(
+            (candidate) => candidate.id === playerId
+        );
+        if (!player) {
+            return false;
+        }
+        // No physical road pieces remaining.
+        if (player.roads.length >= 15) {
+            return false;
+        }
+        const playerStructureNodes = new Set([
+            ...player.settlements.map(
+                (settlement) => settlement.nodeId
+            ),
+            ...player.cities,
+        ]);
+        const opponentStructureNodes = new Set(
+            game.players
+                .filter(
+                    (candidate) =>
+                        candidate.id !== playerId
+                )
+                .flatMap((candidate) => [
+                    ...candidate.settlements.map(
+                        (settlement) =>
+                            settlement.nodeId
+                    ),
+                    ...candidate.cities,
+                ])
+        );
+        return game.board.edges.some((edge) => {
+            // An occupied edge cannot receive a road.
+            const occupied = game.players.some(
+                (candidate) =>
+                    candidate.roads.includes(edge.id)
+            );
+            if (occupied) {
+                return false;
+            }
+            const candidateNodes = [
+                edge.nodeA,
+                edge.nodeB,
+            ];
+            for (const nodeId of candidateNodes) {
+                // A player's own structure connects the road.
+                if (
+                    playerStructureNodes.has(nodeId)
+                ) {
+                    return true;
+                }
+                // An opponent's structure blocks the network
+                // from continuing through this node.
+                if (
+                    opponentStructureNodes.has(nodeId)
+                ) {
+                    continue;
+                }
+                // Otherwise, see whether one of the player's
+                // existing roads reaches this node.
+                const connectedToPlayerRoad =
+                    game.board.edges.some(
+                        (existingEdge) => {
+                            if (
+                                existingEdge.id ===
+                                edge.id
+                            ) {
+                                return false;
+                            }
+                            if (
+                                !player.roads.includes(
+                                    existingEdge.id
+                                )
+                            ) {
+                                return false;
+                            }
+                            return (
+                                existingEdge.nodeA ===
+                                nodeId ||
+                                existingEdge.nodeB ===
+                                nodeId
+                            );
+                        }
+                    );
+                if (connectedToPlayerRoad) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
 }

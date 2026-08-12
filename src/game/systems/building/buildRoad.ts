@@ -19,8 +19,7 @@ export function buildRoad(
         return game;
     }
     const player = game.players.find(
-        (candidate) =>
-            candidate.id === playerId
+        (candidate) => candidate.id === playerId
     );
     if (!player) {
         return game;
@@ -28,17 +27,22 @@ export function buildRoad(
     if (player.roads.length >= 15) {
         return game;
     }
+    const isRoadBuilding =
+        game.roadBuildingPending;
+    // Normal road building requires resources.
+    // Road Building development cards provide roads for free.
     if (
-        player.resources.brick <
-        ROAD_COST.brick ||
-        player.resources.lumber <
-        ROAD_COST.lumber
-    ) {
+        !isRoadBuilding &&
+        (
+            player.resources.brick <
+            ROAD_COST.brick ||
+            player.resources.lumber <
+            ROAD_COST.lumber
+        )) {
         return game;
     }
     const edge = game.board.edges.find(
-        (candidate) =>
-            candidate.id === edgeId
+        (candidate) => candidate.id === edgeId
     );
     if (!edge) {
         return game;
@@ -67,42 +71,178 @@ export function buildRoad(
             }
             return {
                 ...candidate,
-                resources: {
-                    ...candidate.resources,
-                    brick:
-                        candidate.resources.brick -
-                        ROAD_COST.brick,
-                    lumber:
-                        candidate.resources.lumber -
-                        ROAD_COST.lumber,
-                },
+                resources: isRoadBuilding
+                    ? candidate.resources
+                    : {
+                        ...candidate.resources,
+                        brick:
+                            candidate.resources.brick -
+                            ROAD_COST.brick,
+                        lumber:
+                            candidate.resources.lumber -
+                            ROAD_COST.lumber,
+                    },
                 roads: [
                     ...candidate.roads,
                     edgeId,
                 ],
             };
         });
-    const updatedResourceBank = {
-        ...game.resourceBank,
-        brick:
-            game.resourceBank.brick +
-            ROAD_COST.brick,
-        lumber:
-            game.resourceBank.lumber +
-            ROAD_COST.lumber,
-    };
-    return {
+    const updatedResourceBank =
+        isRoadBuilding
+            ? game.resourceBank
+            : {
+                ...game.resourceBank,
+                brick:
+                    game.resourceBank.brick +
+                    ROAD_COST.brick,
+                lumber:
+                    game.resourceBank.lumber +
+                    ROAD_COST.lumber,
+            };
+    const roadPlacedEvent = createEvent(
+        "ROAD_PLACED",
+        isRoadBuilding
+            ? `${player.name} placed a road using Road Building.`
+            : `${player.name} built a road.`
+    );
+    if (!isRoadBuilding) {
+        return {
+            ...game,
+            players: updatedPlayers,
+            resourceBank: updatedResourceBank,
+            eventLog: [
+                ...game.eventLog,
+                roadPlacedEvent,
+            ],
+        };
+    }
+    /*
+     * Road Building allows up to two roads.
+     *
+     * After placing the first road, determine whether
+     * another legal Road Building placement exists.
+     */
+    const updatedGame: GameState = {
         ...game,
         players: updatedPlayers,
         resourceBank: updatedResourceBank,
         eventLog: [
             ...game.eventLog,
-            createEvent(
-                "ROAD_PLACED",
-                `${player.name} built a road.`
-            ),
+            roadPlacedEvent,
         ],
     };
+    const updatedPlayer =
+        updatedPlayers.find(
+            (candidate) =>
+                candidate.id === playerId
+        );
+    if (!updatedPlayer) {
+        return game;
+    }
+    // No physical road pieces remain.
+    if (updatedPlayer.roads.length >= 15) {
+        return {
+            ...updatedGame,
+            roadBuildingPending: false,
+        };
+    }
+    /*
+     * Determine how many roads have been placed
+     * during this Road Building resolution.
+     */
+    const lastRoadBuildingEventIndex =
+        findLastRoadBuildingEventIndex(game);
+    const roadsPlacedDuringRoadBuilding =
+        lastRoadBuildingEventIndex === -1
+            ? 0
+            : game.eventLog
+                .slice(
+                    lastRoadBuildingEventIndex + 1
+                )
+                .filter(
+                    (event) =>
+                        event.type === "ROAD_PLACED"
+                ).length;
+    const totalRoadBuildingRoads =
+        roadsPlacedDuringRoadBuilding + 1;
+    // Two roads have been placed.
+    if (totalRoadBuildingRoads >= 2) {
+        return {
+            ...updatedGame,
+            roadBuildingPending: false,
+        };
+    }
+    /*
+     * We have placed exactly one road.
+     *
+     * If there is no legal second road, the Road Building
+     * effect is complete. The player does not get another
+     * road because there is nowhere legal to place it.
+     */
+    const hasSecondLegalRoad =
+        hasLegalRoadPlacement(
+            updatedGame,
+            playerId
+        );
+    return {
+        ...updatedGame,
+        roadBuildingPending:
+            hasSecondLegalRoad,
+    };
+}
+function hasLegalRoadPlacement(
+    game: GameState,
+    playerId: string
+): boolean {
+    const player = game.players.find(
+        (candidate) =>
+            candidate.id === playerId
+    );
+    if (!player) {
+        return false;
+    }
+    if (player.roads.length >= 15) {
+        return false;
+    }
+    return game.board.edges.some((edge) => {
+        const occupied =
+            game.players.some(
+                (candidate) =>
+                    candidate.roads.includes(
+                        edge.id
+                    )
+            );
+        if (occupied) {
+            return false;
+        }
+        return connectsToPlayerNetwork(
+            game,
+            playerId,
+            edge.id
+        );
+    });
+}
+function findLastRoadBuildingEventIndex(
+    game: GameState
+): number {
+    for (
+        let index = game.eventLog.length - 1;
+        index >= 0;
+        index--
+    ) {
+        const event = game.eventLog[index];
+        if (
+            event.type ===
+            "DEVELOPMENT_CARD_PLAYED" &&
+            event.message.includes(
+                "road building"
+            )
+        ) {
+            return index;
+        }
+    }
+    return -1;
 }
 function connectsToPlayerNetwork(
     game: GameState,
@@ -118,52 +258,44 @@ function connectsToPlayerNetwork(
     }
     const candidateEdge =
         game.board.edges.find(
-            (edge) =>
-                edge.id === edgeId
+            (edge) => edge.id === edgeId
         );
     if (!candidateEdge) {
         return false;
     }
-    const playerStructureNodes =
-        new Set([
-            ...player.settlements.map(
-                (settlement) =>
-                    settlement.nodeId
-            ),
-            ...player.cities,
-        ]);
-    const opponentStructureNodes =
-        new Set(
-            game.players
-                .filter(
-                    (candidate) =>
-                        candidate.id !==
-                        playerId
-                )
-                .flatMap((candidate) => [
-                    ...candidate.settlements.map(
-                        (settlement) =>
-                            settlement.nodeId
-                    ),
-                    ...candidate.cities,
-                ])
-        );
+    const playerStructureNodes = new Set([
+        ...player.settlements.map(
+            (settlement) =>
+                settlement.nodeId
+        ),
+        ...player.cities,
+    ]);
+    const opponentStructureNodes = new Set(
+        game.players
+            .filter(
+                (candidate) =>
+                    candidate.id !== playerId
+            )
+            .flatMap((candidate) => [
+                ...candidate.settlements.map(
+                    (settlement) =>
+                        settlement.nodeId
+                ),
+                ...candidate.cities,
+            ])
+    );
     const candidateNodes = [
         candidateEdge.nodeA,
         candidateEdge.nodeB,
     ];
     for (const nodeId of candidateNodes) {
         if (
-            playerStructureNodes.has(
-                nodeId
-            )
+            playerStructureNodes.has(nodeId)
         ) {
             return true;
         }
         if (
-            opponentStructureNodes.has(
-                nodeId
-            )
+            opponentStructureNodes.has(nodeId)
         ) {
             continue;
         }

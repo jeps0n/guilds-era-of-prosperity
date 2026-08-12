@@ -23,6 +23,7 @@ interface ActionBarProps {
     diceOnly?: boolean;
     hideDice?: boolean;
     playerColor?: string;
+    roadBuildingPending?: boolean;
 }
 interface ActionButtonProps {
     label: string;
@@ -127,6 +128,7 @@ function ActionBar({
     diceOnly = false,
     hideDice = false,
     playerColor = "DEFAULT_BUTTON_BACKGROUND",
+    roadBuildingPending = false,
 }: ActionBarProps) {
     const isInitialPlacement =
         phase === "initial_placement";
@@ -169,8 +171,8 @@ function ActionBar({
                         ? `Rolled ${lastDiceRoll}`
                         : "Roll Dice"
                 }
-                active={canRoll}
-                disabled={!canRoll}
+                active={canRoll && !roadBuildingPending}
+                disabled={!canRoll || roadBuildingPending}
                 onClick={onRollDice}
             />
         );

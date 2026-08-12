@@ -445,7 +445,7 @@ function App() {
         const robberMovedEvent = {
             id: `robber-moved-${Date.now()}`,
             type: "ROBBER_MOVED" as const,
-            message: `${currentPlayer.name} moved the robber to (${tile.numberToken ?? "?"})[${tile.resource}]`,
+            message: `${currentPlayer.name} moved the robber to (${tile.numberToken ?? "?"}) [${tile.resource}]`,
             timestamp: Date.now(),
         };
         const stealEvent =
@@ -482,6 +482,9 @@ function App() {
             yearOfPlentyPending: false,
             yearOfPlentyCardId: undefined,
             yearOfPlentyFirstResource: undefined,
+            roadBuildingPending: false,
+            roadBuildingCardId: undefined,
+            roadBuildingRoadsPlaced: 0,
         };
         // Close all secondary menus immediately.
         setSecondaryMenu(undefined);
@@ -653,6 +656,9 @@ function App() {
                 onPlayDevelopmentCard={
                     handlePlayDevelopmentCard
                 }
+                roadBuildingPending={
+                    game.roadBuildingPending
+                }
                 {...options}
             />
         );
@@ -734,21 +740,17 @@ function App() {
                                 : undefined
                         }
                         onSelectNode={
-                            game.phase ===
-                                "initial_placement" &&
-                                game.placementAction ===
-                                "settlement"
+                            game.phase === "initial_placement" &&
+                                game.placementAction === "settlement"
                                 ? handlePlaceSettlement
-                                : game.phase ===
-                                    "playing"
+                                : game.phase === "playing"
                                     ? (nodeId) => {
                                         const ownsSettlement =
                                             currentPlayer?.settlements.some(
                                                 (
                                                     settlement
                                                 ) =>
-                                                    settlement.nodeId ===
-                                                    nodeId
+                                                    settlement.nodeId === nodeId
                                             );
                                         if (
                                             ownsSettlement
@@ -769,14 +771,15 @@ function App() {
                                     : undefined
                         }
                         onSelectEdge={
-                            game.phase ===
-                                "initial_placement" &&
-                                game.placementAction ===
-                                "road"
+                            game.phase === "initial_placement" &&
+                                game.placementAction === "road"
                                 ? handlePlaceRoad
                                 : game.phase ===
                                     "playing" &&
-                                    actionAvailability.canRoad
+                                    (
+                                        game.roadBuildingPending ||
+                                        actionAvailability.canRoad
+                                    )
                                     ? handleBuildRoad
                                     : undefined
                         }
@@ -789,29 +792,23 @@ function App() {
                                 handleCloseTrade
                             }
                         >
-                            {tradeGiveOptions.length !==
-                                0 && (
-                                    <div
-                                        style={{
-                                            fontSize:
-                                                "13px",
-                                            color:
-                                                "#d1d5db",
-                                            marginBottom:
-                                                "10px",
-                                        }}
-                                    >
-                                        <span>
-                                            Give:
-                                        </span>
-                                    </div>
-                                )}
+                            {tradeGiveOptions.length !== 0 && (
+                                <div
+                                    style={{
+                                        fontSize: "13px",
+                                        color: "#d1d5db",
+                                        marginBottom: "10px",
+                                    }}
+                                >
+                                    <span>
+                                        Give:
+                                    </span>
+                                </div>
+                            )}
                             <div
                                 style={{
-                                    display:
-                                        "flex",
-                                    flexDirection:
-                                        "column",
+                                    display: "flex",
+                                    flexDirection: "column",
                                     gap: "8px",
                                 }}
                             >
@@ -863,14 +860,11 @@ function App() {
                                     0 && (
                                         <div
                                             style={{
-                                                color:
-                                                    "#9ca3af",
-                                                fontSize:
-                                                    "13px",
+                                                color: "#9ca3af",
+                                                fontSize: "13px",
                                             }}
                                         >
-                                            No valid trades
-                                            available.
+                                            No valid trades available.
                                         </div>
                                     )}
                             </div>
@@ -878,14 +872,10 @@ function App() {
                                 <>
                                     <div
                                         style={{
-                                            fontSize:
-                                                "13px",
-                                            color:
-                                                "#d1d5db",
-                                            marginTop:
-                                                "16px",
-                                            marginBottom:
-                                                "10px",
+                                            fontSize: "13px",
+                                            color: "#d1d5db",
+                                            marginTop: "16px",
+                                            marginBottom: "10px",
                                         }}
                                     >
                                         Receive:
@@ -1175,14 +1165,11 @@ function App() {
                                         >
                                             <span
                                                 style={{
-                                                    display:
-                                                        "inline-flex",
-                                                    alignItems:
-                                                        "center",
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
                                                     gap: "8px",
                                                     width: "100%",
-                                                    justifyContent:
-                                                        "flex-start",
+                                                    justifyContent: "flex-start",
                                                 }}
                                             >
                                                 {renderResourceBadge(
@@ -1200,21 +1187,19 @@ function App() {
                         </SecondaryMenu>
                     )}
                     {/* ACTION BAR */}
-                    {game.phase ===
-                        "playing" && (
-                            <div
-                                style={{
-                                    position:
-                                        "absolute",
-                                    right: "16px",
-                                    bottom: "16px",
-                                }}
-                            >
-                                {renderActionBar({
-                                    diceOnly: true,
-                                })}
-                            </div>
-                        )}
+                    {game.phase === "playing" && (
+                        <div
+                            style={{
+                                position: "absolute",
+                                right: "16px",
+                                bottom: "16px",
+                            }}
+                        >
+                            {renderActionBar({
+                                diceOnly: true,
+                            })}
+                        </div>
+                    )}
                 </div>
             }
             rightSidebar={
@@ -1233,11 +1218,10 @@ function App() {
                 </>
             }
             bottom={
-                game.robberPending ? (
+                game.robberPending || game.roadBuildingPending ? (
                     <RobberActionBar
-                        playerColor={
-                            currentPlayerColor
-                        }
+                        playerColor={currentPlayerColor}
+                        roadBuildingPending={game.roadBuildingPending}
                     />
                 ) : (
                     renderActionBar({
