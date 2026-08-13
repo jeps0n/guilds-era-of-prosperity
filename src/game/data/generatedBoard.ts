@@ -1,19 +1,9 @@
 import type { BoardNode } from "../domain/BoardNode";
-import {
-  generateNodes,
-  generateEdges,
-  hexCorners,
-} from "./hexGrid";
-import {
-  STANDARD_HEX_LAYOUT,
-} from "./standardLayout";
+import { generateNodes, generateEdges, hexCorners, } from "./hexGrid";
+import { STANDARD_HEX_LAYOUT, } from "./standardLayout";
 import type { HexTile } from "../domain/HexTile";
-import {
-  RESOURCE_LAYOUT,
-} from "./resourceLayout";
-import {
-  NUMBER_LAYOUT,
-} from "./numberLayout";
+import { RESOURCE_LAYOUT, } from "./resourceLayout";
+import { NUMBER_LAYOUT, } from "./numberLayout";
 import type { Port } from "../domain/Port";
 const SIZE = 75;
 function shuffle<T>(array: T[]): T[] {
@@ -21,56 +11,49 @@ function shuffle<T>(array: T[]): T[] {
     () => Math.random() - 0.5
   );
 }
-const generatedNodes =
-  generateNodes(
-    STANDARD_HEX_LAYOUT,
-    SIZE
-  );
+const generatedNodes = generateNodes(STANDARD_HEX_LAYOUT, SIZE);
 export const GENERATED_NODES:
-BoardNode[] =
-generatedNodes.map((node) => {
-  const adjacentTiles: string[] = [];
-  STANDARD_HEX_LAYOUT.forEach(
-    (hex, index) => {
-      const corners =
-        hexCorners(
-          hex,
-          SIZE
-        );
-      const touching =
-        corners.some(
-          corner =>
-            Math.abs(
-              corner.x - node.x
-            ) < 0.001
-            &&
-            Math.abs(
-              corner.y - node.y
-            ) < 0.001
-        );
-      if (touching) {
-        adjacentTiles.push(
-          `hex-${index + 1}`
-        );
+  BoardNode[] =
+  generatedNodes.map((node) => {
+    const adjacentTiles: string[] = [];
+    STANDARD_HEX_LAYOUT.forEach(
+      (hex, index) => {
+        const corners =
+          hexCorners(
+            hex,
+            SIZE
+          );
+        const touching =
+          corners.some(
+            corner =>
+              Math.abs(
+                corner.x - node.x
+              ) < 0.001
+              &&
+              Math.abs(
+                corner.y - node.y
+              ) < 0.001
+          );
+        if (touching) {
+          adjacentTiles.push(
+            `hex-${index + 1}`
+          );
+        }
       }
-    }
-  );
-  return {
-    id:
-      node.id,
-    x:
-      node.x,
-    y:
-      node.y,
-    adjacentTiles,
-  };
-});
+    );
+    return {
+      id: node.id,
+      x: node.x,
+      y: node.y,
+      adjacentTiles,
+    };
+  });
 export const GENERATED_EDGES =
-generateEdges(
-  STANDARD_HEX_LAYOUT,
-  SIZE,
-  generatedNodes
-);
+  generateEdges(
+    STANDARD_HEX_LAYOUT,
+    SIZE,
+    generatedNodes
+  );
 function isAdjacent(
   a: HexTile,
   b: HexTile
@@ -175,7 +158,7 @@ function createValidTiles(): HexTile[] {
   );
 }
 export const GENERATED_TILES =
-createValidTiles();
+  createValidTiles();
 function orderCoastalEdgesClockwise(
   edges: typeof GENERATED_EDGES
 ): typeof GENERATED_EDGES {
@@ -263,17 +246,17 @@ function placePortsOnCoast(): Port[] {
       `Expected 30 coastal edges, found ${coastalEdges.length}`
     );
   }
-  const portSpacing =[
-      2,
-      3,
-      2,
-      2,
-      3,
-      2,
-      2,
-      3,
-      2,
-    ];
+  const portSpacing = [
+    2,
+    3,
+    2,
+    2,
+    3,
+    2,
+    2,
+    3,
+    2,
+  ];
   const portTypes:
     Port["type"][] = shuffle([
       "generic",
@@ -334,4 +317,4 @@ function placePortsOnCoast(): Port[] {
   );
 }
 export const GENERATED_PORTS =
-placePortsOnCoast();
+  placePortsOnCoast();

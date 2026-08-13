@@ -75,6 +75,8 @@ export interface GameState {
   phase: GamePhase;
   eraOfProsperity: boolean;
   prosperityTriggeredBy?: string;
+  longestRoadPlayerId?: string;
+  // largestArmyPlayerId?: string;
   winnerId?: string;
   eventLog: GameEvent[];
 }

@@ -7,6 +7,9 @@ import GameLayout from "./components/layout/GameLayout";
 import GameLog from "./components/GameLog";
 import PlayerPanel from "./components/PlayerPanel";
 import RobberActionBar from "./components/RobberActionBar";
+import { SecondaryMenu, SecondaryMenuButton, } from "./components/SecondaryMenu";
+import type { GuildType, Resources } from "./game/engine/types";
+import type { DevelopmentCardType } from "./game/domain/DevelopmentCard";
 import { createInitialState } from "./game/engine/initialState";
 import { validateBoard } from "./game/engine/boardValidation/validateBoard";
 import { selectGuild } from "./game/systems/guildSelection";
@@ -14,22 +17,18 @@ import { placeSettlement } from "./game/systems/initialPlacement/placeSettlement
 import { placeRoad } from "./game/systems/initialPlacement/placeRoad";
 import { endTurn } from "./game/systems/turn/endTurn";
 import { rollDice } from "./game/systems/turn/rollDice";
-import type { GuildType, Resources } from "./game/engine/types";
 import { getActionAvailability } from "./game/systems/actions/getActionAvailability";
 import { buildRoad } from "./game/systems/building/buildRoad";
 import { buildSettlement } from "./game/systems/building/buildSettlement";
 import { buildCity } from "./game/systems/building/buildCity";
 import { tradeWithBank } from "./game/systems/trading/tradeWithBank";
+import { getTradeRatio } from "./game/systems/trading/getTradeRatio";
 import { buyDevelopmentCard } from "./game/systems/developmentCards/buyDevelopmentCard";
 import { playDevelopmentCard } from "./game/systems/developmentCards/playDevelopmentCard";
 import { resolveYearOfPlenty } from "./game/systems/developmentCards/resolveYearOfPlenty";
 import { resolveMonopoly } from "./game/systems/developmentCards/resolveMonopoly";
-import type { DevelopmentCardType } from "./game/domain/DevelopmentCard";
-import { getTradeRatio } from "./game/systems/trading/getTradeRatio";
-import {
-    SecondaryMenu,
-    SecondaryMenuButton,
-} from "./components/SecondaryMenu";
+import { calculateLongestRoad } from "./game/systems/achievements/calculateLongestRoad";
+// import { logBoardNetwork } from "./game/data/generatedBoard";
 import {
     savePhaseCheckpoint,
     restorePhaseCheckpoint,
@@ -549,6 +548,12 @@ function App() {
         canRestorePhaseCheckpoint(game);
     const actionAvailability =
         getActionAvailability(game);
+    if (import.meta.env.DEV && game.phase === "playing") {
+        calculateLongestRoad(
+            game,
+            game.currentPlayerId
+        );
+    }
     const tradeResources: (keyof Resources)[] = [
         "brick",
         "lumber",

@@ -1,5 +1,6 @@
 import type { GameState } from "../../engine/GameState";
 import { createEvent } from "../../engine/createEvent";
+import { updateLongestRoad } from "../achievements/updateLongestRoad";
 const ROAD_COST = {
     brick: 1,
     lumber: 1,
@@ -106,23 +107,6 @@ export function buildRoad(
             ? `${player.name} placed a road using Road Building.`
             : `${player.name} built a road.`
     );
-    if (!isRoadBuilding) {
-        return {
-            ...game,
-            players: updatedPlayers,
-            resourceBank: updatedResourceBank,
-            eventLog: [
-                ...game.eventLog,
-                roadPlacedEvent,
-            ],
-        };
-    }
-    /*
-     * Road Building allows up to two roads.
-     *
-     * After placing the first road, determine whether
-     * another legal Road Building placement exists.
-     */
     const updatedGame: GameState = {
         ...game,
         players: updatedPlayers,
@@ -132,8 +116,22 @@ export function buildRoad(
             roadPlacedEvent,
         ],
     };
+    /*
+     * Recalculate Longest Road after every successful road placement.
+     */
+    const longestRoadUpdatedGame =
+        updateLongestRoad(updatedGame);
+    if (!isRoadBuilding) {
+        return longestRoadUpdatedGame;
+    }
+    /*
+     * Road Building allows up to two roads.
+     *
+     * After placing the first road, determine whether
+     * another legal Road Building placement exists.
+     */
     const updatedPlayer =
-        updatedPlayers.find(
+        longestRoadUpdatedGame.players.find(
             (candidate) =>
                 candidate.id === playerId
         );
@@ -143,7 +141,7 @@ export function buildRoad(
     // No physical road pieces remain.
     if (updatedPlayer.roads.length >= 15) {
         return {
-            ...updatedGame,
+            ...longestRoadUpdatedGame,
             roadBuildingPending: false,
         };
     }
@@ -169,7 +167,7 @@ export function buildRoad(
     // Two roads have been placed.
     if (totalRoadBuildingRoads >= 2) {
         return {
-            ...updatedGame,
+            ...longestRoadUpdatedGame,
             roadBuildingPending: false,
         };
     }
@@ -182,11 +180,11 @@ export function buildRoad(
      */
     const hasSecondLegalRoad =
         hasLegalRoadPlacement(
-            updatedGame,
+            longestRoadUpdatedGame,
             playerId
         );
     return {
-        ...updatedGame,
+        ...longestRoadUpdatedGame,
         roadBuildingPending:
             hasSecondLegalRoad,
     };

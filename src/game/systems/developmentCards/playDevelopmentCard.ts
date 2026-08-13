@@ -20,7 +20,7 @@ export function playDevelopmentCard(
     if (!player) {
         return game;
     }
-    // Catan rule: only one development card may be played per turn.
+    // Dev Card Rule: only one development card may be played per turn.
     if (player.developmentCardPlayedThisTurn) {
         return game;
     }
@@ -30,7 +30,7 @@ export function playDevelopmentCard(
     if (!card) {
         return game;
     }
-    // A development card purchased this turn cannot be played this turn.
+    // Dev Card Rule: a development card purchased this turn cannot be played this turn.
     if (
         player.developmentCardsPurchasedThisTurn.includes(
             card.id

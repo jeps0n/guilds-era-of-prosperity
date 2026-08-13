@@ -1,6 +1,7 @@
 import type { GameState } from "../../engine/GameState";
 import { createEvent } from "../../engine/createEvent";
 import { canPlaceSettlement } from "../validation/canPlaceSettlement";
+import { updateLongestRoad } from "../achievements/updateLongestRoad";
 const SETTLEMENT_COST = {
     brick: 1,
     lumber: 1,
@@ -33,13 +34,13 @@ export function buildSettlement(
     }
     if (
         player.resources.brick <
-            SETTLEMENT_COST.brick ||
+        SETTLEMENT_COST.brick ||
         player.resources.lumber <
-            SETTLEMENT_COST.lumber ||
+        SETTLEMENT_COST.lumber ||
         player.resources.wheat <
-            SETTLEMENT_COST.wheat ||
+        SETTLEMENT_COST.wheat ||
         player.resources.sheep <
-            SETTLEMENT_COST.sheep
+        SETTLEMENT_COST.sheep
     ) {
         return game;
     }
@@ -87,9 +88,8 @@ export function buildSettlement(
                 settlements: [
                     ...candidate.settlements,
                     {
-                        id: `settlement-${
-                            candidate.settlements.length + 1
-                        }`,
+                        id: `settlement-${candidate.settlements.length + 1
+                            }`,
                         playerId,
                         nodeId,
                     },
@@ -112,7 +112,7 @@ export function buildSettlement(
             game.resourceBank.sheep +
             SETTLEMENT_COST.sheep,
     };
-    return {
+    const updatedGame: GameState = {
         ...game,
         players: updatedPlayers,
         resourceBank: updatedResourceBank,
@@ -125,6 +125,7 @@ export function buildSettlement(
             ),
         ],
     };
+    return updateLongestRoad(updatedGame);
 }
 function connectsToPlayerRoad(
     game: GameState,
