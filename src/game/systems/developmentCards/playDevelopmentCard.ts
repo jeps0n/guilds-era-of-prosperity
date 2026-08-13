@@ -1,5 +1,6 @@
 import type { GameState } from "../../engine/GameState";
 import { createEvent } from "../../engine/createEvent";
+import { updateLargestArmy } from "../achievements/updateLargestArmy";
 export function playDevelopmentCard(
     game: GameState,
     playerId: string,
@@ -96,7 +97,7 @@ export function playDevelopmentCard(
             };
         }
     );
-    return {
+    const updatedGame: GameState = {
         ...game,
         players: updatedPlayers,
         // Knight starts the robber board action.
@@ -123,6 +124,10 @@ export function playDevelopmentCard(
                 ),
             ],
     };
+    if (card.type === "knight") {
+        return updateLargestArmy(updatedGame);
+    }
+    return updatedGame;
     function hasLegalRoadBuildingPlacement(
         game: GameState,
         playerId: string

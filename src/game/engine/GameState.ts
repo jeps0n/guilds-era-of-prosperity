@@ -69,14 +69,12 @@ export interface GameState {
   monopolyResource?: keyof Resources;
   monopolyCardId?: string;
   roadBuildingPending: boolean;
-  // roadBuildingCardId?: string;
-  // roadBuildingRoadsPlaced: number;
   robberTileId?: string;
   phase: GamePhase;
   eraOfProsperity: boolean;
   prosperityTriggeredBy?: string;
   longestRoadPlayerId?: string;
-  // largestArmyPlayerId?: string;
+  largestArmyPlayerId?: string;
   winnerId?: string;
   eventLog: GameEvent[];
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ActionBar from "./components/ActionBar";
 import BoardView from "./components/BoardView";
 import GameStatus from "./components/GameStatus";
@@ -28,7 +28,6 @@ import { playDevelopmentCard } from "./game/systems/developmentCards/playDevelop
 import { resolveYearOfPlenty } from "./game/systems/developmentCards/resolveYearOfPlenty";
 import { resolveMonopoly } from "./game/systems/developmentCards/resolveMonopoly";
 import { calculateLongestRoad } from "./game/systems/achievements/calculateLongestRoad";
-// import { logBoardNetwork } from "./game/data/generatedBoard";
 import {
     savePhaseCheckpoint,
     restorePhaseCheckpoint,
@@ -46,6 +45,8 @@ function App() {
         | undefined;
     const [secondaryMenu, setSecondaryMenu] =
         useState<SecondaryMenuMode>(undefined);
+    const developmentCardListRef =
+        useRef<HTMLDivElement>(null);
     const [selectedGiveResource, setSelectedGiveResource] =
         useState<keyof Resources | undefined>(undefined);
     useState<number | undefined>(undefined);
@@ -66,8 +67,8 @@ function App() {
     // FOR DEBUGGING - DELETE useEffect EVENTUALLY
     useEffect(() => {
         console.log("===== GAME STATE UPDATED [Turn: " + game.turnNumber + "] =====");
-        console.log("Game: ", game);
-        console.log("========================================");
+        console.log(game);
+        console.log("----------------------------------------");
     }, [game]);
     function handleGuildSelection(guild: GuildType) {
         const nextGame = selectGuild(
@@ -345,8 +346,7 @@ function App() {
                             const hasSettlement =
                                 player.settlements.some(
                                     (settlement) =>
-                                        settlement.nodeId ===
-                                        node.id
+                                        settlement.nodeId === node.id
                                 );
                             const hasCity =
                                 player.cities.includes(
@@ -510,6 +510,17 @@ function App() {
         (player) =>
             player.id === game.currentPlayerId
     );
+    useEffect(() => {
+        if (secondaryMenu === "development") {
+            developmentCardListRef.current?.scrollTo({
+                top: developmentCardListRef.current.scrollHeight,
+                behavior: "auto",
+            });
+        }
+    }, [
+        secondaryMenu,
+        currentPlayer?.developmentCards.length,
+    ]);
     const currentPlayerColor =
         currentPlayer?.id === "player-1"
             ? "#f97316"
@@ -585,8 +596,7 @@ function App() {
                     height: "22px",
                     padding: "0 5px",
                     borderRadius: "6px",
-                    backgroundColor:
-                        resourceColors[resource],
+                    backgroundColor: resourceColors[resource],
                     color: "#000000",
                     fontSize: "12px",
                     fontWeight: "bold",
@@ -738,8 +748,7 @@ function App() {
                             game.robberTileId
                         }
                         onSelectTile={
-                            game.phase ===
-                                "playing" &&
+                            game.phase === "playing" &&
                                 game.robberPending
                                 ? handleSelectRobberTile
                                 : undefined
@@ -779,8 +788,7 @@ function App() {
                             game.phase === "initial_placement" &&
                                 game.placementAction === "road"
                                 ? handlePlaceRoad
-                                : game.phase ===
-                                    "playing" &&
+                                : game.phase === "playing" &&
                                     (
                                         game.roadBuildingPending ||
                                         actionAvailability.canRoad
@@ -822,25 +830,16 @@ function App() {
                                         resource
                                     ) => (
                                         <SecondaryMenuButton
-                                            key={
-                                                resource
-                                            }
-                                            active={
-                                                selectedGiveResource ===
-                                                resource
-                                            }
+                                            key={resource}
+                                            active={selectedGiveResource === resource}
                                             onClick={() =>
-                                                handleSelectGiveResource(
-                                                    resource
-                                                )
+                                                handleSelectGiveResource(resource)
                                             }
                                         >
                                             <span
                                                 style={{
-                                                    display:
-                                                        "inline-flex",
-                                                    alignItems:
-                                                        "center",
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
                                                     gap: "8px",
                                                 }}
                                             >
@@ -861,17 +860,16 @@ function App() {
                                         </SecondaryMenuButton>
                                     )
                                 )}
-                                {tradeGiveOptions.length ===
-                                    0 && (
-                                        <div
-                                            style={{
-                                                color: "#9ca3af",
-                                                fontSize: "13px",
-                                            }}
-                                        >
-                                            No valid trades available.
-                                        </div>
-                                    )}
+                                {tradeGiveOptions.length === 0 && (
+                                    <div
+                                        style={{
+                                            color: "#9ca3af",
+                                            fontSize: "13px",
+                                        }}
+                                    >
+                                        No valid trades available.
+                                    </div>
+                                )}
                             </div>
                             {selectedGiveResource && (
                                 <>
@@ -887,65 +885,46 @@ function App() {
                                     </div>
                                     <div
                                         style={{
-                                            display:
-                                                "flex",
-                                            flexDirection:
-                                                "column",
+                                            display: "flex",
+                                            flexDirection: "column",
                                             gap: "8px",
                                         }}
                                     >
-                                        {tradeReceiveOptions.map(
-                                            (
-                                                resource
-                                            ) => (
-                                                <SecondaryMenuButton
-                                                    key={
-                                                        resource
-                                                    }
-                                                    onClick={() =>
-                                                        handleSelectReceiveResource(
-                                                            resource
-                                                        )
-                                                    }
-                                                >
-                                                    <span
-                                                        style={{
-                                                            display:
-                                                                "inline-flex",
-                                                            alignItems:
-                                                                "center",
-                                                            gap: "8px",
-                                                        }}
-                                                    >
-                                                        {renderResourceBadge(
-                                                            resource,
-                                                            1
-                                                        )}
-                                                        <span>
-                                                            {
-                                                                resource
-                                                            }
-                                                        </span>
-                                                    </span>
-                                                </SecondaryMenuButton>
-                                            )
-                                        )}
-                                        {tradeReceiveOptions.length ===
-                                            0 && (
-                                                <div
+                                        {tradeReceiveOptions.map((resource) => (
+                                            <SecondaryMenuButton
+                                                key={resource}
+                                                onClick={() =>
+                                                    handleSelectReceiveResource(resource)
+                                                }
+                                            >
+                                                <span
                                                     style={{
-                                                        color:
-                                                            "#9ca3af",
-                                                        fontSize:
-                                                            "13px",
+                                                        display: "inline-flex",
+                                                        alignItems: "center",
+                                                        gap: "8px",
                                                     }}
                                                 >
-                                                    No resources
-                                                    available
-                                                    from the
-                                                    bank.
-                                                </div>
-                                            )}
+                                                    {renderResourceBadge(resource, 1)}
+                                                    <span>
+                                                        {resource}
+                                                    </span>
+                                                </span>
+                                            </SecondaryMenuButton>
+                                        )
+                                        )}
+                                        {tradeReceiveOptions.length === 0 && (
+                                            <div
+                                                style={{
+                                                    color: "#9ca3af",
+                                                    fontSize: "13px",
+                                                }}
+                                            >
+                                                No resources
+                                                available
+                                                from the
+                                                bank.
+                                            </div>
+                                        )}
                                     </div>
                                 </>
                             )}
@@ -962,10 +941,7 @@ function App() {
                             }
                         >
                             {!currentPlayer ||
-                                currentPlayer
-                                    .developmentCards
-                                    .length ===
-                                0 ? (
+                                currentPlayer.developmentCards.length === 0 ? (
                                 <div
                                     style={{
                                         color:
@@ -974,18 +950,17 @@ function App() {
                                             "13px",
                                     }}
                                 >
-                                    You have no
-                                    development
-                                    cards to play.
+                                    You have no development cards to play.
                                 </div>
                             ) : (
                                 <div
+                                    ref={developmentCardListRef}
                                     style={{
-                                        display:
-                                            "flex",
-                                        flexDirection:
-                                            "column",
+                                        display: "flex",
+                                        flexDirection: "column",
                                         gap: "8px",
+                                        maxHeight: "492px",
+                                        overflowY: "auto",
                                     }}
                                 >
                                     {currentPlayer.developmentCards.map(
@@ -1001,38 +976,25 @@ function App() {
                                                     card.id
                                                 );
                                             const isVictoryPoint =
-                                                card.type ===
-                                                "victory_point";
+                                                card.type === "victory_point";
                                             const isPlayable =
-                                                card.type !==
-                                                "victory_point" &&
+                                                card.type !== "victory_point" &&
                                                 !isPlayed &&
                                                 !isPurchasedThisTurn &&
                                                 !currentPlayer.developmentCardPlayedThisTurn;
                                             return (
                                                 <SecondaryMenuButton
-                                                    key={
-                                                        card.id
-                                                    }
-                                                    disabled={
-                                                        !isPlayable
-                                                    }
+                                                    key={card.id}
+                                                    disabled={!isPlayable}
                                                     onClick={() => {
-                                                        if (
-                                                            !isPlayable
-                                                        ) {
+                                                        if (!isPlayable) {
                                                             return;
                                                         }
-                                                        handleSelectDevelopmentCard(
-                                                            card.id
-                                                        );
+                                                        handleSelectDevelopmentCard(card.id);
                                                     }}
                                                 >
-                                                    {getDevelopmentCardName(
-                                                        card.type
-                                                    )}
-                                                    {isVictoryPoint &&
-                                                        " (+1 VP)"}
+                                                    {getDevelopmentCardName(card.type)}
+                                                    {isVictoryPoint && " (+1 VP)"}
                                                 </SecondaryMenuButton>
                                             );
                                         }
@@ -1051,16 +1013,12 @@ function App() {
                         >
                             <div
                                 style={{
-                                    fontSize:
-                                        "13px",
-                                    color:
-                                        "#d1d5db",
-                                    marginBottom:
-                                        "12px",
+                                    fontSize: "13px",
+                                    color: "#d1d5db",
+                                    marginBottom: "12px",
                                 }}
                             >
-                                {yearOfPlentySelection ===
-                                    undefined
+                                {yearOfPlentySelection === undefined
                                     ? "Select your two resources:"
                                     : "Select your two resources:"}
                             </div>
@@ -1081,26 +1039,20 @@ function App() {
                                  */}
                             <div
                                 style={{
-                                    display:
-                                        "grid",
-                                    gridTemplateColumns:
-                                        "1fr 1fr",
+                                    display: "grid",
+                                    gridTemplateColumns: "1fr 1fr",
                                     gap: "8px",
                                 }}
                             >
                                 {tradeResources.flatMap(
-                                    (
-                                        resource
-                                    ) =>
+                                    (resource) =>
                                         [0, 1].map(
                                             (
                                                 slot
                                             ) => {
                                                 const isFirstSelection =
-                                                    yearOfPlentySelection?.resource ===
-                                                    resource &&
-                                                    yearOfPlentySelection?.slot ===
-                                                    slot;
+                                                    yearOfPlentySelection?.resource === resource &&
+                                                    yearOfPlentySelection?.slot === slot;
                                                 return (
                                                     <SecondaryMenuButton
                                                         key={`${resource}-${slot}`}

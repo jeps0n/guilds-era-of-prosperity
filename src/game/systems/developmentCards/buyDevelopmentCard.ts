@@ -22,9 +22,6 @@ export function buyDevelopmentCard(
   if (!player) {
     return game;
   }
-  console.log("=== BUY DEVELOPMENT CARD ===");
-  console.log("Current Player:", player);
-  console.log("Current Player Guild:", player.guild);
   if (
     player.resources.ore < 1 ||
     player.resources.wheat < 1 ||

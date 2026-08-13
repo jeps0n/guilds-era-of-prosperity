@@ -21,7 +21,7 @@ export function SecondaryMenu({
         position: "absolute",
         bottom: "16px",
         left: "16px",
-        width: "280px",
+        width: "310px",
         padding: "16px",
         borderRadius: "14px",
         border: "1px solid #374151",
@@ -105,7 +105,8 @@ export function SecondaryMenuButton({
         }
       }}
       style={{
-        width: "100%",
+        width: "90%",
+        margin: "0 auto",
         padding: "10px",
         borderRadius: "10px",
         border: active
