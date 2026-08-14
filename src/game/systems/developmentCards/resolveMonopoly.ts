@@ -84,7 +84,11 @@ export function resolveMonopoly(
             ...game.eventLog,
             createEvent(
                 "DEVELOPMENT_CARD_PLAYED",
-                `${player.name} played a Monopoly card and collected [${resource}] ${totalCollected}.`
+                `${player.name} played a Monopoly card.`
+            ),
+            createEvent(
+                "MONOPOLY_RESOLVED",
+                `${player.name} collected [${resource}] ${totalCollected}.`
             ),
         ],
     };

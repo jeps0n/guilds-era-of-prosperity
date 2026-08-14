@@ -28,7 +28,7 @@ export function selectGuild(
       ...game.eventLog,
       createEvent(
         "GUILD_SELECTED",
-        `${player.name} selected ${guild} Guild.`
+        `${player.name} selected ${guild.replaceAll("_", " ").replace(/\b\w/g, (char) => char.toUpperCase())} Guild.`
       ),
     ],
   };
