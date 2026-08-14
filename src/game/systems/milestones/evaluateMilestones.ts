@@ -1,6 +1,5 @@
 import type { GameState } from "../../engine/GameState";
 import { createEvent } from "../../engine/createEvent";
-
 export function evaluateMilestones(
     game: GameState
 ): GameState {
@@ -8,7 +7,6 @@ export function evaluateMilestones(
     const winner = game.players.find(
         (player) => player.vp >= 15
     );
-
     if (winner) {
         return {
             ...game,
@@ -36,7 +34,6 @@ export function evaluateMilestones(
             game.players.find(
                 (player) => player.vp >= 6
             );
-
         if (playerReached6VP) {
             return {
                 ...game,
@@ -55,6 +52,5 @@ export function evaluateMilestones(
             };
         }
     }
-
     return game;
 }

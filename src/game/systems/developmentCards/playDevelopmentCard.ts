@@ -133,7 +133,6 @@ export function playDevelopmentCard(
     if (card.type === "knight") {
         const largestArmyUpdatedGame =
             updateLargestArmy(updatedGame);
-
         return evaluateMilestones(
             largestArmyUpdatedGame
         );

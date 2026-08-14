@@ -9,6 +9,7 @@ export function createInitialState(): GameState {
       id: "player-1",
       name: "Player A",
       guild: undefined,
+      guildPassiveUsedThisTurn: false,
       vp: 0,
       resources: {
         brick: 0,
@@ -40,6 +41,7 @@ export function createInitialState(): GameState {
       id: "player-2",
       name: "Player B",
       guild: undefined,
+      guildPassiveUsedThisTurn: false,
       vp: 0,
       resources: {
         brick: 0,
@@ -93,7 +95,6 @@ export function createInitialState(): GameState {
     guildSelectionPlayerId:
       guildSelectionPlayer.id,
     turnNumber: 0,
-
     // Board / Economy
     board: STARTER_BOARD,
     resourceBank: {
@@ -105,47 +106,37 @@ export function createInitialState(): GameState {
     },
     developmentDeck: [...DEVELOPMENT_CARD_DECK]
       .sort(() => Math.random() - 0.5),
-
     // Initial Placement
     placementStep: 0,
     placementOrder,
     placementAction: "settlement",
     // lastPlacedSettlementNodeId: undefined,
-
     // Dice / Turn Resolution
     // lastDiceRoll: undefined,
     // discardPendingPlayerIds: undefined,
-
     // Robber
     robberPending: false,
     robberTileId: desertTile!.id,
-
     // Year of Plenty
     yearOfPlentyPending: false,
     // yearOfPlentyFirstResource: undefined,
     // yearOfPlentyCardId: undefined,
-
     // Monopoly
     monopolyPending: false,
     // monopolyResource: undefined,
     // monopolyCardId: undefined,
-
     // Road Building
     roadBuildingPending: false,
     // roadBuildingCardId: undefined,
     roadBuildingRoadsPlaced: 0,
-
     // Game Progression
     phase: "guild_selection",
     era: "standard",
-
     // Achievements
     // longestRoadPlayerId: undefined,
     // largestArmyPlayerId: undefined,
-
     // Victory
     // winnerId: undefined,
-
     // Events
     eventLog: [],
   };

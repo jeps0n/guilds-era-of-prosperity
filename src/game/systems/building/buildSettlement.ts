@@ -131,7 +131,6 @@ export function buildSettlement(
     };
     const longestRoadUpdatedGame =
         updateLongestRoad(updatedGame);
-
     return evaluateMilestones(
         longestRoadUpdatedGame
     );

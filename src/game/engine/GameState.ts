@@ -50,7 +50,6 @@ export interface GameState {
     currentPlayerId: string;
     guildSelectionPlayerId: string;
     turnNumber: number;
-
     // Board / Economy
     board: Board;
     resourceBank: Resources;
@@ -63,47 +62,37 @@ export interface GameState {
             | "year_of_plenty"
             | "monopoly";
     }[];
-
     // Initial Placement
     placementStep: number;
     placementOrder: string[];
     placementAction: PlacementAction;
     lastPlacedSettlementNodeId?: string;
-
     // Dice / Turn Resolution
     lastDiceRoll?: number;
     discardPendingPlayerIds?: string[];
-
     // Robber
     robberPending: boolean;
     robberTileId?: string;
-
     // Year of Plenty
     yearOfPlentyPending: boolean;
     yearOfPlentyFirstResource?: keyof Resources;
     yearOfPlentyCardId?: string;
-
     // Monopoly
     monopolyPending: boolean;
     monopolyResource?: keyof Resources;
     monopolyCardId?: string;
-
     // Road Building
     roadBuildingPending: boolean;
     roadBuildingCardId?: string;
     roadBuildingRoadsPlaced: number;
-
     // Game Progression
     phase: GamePhase;
     era: GameEra;
-
     // Achievements
     longestRoadPlayerId?: string;
     largestArmyPlayerId?: string;
-
     // Victory
     winnerId?: string;
-
     // Events
     eventLog: GameEvent[];
 }

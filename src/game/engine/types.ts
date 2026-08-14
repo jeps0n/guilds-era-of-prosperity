@@ -15,6 +15,7 @@ export interface Player {
   id: string;
   name: string;
   guild?: GuildType;
+  guildPassiveUsedThisTurn: boolean;
   vp: number;
   resources: Resources;
   tradeRatios: Resources;
