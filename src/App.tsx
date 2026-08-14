@@ -757,7 +757,7 @@ function App() {
                             game.phase === "initial_placement" &&
                                 game.placementAction === "settlement"
                                 ? handlePlaceSettlement
-                                : game.phase === "playing"
+                                : game.phase === "playing" && !game.robberPending
                                     ? (nodeId) => {
                                         const ownsSettlement =
                                             currentPlayer?.settlements.some(
@@ -788,7 +788,7 @@ function App() {
                             game.phase === "initial_placement" &&
                                 game.placementAction === "road"
                                 ? handlePlaceRoad
-                                : game.phase === "playing" &&
+                                : game.phase === "playing" && !game.robberPending &&
                                     (
                                         game.roadBuildingPending ||
                                         actionAvailability.canRoad

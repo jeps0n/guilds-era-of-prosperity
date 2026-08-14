@@ -1,6 +1,7 @@
 import type { GameState } from "../../engine/GameState";
 import { createEvent } from "../../engine/createEvent";
 import { updateLargestArmy } from "../achievements/updateLargestArmy";
+import { evaluateMilestones } from "../milestones/evaluateMilestones";
 export function playDevelopmentCard(
     game: GameState,
     playerId: string,
@@ -130,7 +131,12 @@ export function playDevelopmentCard(
             ],
     };
     if (card.type === "knight") {
-        return updateLargestArmy(updatedGame);
+        const largestArmyUpdatedGame =
+            updateLargestArmy(updatedGame);
+
+        return evaluateMilestones(
+            largestArmyUpdatedGame
+        );
     }
     return updatedGame;
     function hasLegalRoadBuildingPlacement(

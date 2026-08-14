@@ -1,5 +1,6 @@
 import type { GameState } from "../../engine/GameState";
 import { createEvent } from "../../engine/createEvent";
+import { evaluateMilestones } from "../milestones/evaluateMilestones";
 export function buyDevelopmentCard(
   game: GameState,
   playerId: string
@@ -8,6 +9,9 @@ export function buyDevelopmentCard(
     return game;
   }
   if (game.currentPlayerId !== playerId) {
+    return game;
+  }
+  if (game.robberPending) {
     return game;
   }
   if (game.lastDiceRoll === undefined) {
@@ -65,7 +69,7 @@ export function buyDevelopmentCard(
     wheat: game.resourceBank.wheat + 1,
     sheep: game.resourceBank.sheep + 1,
   };
-  return {
+  return evaluateMilestones({
     ...game,
     players: updatedPlayers,
     resourceBank: updatedResourceBank,
@@ -77,5 +81,5 @@ export function buyDevelopmentCard(
         `${player.name} purchased a development card.`
       ),
     ],
-  };
+  });
 }

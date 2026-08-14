@@ -20,6 +20,9 @@ export function buildRoad(
     if (game.lastDiceRoll === undefined) {
         return game;
     }
+    if (game.robberPending) {
+        return game;
+    }
     const player = game.players.find(
         (candidate) => candidate.id === playerId
     );
@@ -127,7 +130,9 @@ export function buildRoad(
     const longestRoadUpdatedGame =
         updateLongestRoad(updatedGame);
     if (!isRoadBuilding) {
-        return longestRoadUpdatedGame;
+        return evaluateMilestones(
+            longestRoadUpdatedGame
+        );
     }
     /*
     * Road Building allows up to two roads.

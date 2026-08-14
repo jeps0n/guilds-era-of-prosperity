@@ -16,6 +16,9 @@ export function buildCity(
     if (game.currentPlayerId !== playerId) {
         return game;
     }
+    if (game.robberPending) {
+        return game;
+    }
     if (game.lastDiceRoll === undefined) {
         return game;
     }
