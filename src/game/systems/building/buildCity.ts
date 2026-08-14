@@ -1,5 +1,6 @@
 import type { GameState } from "../../engine/GameState";
 import { createEvent } from "../../engine/createEvent";
+import { evaluateMilestones } from "../milestones/evaluateMilestones";
 const CITY_COST = {
     ore: 3,
     wheat: 2,
@@ -84,7 +85,7 @@ export function buildCity(
             game.resourceBank.wheat +
             CITY_COST.wheat,
     };
-    return {
+    return evaluateMilestones({
         ...game,
         players: updatedPlayers,
         resourceBank: updatedResourceBank,
@@ -95,5 +96,5 @@ export function buildCity(
                 `${player.name} upgraded a settlement to a city.`
             ),
         ],
-    };
+    });
 }

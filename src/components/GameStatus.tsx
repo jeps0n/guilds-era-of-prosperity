@@ -12,7 +12,6 @@ function GameStatus({
   return (
     <div
       style={{
-        marginTop: "8px",
         background: "#111827",
         border: "1px solid #374151",
         borderRadius: "12px",

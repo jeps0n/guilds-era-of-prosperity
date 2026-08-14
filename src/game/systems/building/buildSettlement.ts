@@ -2,6 +2,7 @@ import type { GameState } from "../../engine/GameState";
 import { createEvent } from "../../engine/createEvent";
 import { canPlaceSettlement } from "../validation/canPlaceSettlement";
 import { updateLongestRoad } from "../achievements/updateLongestRoad";
+import { evaluateMilestones } from "../milestones/evaluateMilestones";
 const SETTLEMENT_COST = {
     brick: 1,
     lumber: 1,
@@ -125,7 +126,12 @@ export function buildSettlement(
             ),
         ],
     };
-    return updateLongestRoad(updatedGame);
+    const longestRoadUpdatedGame =
+        updateLongestRoad(updatedGame);
+
+    return evaluateMilestones(
+        longestRoadUpdatedGame
+    );
 }
 function connectsToPlayerRoad(
     game: GameState,

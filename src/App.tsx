@@ -688,7 +688,7 @@ function App() {
     ) {
         return (
             <GameLayout
-                header="Guilds: Era of Prosperity"
+                // header="Guilds: Era of Prosperity"
                 board={
                     <GuildSelection
                         playerName={
@@ -724,7 +724,7 @@ function App() {
      */
     return (
         <GameLayout
-            header="Guilds: Era of Prosperity"
+            // header="Guilds: Era of Prosperity"
             board={
                 <div
                     style={{

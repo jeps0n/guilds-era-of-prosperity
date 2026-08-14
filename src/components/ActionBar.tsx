@@ -1,3 +1,4 @@
+import type { GamePhase } from "../game/engine/GameState";
 import type { ActionAvailability } from "../game/systems/actions/getActionAvailability";
 const ACTIVE_BUTTON_BACKGROUND = "#1d4ed8";
 const DISABLED_BUTTON_BACKGROUND = "#1f2937";
@@ -10,11 +11,7 @@ interface ActionBarProps {
     onTrade?: () => void;
     onBuyDevelopmentCard?: () => void;
     onPlayDevelopmentCard?: () => void;
-    phase:
-    | "guild_selection"
-    | "initial_placement"
-    | "playing"
-    | "game_over";
+    phase: GamePhase
     placementAction?:
     | "settlement"
     | "road";

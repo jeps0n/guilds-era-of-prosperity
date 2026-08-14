@@ -1,6 +1,7 @@
 import type { GameState } from "../../engine/GameState";
 import { createEvent } from "../../engine/createEvent";
 import { updateLongestRoad } from "../achievements/updateLongestRoad";
+import { evaluateMilestones } from "../milestones/evaluateMilestones";
 const ROAD_COST = {
     brick: 1,
     lumber: 1,
@@ -145,19 +146,19 @@ export function buildRoad(
     }
     // No physical road pieces remain.
     if (updatedPlayer.roads.length >= 15) {
-        return {
+        return evaluateMilestones({
             ...longestRoadUpdatedGame,
             roadBuildingPending: false,
             roadBuildingRoadsPlaced: 0,
-        };
+        });
     }
     // Two roads have been placed.
     if (longestRoadUpdatedGame.roadBuildingRoadsPlaced >= 2) {
-        return {
+        return evaluateMilestones({
             ...longestRoadUpdatedGame,
             roadBuildingPending: false,
             roadBuildingRoadsPlaced: 0,
-        };
+        });
     }
     /*
      * We have placed exactly one road.
@@ -171,11 +172,10 @@ export function buildRoad(
             longestRoadUpdatedGame,
             playerId
         );
-    return {
+    return evaluateMilestones({
         ...longestRoadUpdatedGame,
-        roadBuildingPending:
-            hasSecondLegalRoad,
-    };
+        roadBuildingPending: hasSecondLegalRoad,
+    });
 }
 function hasLegalRoadPlacement(
     game: GameState,

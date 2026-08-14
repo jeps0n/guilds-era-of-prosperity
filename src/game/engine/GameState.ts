@@ -5,6 +5,9 @@ export type GamePhase =
   | "initial_placement"
   | "playing"
   | "game_over";
+export type GameEra =
+  | "standard"
+  | "prosperity";
 export type PlacementAction =
   | "settlement"
   | "road";
@@ -42,43 +45,65 @@ export interface GameEvent {
   timestamp: number;
 }
 export interface GameState {
-  players: Player[];
-  currentPlayerId: string;
-  guildSelectionPlayerId: string;
-  board: Board;
-  resourceBank: Resources;
-  developmentDeck: {
-    id: string;
-    type:
-    | "knight"
-    | "victory_point"
-    | "road_building"
-    | "year_of_plenty"
-    | "monopoly";
-  }[];
-  placementStep: number;
-  placementOrder: string[];
-  placementAction: PlacementAction;
-  lastPlacedSettlementNodeId?: string;
-  turnNumber: number;
-  lastDiceRoll?: number;
-  discardPendingPlayerIds?: string[];
-  robberPending: boolean;
-  yearOfPlentyPending: boolean;
-  yearOfPlentyFirstResource?: keyof Resources;
-  yearOfPlentyCardId?: string;
-  monopolyPending: boolean;
-  monopolyResource?: keyof Resources;
-  monopolyCardId?: string;
-  roadBuildingPending: boolean;
-  roadBuildingCardId?: string;
-  roadBuildingRoadsPlaced: number;
-  robberTileId?: string;
-  phase: GamePhase;
-  eraOfProsperity: boolean;
-  prosperityTriggeredBy?: string;
-  longestRoadPlayerId?: string;
-  largestArmyPlayerId?: string;
-  winnerId?: string;
-  eventLog: GameEvent[];
+    // Players / Turn
+    players: Player[];
+    currentPlayerId: string;
+    guildSelectionPlayerId: string;
+    turnNumber: number;
+
+    // Board / Economy
+    board: Board;
+    resourceBank: Resources;
+    developmentDeck: {
+        id: string;
+        type:
+            | "knight"
+            | "victory_point"
+            | "road_building"
+            | "year_of_plenty"
+            | "monopoly";
+    }[];
+
+    // Initial Placement
+    placementStep: number;
+    placementOrder: string[];
+    placementAction: PlacementAction;
+    lastPlacedSettlementNodeId?: string;
+
+    // Dice / Turn Resolution
+    lastDiceRoll?: number;
+    discardPendingPlayerIds?: string[];
+
+    // Robber
+    robberPending: boolean;
+    robberTileId?: string;
+
+    // Year of Plenty
+    yearOfPlentyPending: boolean;
+    yearOfPlentyFirstResource?: keyof Resources;
+    yearOfPlentyCardId?: string;
+
+    // Monopoly
+    monopolyPending: boolean;
+    monopolyResource?: keyof Resources;
+    monopolyCardId?: string;
+
+    // Road Building
+    roadBuildingPending: boolean;
+    roadBuildingCardId?: string;
+    roadBuildingRoadsPlaced: number;
+
+    // Game Progression
+    phase: GamePhase;
+    era: GameEra;
+
+    // Achievements
+    longestRoadPlayerId?: string;
+    largestArmyPlayerId?: string;
+
+    // Victory
+    winnerId?: string;
+
+    // Events
+    eventLog: GameEvent[];
 }

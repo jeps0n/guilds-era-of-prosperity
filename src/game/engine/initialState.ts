@@ -86,18 +86,16 @@ export function createInitialState(): GameState {
     (tile) => tile.resource === "desert"
   );
   return {
+    // Players / Turn
     players,
+    currentPlayerId:
+      placementOrder[0],
+    guildSelectionPlayerId:
+      guildSelectionPlayer.id,
+    turnNumber: 0,
+
+    // Board / Economy
     board: STARTER_BOARD,
-    robberTileId: desertTile!.id,
-    robberPending: false,
-    yearOfPlentyPending: false,
-    yearOfPlentyFirstResource: undefined,
-    yearOfPlentyCardId: undefined,
-    monopolyPending: false,
-    monopolyResource: undefined,
-    monopolyCardId: undefined,
-    roadBuildingPending: false,
-    roadBuildingRoadsPlaced: 0,
     resourceBank: {
       brick: 19,
       lumber: 19,
@@ -107,16 +105,48 @@ export function createInitialState(): GameState {
     },
     developmentDeck: [...DEVELOPMENT_CARD_DECK]
       .sort(() => Math.random() - 0.5),
-    guildSelectionPlayerId:
-      guildSelectionPlayer.id,
-    currentPlayerId:
-      placementOrder[0],
+
+    // Initial Placement
     placementStep: 0,
     placementOrder,
     placementAction: "settlement",
+    // lastPlacedSettlementNodeId: undefined,
+
+    // Dice / Turn Resolution
+    // lastDiceRoll: undefined,
+    // discardPendingPlayerIds: undefined,
+
+    // Robber
+    robberPending: false,
+    robberTileId: desertTile!.id,
+
+    // Year of Plenty
+    yearOfPlentyPending: false,
+    // yearOfPlentyFirstResource: undefined,
+    // yearOfPlentyCardId: undefined,
+
+    // Monopoly
+    monopolyPending: false,
+    // monopolyResource: undefined,
+    // monopolyCardId: undefined,
+
+    // Road Building
+    roadBuildingPending: false,
+    // roadBuildingCardId: undefined,
+    roadBuildingRoadsPlaced: 0,
+
+    // Game Progression
     phase: "guild_selection",
-    turnNumber: 0,
-    eraOfProsperity: false,
+    era: "standard",
+
+    // Achievements
+    // longestRoadPlayerId: undefined,
+    // largestArmyPlayerId: undefined,
+
+    // Victory
+    // winnerId: undefined,
+
+    // Events
     eventLog: [],
   };
 }
