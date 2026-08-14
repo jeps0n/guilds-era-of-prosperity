@@ -76,6 +76,10 @@ export function resolveYearOfPlenty(
             ...game.eventLog,
             createEvent(
                 "DEVELOPMENT_CARD_PLAYED",
+                `${player.name} played a Year of Plenty card.`
+            ),
+            createEvent(
+                "YEAR_OF_PLENTY_RESOLVED",
                 `${player.name} received [${firstResource}] 1 and [${secondResource}] 1 from Year of Plenty.`
             ),
         ],

@@ -23,6 +23,7 @@ export type GameEventType =
   | "PORT_TRADE"
   | "DEVELOPMENT_CARD_PURCHASED"
   | "DEVELOPMENT_CARD_PLAYED"
+  | "YEAR_OF_PLENTY_RESOLVED"
   | "ROBBER_MOVED"
   | "RESOURCE_STOLEN"
   | "LONGEST_ROAD_CLAIMED"
@@ -69,6 +70,8 @@ export interface GameState {
   monopolyResource?: keyof Resources;
   monopolyCardId?: string;
   roadBuildingPending: boolean;
+  roadBuildingCardId?: string;
+  roadBuildingRoadsPlaced: number;
   robberTileId?: string;
   phase: GamePhase;
   eraOfProsperity: boolean;

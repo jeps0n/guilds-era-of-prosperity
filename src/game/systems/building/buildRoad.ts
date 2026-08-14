@@ -111,6 +111,10 @@ export function buildRoad(
         ...game,
         players: updatedPlayers,
         resourceBank: updatedResourceBank,
+        roadBuildingRoadsPlaced:
+            isRoadBuilding
+                ? game.roadBuildingRoadsPlaced + 1
+                : game.roadBuildingRoadsPlaced,
         eventLog: [
             ...game.eventLog,
             roadPlacedEvent,
@@ -125,11 +129,12 @@ export function buildRoad(
         return longestRoadUpdatedGame;
     }
     /*
-     * Road Building allows up to two roads.
-     *
-     * After placing the first road, determine whether
-     * another legal Road Building placement exists.
-     */
+    * Road Building allows up to two roads.
+    *
+    * The number of roads placed during the current
+    * Road Building resolution is tracked explicitly
+    * in GameState.
+    */
     const updatedPlayer =
         longestRoadUpdatedGame.players.find(
             (candidate) =>
@@ -143,32 +148,15 @@ export function buildRoad(
         return {
             ...longestRoadUpdatedGame,
             roadBuildingPending: false,
+            roadBuildingRoadsPlaced: 0,
         };
     }
-    /*
-     * Determine how many roads have been placed
-     * during this Road Building resolution.
-     */
-    const lastRoadBuildingEventIndex =
-        findLastRoadBuildingEventIndex(game);
-    const roadsPlacedDuringRoadBuilding =
-        lastRoadBuildingEventIndex === -1
-            ? 0
-            : game.eventLog
-                .slice(
-                    lastRoadBuildingEventIndex + 1
-                )
-                .filter(
-                    (event) =>
-                        event.type === "ROAD_PLACED"
-                ).length;
-    const totalRoadBuildingRoads =
-        roadsPlacedDuringRoadBuilding + 1;
     // Two roads have been placed.
-    if (totalRoadBuildingRoads >= 2) {
+    if (longestRoadUpdatedGame.roadBuildingRoadsPlaced >= 2) {
         return {
             ...longestRoadUpdatedGame,
             roadBuildingPending: false,
+            roadBuildingRoadsPlaced: 0,
         };
     }
     /*
@@ -220,27 +208,6 @@ function hasLegalRoadPlacement(
             edge.id
         );
     });
-}
-function findLastRoadBuildingEventIndex(
-    game: GameState
-): number {
-    for (
-        let index = game.eventLog.length - 1;
-        index >= 0;
-        index--
-    ) {
-        const event = game.eventLog[index];
-        if (
-            event.type ===
-            "DEVELOPMENT_CARD_PLAYED" &&
-            event.message.includes(
-                "road building"
-            )
-        ) {
-            return index;
-        }
-    }
-    return -1;
 }
 function connectsToPlayerNetwork(
     game: GameState,

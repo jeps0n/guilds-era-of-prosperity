@@ -105,9 +105,9 @@ export function SecondaryMenuButton({
         }
       }}
       style={{
-        width: "90%",
+        width: "85%",
         margin: "0 auto",
-        padding: "10px",
+        padding: "8px",
         borderRadius: "10px",
         border: active
           ? "2px solid #60a5fa"

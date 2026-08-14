@@ -66,10 +66,7 @@ export function playDevelopmentCard(
         card.type === "road_building";
     const canStartRoadBuilding =
         isRoadBuilding &&
-        hasLegalRoadBuildingPlacement(
-            game,
-            playerId
-        );
+        hasLegalRoadBuildingPlacement(game, playerId);
     const updatedPlayers = game.players.map(
         (candidate) => {
             if (candidate.id !== playerId) {
@@ -106,6 +103,12 @@ export function playDevelopmentCard(
         // Road Building starts the road board action.
         roadBuildingPending:
             canStartRoadBuilding,
+        // A new Road Building resolution always
+        // starts with zero roads placed.
+        roadBuildingRoadsPlaced:
+            isRoadBuilding
+                ? 0
+                : game.roadBuildingRoadsPlaced,
         yearOfPlentyPending:
             isYearOfPlenty,
         yearOfPlentyCardId:
@@ -120,7 +123,9 @@ export function playDevelopmentCard(
                 ...game.eventLog,
                 createEvent(
                     "DEVELOPMENT_CARD_PLAYED",
-                    `${player.name} played a ${card.type.replaceAll("_", " ")} card.`
+                    `${player.name} played a ${card.type
+                        .replaceAll("_", " ")
+                        .replace(/\b\w/g, (char) => char.toUpperCase())} card.`
                 ),
             ],
     };
