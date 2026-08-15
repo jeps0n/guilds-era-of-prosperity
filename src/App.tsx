@@ -45,6 +45,8 @@ function App() {
         | "development"
         | "merchantDevelopment"
         | "explorerRoad"
+        | "builderSettlement"
+        | "builderCity"
         | undefined;
     const [secondaryMenu, setSecondaryMenu] =
         useState<SecondaryMenuMode>(undefined);
@@ -58,6 +60,14 @@ function App() {
         useState<string | undefined>(undefined);
     const [explorerKeepResource, setExplorerKeepResource] =
         useState<"brick" | "lumber" | undefined>(undefined);
+    const [builderSettlementNodeId, setBuilderSettlementNodeId] =
+        useState<string | undefined>(undefined);
+    const [builderSettlementResource, setBuilderSettlementResource] =
+        useState<keyof Resources | undefined>(undefined);
+    const [builderCityNodeId, setBuilderCityNodeId] =
+        useState<string | undefined>(undefined);
+    const [builderCityResource, setBuilderCityResource] =
+        useState<"ore" | "wheat" | undefined>(undefined);
     /*
      * Year of Plenty selection tracks BOTH:
      * - the resource selected
@@ -169,7 +179,157 @@ function App() {
         }
         setGame(nextGame);
     }
+    function handleBuildSettlement(
+        nodeId: string
+    ) {
+        const player = game.players.find(
+            (candidate) =>
+                candidate.id === game.currentPlayerId
+        );
+        if (!player) {
+            return;
+        }
+        const isBuilder =
+            player.guild === "builder";
+        const builderPassiveAvailable =
+            isBuilder &&
+            !player.guildPassiveUsedThisTurn;
+        const settlementResources = [
+            "brick",
+            "lumber",
+            "wheat",
+            "sheep",
+        ] as const;
+        const availableResources =
+            settlementResources.filter(
+                (resource) =>
+                    player.resources[resource] >= 1
+            );
+        /*
+         * Builder with an unused passive must choose
+         * which settlement resource to keep.
+         *
+         * The availability layer guarantees that at least
+         * three of the four resources are available.
+         */
+        if (
+            builderPassiveAvailable &&
+            availableResources.length >= 3
+        ) {
+            setBuilderSettlementNodeId(nodeId);
+            setBuilderSettlementResource(undefined);
+            setSecondaryMenu("builderSettlement");
+            return;
+        }
+        /*
+         * Normal players and Builders whose passive has
+         * already been used follow the normal engine path.
+         */
+        const nextGame = buildSettlement(
+            game,
+            game.currentPlayerId,
+            nodeId
+        );
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
+    }
+    function handleBuilderSettlement(
+        discountedResource: keyof Resources
+    ) {
+        if (!builderSettlementNodeId) {
+            return;
+        }
+        const nextGame = buildSettlement(
+            game,
+            game.currentPlayerId,
+            builderSettlementNodeId,
+            discountedResource
+        );
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
+        setBuilderSettlementNodeId(undefined);
+        setBuilderSettlementResource(undefined);
+        setSecondaryMenu(undefined);
+    }
     function handleBuildCity(nodeId: string) {
+        const player = game.players.find(
+            (candidate) =>
+                candidate.id === game.currentPlayerId
+        );
+        if (!player) {
+            return;
+        }
+        const isBuilder =
+            player.guild === "builder";
+        const builderPassiveAvailable =
+            isBuilder &&
+            !player.guildPassiveUsedThisTurn;
+        /*
+         * Builder with an unused passive:
+         *
+         * 2 ore + 2 wheat:
+         *   Automatically discount ore.
+         *
+         * 3 ore + 1 wheat:
+         *   Automatically discount wheat.
+         *
+         * 3 ore + 2 wheat:
+         *   All five required resources are available,
+         *   so the player chooses which resource to keep.
+         */
+        if (builderPassiveAvailable) {
+            const hasOreDiscountOnly =
+                player.resources.ore >= 2 &&
+                player.resources.ore < 3 &&
+                player.resources.wheat >= 2;
+            const hasWheatDiscountOnly =
+                player.resources.ore >= 3 &&
+                player.resources.wheat >= 1 &&
+                player.resources.wheat < 2;
+            const hasFullCityCost =
+                player.resources.ore >= 3 &&
+                player.resources.wheat >= 2;
+            if (hasOreDiscountOnly) {
+                const nextGame = buildCity(
+                    game,
+                    game.currentPlayerId,
+                    nodeId,
+                    "ore"
+                );
+                if (nextGame === game) {
+                    return;
+                }
+                setGame(nextGame);
+                return;
+            }
+            if (hasWheatDiscountOnly) {
+                const nextGame = buildCity(
+                    game,
+                    game.currentPlayerId,
+                    nodeId,
+                    "wheat"
+                );
+                if (nextGame === game) {
+                    return;
+                }
+                setGame(nextGame);
+                return;
+            }
+            if (hasFullCityCost) {
+                setBuilderCityNodeId(nodeId);
+                setBuilderCityResource(undefined);
+                setSecondaryMenu("builderCity");
+                return;
+            }
+        }
+        /*
+         * Normal players and Builders whose passive has
+         * already been used follow the normal engine path.
+         */
         const nextGame = buildCity(
             game,
             game.currentPlayerId,
@@ -179,6 +339,26 @@ function App() {
             return;
         }
         setGame(nextGame);
+    }
+    function handleBuilderCity(
+        discountedResource: "ore" | "wheat"
+    ) {
+        if (!builderCityNodeId) {
+            return;
+        }
+        const nextGame = buildCity(
+            game,
+            game.currentPlayerId,
+            builderCityNodeId,
+            discountedResource
+        );
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
+        setBuilderCityNodeId(undefined);
+        setBuilderCityResource(undefined);
+        setSecondaryMenu(undefined);
     }
     function getDevelopmentCardName(
         type: DevelopmentCardType
@@ -888,26 +1068,14 @@ function App() {
                                     ? (nodeId) => {
                                         const ownsSettlement =
                                             currentPlayer?.settlements.some(
-                                                (
-                                                    settlement
-                                                ) =>
+                                                (settlement) =>
                                                     settlement.nodeId === nodeId
                                             );
-                                        if (
-                                            ownsSettlement
-                                        ) {
-                                            handleBuildCity(
-                                                nodeId
-                                            );
+                                        if (ownsSettlement) {
+                                            handleBuildCity(nodeId);
                                             return;
                                         }
-                                        setGame(
-                                            buildSettlement(
-                                                game,
-                                                game.currentPlayerId,
-                                                nodeId
-                                            )
-                                        );
+                                        handleBuildSettlement(nodeId);
                                     }
                                     : undefined
                         }
@@ -1099,6 +1267,139 @@ function App() {
                                         }
                                         onClick={() =>
                                             handleExplorerRoadBuild(
+                                                resource
+                                            )
+                                        }
+                                    >
+                                        <span
+                                            style={{
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: "8px",
+                                                width: "100%",
+                                                justifyContent:
+                                                    "flex-start",
+                                            }}
+                                        >
+                                            {renderResourceBadge(
+                                                resource,
+                                                1
+                                            )}
+                                            <span>
+                                                Keep {resource}
+                                            </span>
+                                        </span>
+                                    </SecondaryMenuButton>
+                                ))}
+                            </div>
+                        </SecondaryMenu>
+                    )}
+                    {/* SECONDARY MENU > BUILDER SETTLEMENT DISCOUNT */}
+                    {secondaryMenu === "builderSettlement" && game.phase === "playing" && (
+                        <SecondaryMenu
+                            title="Builder Discount"
+                            onClose={() => {
+                                setBuilderSettlementNodeId(undefined);
+                                setBuilderSettlementResource(undefined);
+                                setSecondaryMenu(undefined);
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: "13px",
+                                    color: "#d1d5db",
+                                    marginBottom: "12px",
+                                }}
+                            >
+                                Choose one resource to keep:
+                            </div>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "8px",
+                                }}
+                            >
+                                {(
+                                    [
+                                        "brick",
+                                        "lumber",
+                                        "wheat",
+                                        "sheep",
+                                    ] as const
+                                ).map((resource) => (
+                                    <SecondaryMenuButton
+                                        key={resource}
+                                        active={
+                                            builderSettlementResource ===
+                                            resource
+                                        }
+                                        onClick={() =>
+                                            handleBuilderSettlement(
+                                                resource
+                                            )
+                                        }
+                                    >
+                                        <span
+                                            style={{
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: "8px",
+                                                width: "100%",
+                                                justifyContent:
+                                                    "flex-start",
+                                            }}
+                                        >
+                                            {renderResourceBadge(
+                                                resource,
+                                                1
+                                            )}
+                                            <span>
+                                                Keep {resource}
+                                            </span>
+                                        </span>
+                                    </SecondaryMenuButton>
+                                ))}
+                            </div>
+                        </SecondaryMenu>
+                    )}
+                    {/* SECONDARY MENU > BUILDER CITY DISCOUNT */}
+                    {secondaryMenu === "builderCity" && game.phase === "playing" && (
+                        <SecondaryMenu
+                            title="Builder Discount"
+                            onClose={() => {
+                                setBuilderCityNodeId(undefined);
+                                setBuilderCityResource(undefined);
+                                setSecondaryMenu(undefined);
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: "13px",
+                                    color: "#d1d5db",
+                                    marginBottom: "12px",
+                                }}
+                            >
+                                Choose one resource to keep:
+                            </div>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "8px",
+                                }}
+                            >
+                                {(
+                                    ["ore", "wheat"] as const
+                                ).map((resource) => (
+                                    <SecondaryMenuButton
+                                        key={resource}
+                                        active={
+                                            builderCityResource ===
+                                            resource
+                                        }
+                                        onClick={() =>
+                                            handleBuilderCity(
                                                 resource
                                             )
                                         }

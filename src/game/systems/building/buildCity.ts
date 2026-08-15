@@ -1,11 +1,18 @@
 import type { GameState } from "../../engine/GameState";
+import type { Resources } from "../../engine/types";
 import { createEvent } from "../../engine/createEvent";
 import { getEffectiveCityCost } from "../../guilds/builder/passive/getEffectiveCityCost";
 import { evaluateMilestones } from "../milestones/evaluateMilestones";
+type Resource = keyof Resources;
+const CITY_RESOURCES: Resource[] = [
+    "ore",
+    "wheat",
+];
 export function buildCity(
     game: GameState,
     playerId: string,
-    nodeId: string
+    nodeId: string,
+    discountedResource?: Resource
 ): GameState {
     if (game.phase !== "playing") {
         return game;
@@ -34,7 +41,48 @@ export function buildCity(
     if (!settlement) {
         return game;
     }
-    const cityCost = getEffectiveCityCost(player);
+    const isBuilder =
+        player.guild === "builder";
+    const builderPassiveAvailable =
+        isBuilder &&
+        !player.guildPassiveUsedThisTurn;
+    /*
+     * If Builder is attempting to use the passive,
+     * the discounted resource must be one of the
+     * resources normally required by a city.
+     */
+    if (
+        builderPassiveAvailable &&
+        discountedResource !== undefined &&
+        !CITY_RESOURCES.includes(
+            discountedResource
+        )
+    ) {
+        return game;
+    }
+    /*
+     * A Builder with an unused passive must explicitly
+     * provide the resource being discounted.
+     *
+     * Normal players, and Builders whose passive has
+     * already been used, use the normal city cost.
+     */
+    if (
+        builderPassiveAvailable &&
+        discountedResource === undefined
+    ) {
+        return game;
+    }
+    const cityCost =
+        getEffectiveCityCost(
+            player,
+            discountedResource
+        );
+    /*
+     * Final affordability check against the effective
+     * cost. The engine remains authoritative regardless
+     * of what the UI says is affordable.
+     */
     if (
         player.resources.ore < cityCost.ore ||
         player.resources.wheat < cityCost.wheat
@@ -43,14 +91,22 @@ export function buildCity(
     }
     const updatedSettlements =
         player.settlements.filter(
-            (candidate) => candidate.nodeId !== nodeId
+            (candidate) =>
+                candidate.nodeId !== nodeId
         );
     const updatedCities = [
         ...player.cities,
         nodeId,
     ];
-    const updatedPlayers = game.players.map(
-        (candidate) => {
+    /*
+     * The passive is consumed only after all validation
+     * succeeds and the city is actually built.
+     */
+    const usesBuilderPassive =
+        builderPassiveAvailable &&
+        discountedResource !== undefined;
+    const updatedPlayers =
+        game.players.map((candidate) => {
             if (candidate.id !== playerId) {
                 return candidate;
             }
@@ -65,17 +121,17 @@ export function buildCity(
                         candidate.resources.wheat -
                         cityCost.wheat,
                 },
-                settlements: updatedSettlements,
-                cities: updatedCities,
+                settlements:
+                    updatedSettlements,
+                cities:
+                    updatedCities,
                 guildPassiveUsedThisTurn:
-                    candidate.guild === "builder" &&
-                    !candidate.guildPassiveUsedThisTurn
+                    usesBuilderPassive
                         ? true
                         : candidate.guildPassiveUsedThisTurn,
                 vp: candidate.vp + 1,
             };
-        }
-    );
+        });
     const updatedResourceBank = {
         ...game.resourceBank,
         ore:
@@ -88,7 +144,8 @@ export function buildCity(
     return evaluateMilestones({
         ...game,
         players: updatedPlayers,
-        resourceBank: updatedResourceBank,
+        resourceBank:
+            updatedResourceBank,
         eventLog: [
             ...game.eventLog,
             createEvent(

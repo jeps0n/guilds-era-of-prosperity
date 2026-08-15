@@ -1,13 +1,22 @@
 import type { GameState } from "../../engine/GameState";
+import type { Resources } from "../../engine/types";
 import { createEvent } from "../../engine/createEvent";
 import { getEffectiveSettlementCost } from "../../guilds/builder/passive/getEffectiveSettlementCost";
 import { canPlaceSettlement } from "../validation/canPlaceSettlement";
 import { updateLongestRoad } from "../achievements/updateLongestRoad";
 import { evaluateMilestones } from "../milestones/evaluateMilestones";
+type Resource = keyof Resources;
+const SETTLEMENT_RESOURCES: Resource[] = [
+    "brick",
+    "lumber",
+    "wheat",
+    "sheep",
+];
 export function buildSettlement(
     game: GameState,
     playerId: string,
-    nodeId: string
+    nodeId: string,
+    discountedResource?: Resource
 ): GameState {
     if (game.phase !== "playing") {
         return game;
@@ -30,8 +39,48 @@ export function buildSettlement(
     if (player.settlements.length >= 5) {
         return game;
     }
+    const isBuilder =
+        player.guild === "builder";
+    const builderPassiveAvailable =
+        isBuilder &&
+        !player.guildPassiveUsedThisTurn;
+    /*
+     * If Builder is attempting to use the passive,
+     * the discounted resource must be one of the
+     * four resources normally required by a settlement.
+     */
+    if (
+        builderPassiveAvailable &&
+        discountedResource !== undefined &&
+        !SETTLEMENT_RESOURCES.includes(
+            discountedResource
+        )
+    ) {
+        return game;
+    }
+    /*
+     * A Builder with an unused passive must explicitly
+     * provide the resource being discounted.
+     *
+     * Normal players, and Builders whose passive has
+     * already been used, use the normal settlement cost.
+     */
+    if (
+        builderPassiveAvailable &&
+        discountedResource === undefined
+    ) {
+        return game;
+    }
     const settlementCost =
-        getEffectiveSettlementCost(player);
+        getEffectiveSettlementCost(
+            player,
+            discountedResource
+        );
+    /*
+     * Final affordability check against the effective
+     * cost. The engine remains authoritative regardless
+     * of what the UI says is affordable.
+     */
     if (
         player.resources.brick <
             settlementCost.brick ||
@@ -45,7 +94,8 @@ export function buildSettlement(
         return game;
     }
     const node = game.board.nodes.find(
-        (candidate) => candidate.id === nodeId
+        (candidate) =>
+            candidate.id === nodeId
     );
     if (!node) {
         return game;
@@ -62,6 +112,13 @@ export function buildSettlement(
     ) {
         return game;
     }
+    /*
+     * The passive is consumed only after all validation
+     * succeeds and the settlement is actually built.
+     */
+    const usesBuilderPassive =
+        builderPassiveAvailable &&
+        discountedResource !== undefined;
     const updatedPlayers =
         game.players.map((candidate) => {
             if (candidate.id !== playerId) {
@@ -95,8 +152,7 @@ export function buildSettlement(
                     },
                 ],
                 guildPassiveUsedThisTurn:
-                    candidate.guild === "builder" &&
-                    !candidate.guildPassiveUsedThisTurn
+                    usesBuilderPassive
                         ? true
                         : candidate.guildPassiveUsedThisTurn,
                 vp: candidate.vp + 1,
@@ -116,13 +172,16 @@ export function buildSettlement(
         sheep:
             game.resourceBank.sheep +
             settlementCost.sheep,
-        ore: game.resourceBank.ore,
+        ore:
+            game.resourceBank.ore,
     };
     const updatedGame: GameState = {
         ...game,
         players: updatedPlayers,
-        resourceBank: updatedResourceBank,
-        lastPlacedSettlementNodeId: nodeId,
+        resourceBank:
+            updatedResourceBank,
+        lastPlacedSettlementNodeId:
+            nodeId,
         eventLog: [
             ...game.eventLog,
             createEvent(
@@ -143,7 +202,8 @@ function connectsToPlayerRoad(
     nodeId: string
 ): boolean {
     const player = game.players.find(
-        (candidate) => candidate.id === playerId
+        (candidate) =>
+            candidate.id === playerId
     );
     if (!player) {
         return false;

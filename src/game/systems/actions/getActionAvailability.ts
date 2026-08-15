@@ -57,7 +57,7 @@ export function getActionAvailability(
         ["brick", "lumber"].filter(
             (resource) =>
                 resources[
-                    resource as "brick" | "lumber"
+                resource as "brick" | "lumber"
                 ] >= 1
         ).length;
     const canRoad =
@@ -77,14 +77,100 @@ export function getActionAvailability(
             resources.brick >= 1 &&
             resources.lumber >= 1
         );
+    /*
+     * Builder passive availability:
+     *
+     * Builder receives one discounted settlement OR
+     * city per turn.
+     *
+     * The passive is available until the first
+     * discounted construction is successfully completed.
+     */
+    const isBuilder =
+        currentPlayer.guild === "builder";
+    const builderPassiveAvailable =
+        isBuilder &&
+        !currentPlayer.guildPassiveUsedThisTurn;
+    /*
+     * Builder settlement:
+     *
+     * Normal settlement cost:
+     * 1 brick + 1 lumber + 1 wheat + 1 sheep.
+     *
+     * Builder may omit one required resource when the
+     * passive is available.
+     *
+     * Therefore at least 3 of the 4 required resources
+     * must be available.
+     */
+    const settlementResourcesAvailable =
+        (
+            [
+                "brick",
+                "lumber",
+                "wheat",
+                "sheep",
+            ] as const
+        ).filter(
+            (resource) =>
+                resources[resource] >= 1
+        ).length;
     const canSettlement =
-        resources.brick >= 1 &&
-        resources.lumber >= 1 &&
-        resources.wheat >= 1 &&
-        resources.sheep >= 1;
+        (
+            builderPassiveAvailable &&
+            settlementResourcesAvailable >= 3
+        ) ||
+        (
+            /*
+             * Normal player, or Builder whose passive
+             * has already been used:
+             *
+             * Requires the complete settlement cost.
+             */
+            !builderPassiveAvailable &&
+            resources.brick >= 1 &&
+            resources.lumber >= 1 &&
+            resources.wheat >= 1 &&
+            resources.sheep >= 1
+        );
+    /*
+     * Builder city:
+     *
+     * Normal city cost:
+     * 3 ore + 2 wheat.
+     *
+     * With the Builder passive, one required resource
+     * may be omitted:
+     *
+     *   2 ore + 2 wheat
+     * OR
+     *   3 ore + 1 wheat
+     */
+    const builderCanAffordDiscountedCity =
+        (
+            resources.ore >= 2 &&
+            resources.wheat >= 2
+        ) ||
+        (
+            resources.ore >= 3 &&
+            resources.wheat >= 1
+        );
     const canCity =
-        resources.ore >= 3 &&
-        resources.wheat >= 2;
+        (
+            builderPassiveAvailable &&
+            builderCanAffordDiscountedCity
+        ) ||
+        (
+            /*
+             * Normal player, or Builder whose passive
+             * has already been used:
+             *
+             * Requires the complete city cost.
+             */
+            !builderPassiveAvailable &&
+            resources.ore >= 3 &&
+            resources.wheat >= 2
+        );
     /*
      * Merchant passive availability:
      *
