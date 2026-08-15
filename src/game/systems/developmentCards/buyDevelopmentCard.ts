@@ -2,7 +2,7 @@ import type { GameState } from "../../engine/GameState";
 import type { Resources } from "../../engine/types";
 import { createEvent } from "../../engine/createEvent";
 import { evaluateMilestones } from "../milestones/evaluateMilestones";
-import { getEffectiveDevelopmentCardCost } from "../../guilds/merchant/passive/getEffectiveDevCardCost.ts";
+import { getEffectiveDevelopmentCardCost } from "../../guilds/merchant/passive/getEffectiveDevelopmentCardCost.ts";
 type Resource = keyof Resources;
 const DEVELOPMENT_CARD_RESOURCES: Resource[] = [
   "ore",
