@@ -43,6 +43,7 @@ function App() {
     type SecondaryMenuMode =
         | "trade"
         | "development"
+        | "merchantDevelopment"
         | undefined;
     const [secondaryMenu, setSecondaryMenu] =
         useState<SecondaryMenuMode>(undefined);
@@ -50,7 +51,8 @@ function App() {
         useRef<HTMLDivElement>(null);
     const [selectedGiveResource, setSelectedGiveResource] =
         useState<keyof Resources | undefined>(undefined);
-    useState<number | undefined>(undefined);
+    const [merchantKeepResource, setMerchantKeepResource] =
+        useState<keyof Resources | undefined>(undefined);
     /*
      * Year of Plenty selection tracks BOTH:
      * - the resource selected
@@ -153,6 +155,45 @@ function App() {
         }
     }
     function handleBuyDevelopmentCard() {
+        const player = game.players.find(
+            (candidate) =>
+                candidate.id === game.currentPlayerId
+        );
+        if (!player) {
+            return;
+        }
+        const isMerchant =
+            player.guild === "merchant";
+        const merchantPassiveAvailable =
+            isMerchant &&
+            !player.guildPassiveUsedThisTurn;
+        const requiredResources: (keyof Resources)[] = [
+            "ore",
+            "wheat",
+            "sheep",
+        ];
+        const availableRequiredResources =
+            requiredResources.filter(
+                (resource) =>
+                    player.resources[resource] >= 1
+            );
+        /*
+         * Merchant with all three resources:
+         * open the discount menu and let the player
+         * choose which resource to keep.
+         */
+        if (
+            merchantPassiveAvailable &&
+            availableRequiredResources.length === 3
+        ) {
+            setMerchantKeepResource(undefined);
+            setSecondaryMenu("merchantDevelopment");
+            return;
+        }
+        /*
+         * Merchant with exactly two resources:
+         * purchase immediately at the discounted cost.
+         */
         const nextGame = buyDevelopmentCard(
             game,
             game.currentPlayerId
@@ -161,6 +202,21 @@ function App() {
             return;
         }
         setGame(nextGame);
+    }
+    function handleMerchantDevelopmentPurchase(
+        keepResource: keyof Resources
+    ) {
+        const nextGame = buyDevelopmentCard(
+            game,
+            game.currentPlayerId,
+            keepResource
+        );
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
+        setMerchantKeepResource(undefined);
+        setSecondaryMenu(undefined);
     }
     // ABC - OPEN DEV CARD MENU
     function handlePlayDevelopmentCard() {
@@ -941,6 +997,73 @@ function App() {
                                     </div>
                                 </>
                             )}
+                        </SecondaryMenu>
+                    )}
+                    {/* SECONDARY MENU > MERCHANT DEV CARD DISCOUNT */}
+                    {secondaryMenu === "merchantDevelopment" && game.phase === "playing" && (
+                        <SecondaryMenu
+                            title="Merchant Discount"
+                            onClose={() => {
+                                setMerchantKeepResource(undefined);
+                                setSecondaryMenu(undefined);
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: "13px",
+                                    color: "#d1d5db",
+                                    marginBottom: "12px",
+                                }}
+                            >
+                                Choose one resource to keep:
+                            </div>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "8px",
+                                }}
+                            >
+                                {(
+                                    [
+                                        "ore",
+                                        "wheat",
+                                        "sheep",
+                                    ] as const
+                                ).map((resource) => (
+                                    <SecondaryMenuButton
+                                        key={resource}
+                                        active={
+                                            merchantKeepResource ===
+                                            resource
+                                        }
+                                        onClick={() =>
+                                            handleMerchantDevelopmentPurchase(
+                                                resource
+                                            )
+                                        }
+                                    >
+                                        <span
+                                            style={{
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: "8px",
+                                                width: "100%",
+                                                justifyContent:
+                                                    "flex-start",
+                                            }}
+                                        >
+                                            {renderResourceBadge(
+                                                resource,
+                                                1
+                                            )}
+                                            <span>
+                                                Keep {resource}
+                                            </span>
+                                        </span>
+                                    </SecondaryMenuButton>
+                                ))}
+                            </div>
                         </SecondaryMenu>
                     )}
                     {/* SECONDARY MENU > RENDER DEV CARD OPTIONS*/}

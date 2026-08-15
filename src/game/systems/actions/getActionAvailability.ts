@@ -40,11 +40,48 @@ export function getActionAvailability(
     const canCity =
         resources.ore >= 3 &&
         resources.wheat >= 2;
+    const isMerchant =
+        currentPlayer.guild === "merchant";
+    const merchantPassiveAvailable =
+        isMerchant &&
+        !currentPlayer.guildPassiveUsedThisTurn;
+    const requiredDevelopmentResources = [
+        "ore",
+        "wheat",
+        "sheep",
+    ] as const;
+    const developmentResourcesAvailable =
+        requiredDevelopmentResources.filter(
+            (resource) =>
+                resources[resource] >= 1
+        ).length;
     const canBuyDevelopmentCard =
-        resources.ore >= 1 &&
-        resources.wheat >= 1 &&
-        resources.sheep >= 1 &&
-        game.developmentDeck.length > 0;
+        game.developmentDeck.length > 0 &&
+        (
+            /*
+            * Normal player, or Merchant whose passive
+            * has already been used:
+            *
+            * Requires all three resources.
+            */
+            (
+                !merchantPassiveAvailable &&
+                requiredDevelopmentResources.every(
+                    (resource) =>
+                        resources[resource] >= 1
+                )
+            ) ||
+            /*
+            * Merchant with an unused passive:
+            *
+            * Requires at least two of the three
+            * development-card resources.
+            */
+            (
+                merchantPassiveAvailable &&
+                developmentResourcesAvailable >= 2
+            )
+        );
     const hasRolled =
         game.lastDiceRoll !== undefined;
     const canTrade =
