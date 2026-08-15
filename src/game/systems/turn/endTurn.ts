@@ -24,6 +24,7 @@ export function endTurn(
         ...player,
         developmentCardsPurchasedThisTurn: [],
         developmentCardPlayedThisTurn: false,
+        guildPassiveUsedThisTurn: false,
       };
     }
   );

@@ -2,6 +2,7 @@ import type { GameState } from "../../engine/GameState";
 import type { Resources } from "../../engine/types";
 import { createEvent } from "../../engine/createEvent";
 import { getTradeRatio } from "./getTradeRatio";
+import { getMerchantTradeRatio } from "../../guilds/getMerchantTradeRatio";
 export function tradeWithBank(
   game: GameState,
   playerId: string,
@@ -26,11 +27,18 @@ export function tradeWithBank(
   if (!player) {
     return game;
   }
-  const ratio = getTradeRatio(
-    game,
-    playerId,
-    giveResource
-  );
+  const ratio =
+    player.guild === "merchant"
+      ? getMerchantTradeRatio(
+        game,
+        playerId,
+        giveResource
+      )
+      : getTradeRatio(
+        game,
+        playerId,
+        giveResource
+      );
   if (player.resources[giveResource] < ratio) {
     return game;
   }
@@ -53,6 +61,10 @@ export function tradeWithBank(
             candidate.resources[receiveResource] +
             1,
         },
+        guildPassiveUsedThisTurn:
+          candidate.guild === "merchant"
+            ? true
+            : candidate.guildPassiveUsedThisTurn,
       };
     }
   );
