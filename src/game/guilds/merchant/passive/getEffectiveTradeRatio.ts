@@ -1,7 +1,7 @@
-import type { GameState } from "../engine/GameState";
-import type { Resources } from "../engine/types";
-import { getTradeRatio } from "../systems/trading/getTradeRatio";
-export function getMerchantTradeRatio(
+import type { GameState } from "../../../engine/GameState";
+import type { Resources } from "../../../engine/types";
+import { getTradeRatio } from "../../../systems/trading/getTradeRatio";
+export function getEffectiveTradeRatio(
     game: GameState,
     playerId: string,
     resource: keyof Resources

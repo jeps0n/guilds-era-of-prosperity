@@ -2,6 +2,7 @@ import type { GameState } from "../../engine/GameState";
 import type { Resources } from "../../engine/types";
 import { createEvent } from "../../engine/createEvent";
 import { evaluateMilestones } from "../milestones/evaluateMilestones";
+import { getEffectiveDevelopmentCardCost } from "../../guilds/merchant/passive/getEffectiveDevCardCost.ts";
 type Resource = keyof Resources;
 const DEVELOPMENT_CARD_RESOURCES: Resource[] = [
   "ore",
@@ -34,71 +35,27 @@ export function buyDevelopmentCard(
   if (!player) {
     return game;
   }
-  const isMerchant =
-    player.guild === "merchant";
-  const merchantPassiveAvailable =
-    isMerchant &&
-    !player.guildPassiveUsedThisTurn;
-  /*
-   * Determine which resources will be paid.
-   *
-   * Normal player:
-   *   ore + wheat + sheep
-   *
-   * Merchant with passive available:
-   *   exactly two of the three required resources
-   *
-   * Merchant with all three resources:
-   *   merchantKeepResource must specify which one is kept.
-   */
   let paymentResources: Resource[];
-  if (merchantPassiveAvailable) {
-    const availableRequiredResources =
-      DEVELOPMENT_CARD_RESOURCES.filter(
-        (resource) =>
-          player.resources[resource] >= 1
+  /*
+   * Merchant's discounted development-card cost is resolved
+   * by the Merchant passive module.
+   *
+   * Normal players continue to use the base-game cost.
+   */
+  if (
+    player.guild === "merchant" &&
+    !player.guildPassiveUsedThisTurn
+  ) {
+    const merchantCost =
+      getEffectiveDevelopmentCardCost(
+        player,
+        merchantKeepResource
       );
-    if (availableRequiredResources.length < 2) {
+    if (!merchantCost) {
       return game;
     }
-    /*
-     * If the Merchant has all three resources,
-     * the caller must specify which resource to keep.
-     *
-     * This prevents the system from silently choosing
-     * for the player.
-     */
-    if (availableRequiredResources.length === 3) {
-      if (
-        merchantKeepResource === undefined ||
-        !DEVELOPMENT_CARD_RESOURCES.includes(
-          merchantKeepResource
-        )
-      ) {
-        return game;
-      }
-      paymentResources =
-        DEVELOPMENT_CARD_RESOURCES.filter(
-          (resource) =>
-            resource !== merchantKeepResource
-        );
-    } else {
-      /*
-       * Merchant has exactly two of the three
-       * required resources.
-       *
-       * Pay those two directly.
-       */
-      paymentResources =
-        availableRequiredResources;
-    }
+    paymentResources = merchantCost;
   } else {
-    /*
-     * Normal purchase.
-     *
-     * This also applies to a Merchant whose passive
-     * has already been used this turn.
-     */
     const canPayNormalCost =
       DEVELOPMENT_CARD_RESOURCES.every(
         (resource) =>
@@ -134,12 +91,9 @@ export function buyDevelopmentCard(
           ...candidate.developmentCardsPurchasedThisTurn,
           purchasedCard.id,
         ],
-        /*
-         * The Merchant passive is consumed whenever
-         * the Merchant receives the discounted price.
-         */
         guildPassiveUsedThisTurn:
-          merchantPassiveAvailable
+          player.guild === "merchant" &&
+          !candidate.guildPassiveUsedThisTurn
             ? true
             : candidate.guildPassiveUsedThisTurn,
         vp:

@@ -1,14 +1,9 @@
 import type { GameState } from "../../engine/GameState";
 import { createEvent } from "../../engine/createEvent";
+import { getEffectiveSettlementCost } from "../../guilds/builder/passive/getEffectiveSettlementCost";
 import { canPlaceSettlement } from "../validation/canPlaceSettlement";
 import { updateLongestRoad } from "../achievements/updateLongestRoad";
 import { evaluateMilestones } from "../milestones/evaluateMilestones";
-const SETTLEMENT_COST = {
-    brick: 1,
-    lumber: 1,
-    wheat: 1,
-    sheep: 1,
-};
 export function buildSettlement(
     game: GameState,
     playerId: string,
@@ -27,8 +22,7 @@ export function buildSettlement(
         return game;
     }
     const player = game.players.find(
-        (candidate) =>
-            candidate.id === playerId
+        (candidate) => candidate.id === playerId
     );
     if (!player) {
         return game;
@@ -36,21 +30,22 @@ export function buildSettlement(
     if (player.settlements.length >= 5) {
         return game;
     }
+    const settlementCost =
+        getEffectiveSettlementCost(player);
     if (
         player.resources.brick <
-        SETTLEMENT_COST.brick ||
+            settlementCost.brick ||
         player.resources.lumber <
-        SETTLEMENT_COST.lumber ||
+            settlementCost.lumber ||
         player.resources.wheat <
-        SETTLEMENT_COST.wheat ||
+            settlementCost.wheat ||
         player.resources.sheep <
-        SETTLEMENT_COST.sheep
+            settlementCost.sheep
     ) {
         return game;
     }
     const node = game.board.nodes.find(
-        (candidate) =>
-            candidate.id === nodeId
+        (candidate) => candidate.id === nodeId
     );
     if (!node) {
         return game;
@@ -78,26 +73,32 @@ export function buildSettlement(
                     ...candidate.resources,
                     brick:
                         candidate.resources.brick -
-                        SETTLEMENT_COST.brick,
+                        settlementCost.brick,
                     lumber:
                         candidate.resources.lumber -
-                        SETTLEMENT_COST.lumber,
+                        settlementCost.lumber,
                     wheat:
                         candidate.resources.wheat -
-                        SETTLEMENT_COST.wheat,
+                        settlementCost.wheat,
                     sheep:
                         candidate.resources.sheep -
-                        SETTLEMENT_COST.sheep,
+                        settlementCost.sheep,
                 },
                 settlements: [
                     ...candidate.settlements,
                     {
-                        id: `settlement-${candidate.settlements.length + 1
-                            }`,
+                        id: `settlement-${
+                            candidate.settlements.length + 1
+                        }`,
                         playerId,
                         nodeId,
                     },
                 ],
+                guildPassiveUsedThisTurn:
+                    candidate.guild === "builder" &&
+                    !candidate.guildPassiveUsedThisTurn
+                        ? true
+                        : candidate.guildPassiveUsedThisTurn,
                 vp: candidate.vp + 1,
             };
         });
@@ -105,16 +106,17 @@ export function buildSettlement(
         ...game.resourceBank,
         brick:
             game.resourceBank.brick +
-            SETTLEMENT_COST.brick,
+            settlementCost.brick,
         lumber:
             game.resourceBank.lumber +
-            SETTLEMENT_COST.lumber,
+            settlementCost.lumber,
         wheat:
             game.resourceBank.wheat +
-            SETTLEMENT_COST.wheat,
+            settlementCost.wheat,
         sheep:
             game.resourceBank.sheep +
-            SETTLEMENT_COST.sheep,
+            settlementCost.sheep,
+        ore: game.resourceBank.ore,
     };
     const updatedGame: GameState = {
         ...game,
@@ -141,8 +143,7 @@ function connectsToPlayerRoad(
     nodeId: string
 ): boolean {
     const player = game.players.find(
-        (candidate) =>
-            candidate.id === playerId
+        (candidate) => candidate.id === playerId
     );
     if (!player) {
         return false;

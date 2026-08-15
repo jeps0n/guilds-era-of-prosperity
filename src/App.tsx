@@ -23,7 +23,7 @@ import { buildSettlement } from "./game/systems/building/buildSettlement";
 import { buildCity } from "./game/systems/building/buildCity";
 import { tradeWithBank } from "./game/systems/trading/tradeWithBank";
 import { getTradeRatio } from "./game/systems/trading/getTradeRatio";
-import { getMerchantTradeRatio } from "./game/guilds/getMerchantTradeRatio";
+import { getEffectiveTradeRatio } from "./game/guilds/merchant/passive/getEffectiveTradeRatio";
 import { buyDevelopmentCard } from "./game/systems/developmentCards/buyDevelopmentCard";
 import { playDevelopmentCard } from "./game/systems/developmentCards/playDevelopmentCard";
 import { resolveYearOfPlenty } from "./game/systems/developmentCards/resolveYearOfPlenty";
@@ -670,7 +670,7 @@ function App() {
                 (resource) => {
                     const ratio =
                         currentPlayer.guild === "merchant"
-                            ? getMerchantTradeRatio(
+                            ? getEffectiveTradeRatio(
                                 game,
                                 currentPlayer.id,
                                 resource
@@ -909,7 +909,7 @@ function App() {
                                                 {renderResourceBadge(
                                                     resource,
                                                     currentPlayer!.guild === "merchant"
-                                                        ? getMerchantTradeRatio(
+                                                        ? getEffectiveTradeRatio(
                                                             game,
                                                             currentPlayer!.id,
                                                             resource

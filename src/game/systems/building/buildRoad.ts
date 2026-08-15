@@ -2,6 +2,7 @@ import type { GameState } from "../../engine/GameState";
 import { createEvent } from "../../engine/createEvent";
 import { updateLongestRoad } from "../achievements/updateLongestRoad";
 import { evaluateMilestones } from "../milestones/evaluateMilestones";
+import { getEffectiveRoadCost } from "../../guilds/explorer/passive/getEffectiveRoadCost";
 const ROAD_COST = {
     brick: 1,
     lumber: 1,
@@ -34,17 +35,27 @@ export function buildRoad(
     }
     const isRoadBuilding =
         game.roadBuildingPending;
-    // Normal road building requires resources.
-    // Road Building development cards provide roads for free.
-    if (
+    /*
+     * Road Building development card:
+     * roads are completely free and do not consume
+     * the Explorer passive.
+     */
+    const roadCost =
         !isRoadBuilding &&
-        (
-            player.resources.brick <
-            ROAD_COST.brick ||
-            player.resources.lumber <
-            ROAD_COST.lumber
-        )) {
-        return game;
+        player.guild === "explorer" &&
+        !player.guildPassiveUsedThisTurn
+            ? getEffectiveRoadCost(player)
+            : ROAD_COST;
+    /*
+     * Normal road/passive road affordability.
+     */
+    if (!isRoadBuilding) {
+        if (
+            player.resources.brick < roadCost.brick ||
+            player.resources.lumber < roadCost.lumber
+        ) {
+            return game;
+        }
     }
     const edge = game.board.edges.find(
         (candidate) => candidate.id === edgeId
@@ -69,6 +80,10 @@ export function buildRoad(
     ) {
         return game;
     }
+    const usesExplorerPassive =
+        !isRoadBuilding &&
+        player.guild === "explorer" &&
+        !player.guildPassiveUsedThisTurn;
     const updatedPlayers =
         game.players.map((candidate) => {
             if (candidate.id !== playerId) {
@@ -82,15 +97,19 @@ export function buildRoad(
                         ...candidate.resources,
                         brick:
                             candidate.resources.brick -
-                            ROAD_COST.brick,
+                            roadCost.brick,
                         lumber:
                             candidate.resources.lumber -
-                            ROAD_COST.lumber,
+                            roadCost.lumber,
                     },
                 roads: [
                     ...candidate.roads,
                     edgeId,
                 ],
+                guildPassiveUsedThisTurn:
+                    usesExplorerPassive
+                        ? true
+                        : candidate.guildPassiveUsedThisTurn,
             };
         });
     const updatedResourceBank =
@@ -100,10 +119,10 @@ export function buildRoad(
                 ...game.resourceBank,
                 brick:
                     game.resourceBank.brick +
-                    ROAD_COST.brick,
+                    roadCost.brick,
                 lumber:
                     game.resourceBank.lumber +
-                    ROAD_COST.lumber,
+                    roadCost.lumber,
             };
     const roadPlacedEvent = createEvent(
         "ROAD_PLACED",
@@ -124,9 +143,6 @@ export function buildRoad(
             roadPlacedEvent,
         ],
     };
-    /*
-     * Recalculate Longest Road after every successful road placement.
-     */
     const longestRoadUpdatedGame =
         updateLongestRoad(updatedGame);
     if (!isRoadBuilding) {
@@ -134,13 +150,6 @@ export function buildRoad(
             longestRoadUpdatedGame
         );
     }
-    /*
-    * Road Building allows up to two roads.
-    *
-    * The number of roads placed during the current
-    * Road Building resolution is tracked explicitly
-    * in GameState.
-    */
     const updatedPlayer =
         longestRoadUpdatedGame.players.find(
             (candidate) =>
@@ -149,7 +158,6 @@ export function buildRoad(
     if (!updatedPlayer) {
         return game;
     }
-    // No physical road pieces remain.
     if (updatedPlayer.roads.length >= 15) {
         return evaluateMilestones({
             ...longestRoadUpdatedGame,
@@ -157,21 +165,15 @@ export function buildRoad(
             roadBuildingRoadsPlaced: 0,
         });
     }
-    // Two roads have been placed.
-    if (longestRoadUpdatedGame.roadBuildingRoadsPlaced >= 2) {
+    if (
+        longestRoadUpdatedGame.roadBuildingRoadsPlaced >= 2
+    ) {
         return evaluateMilestones({
             ...longestRoadUpdatedGame,
             roadBuildingPending: false,
             roadBuildingRoadsPlaced: 0,
         });
     }
-    /*
-     * We have placed exactly one road.
-     *
-     * If there is no legal second road, the Road Building
-     * effect is complete. The player does not get another
-     * road because there is nowhere legal to place it.
-     */
     const hasSecondLegalRoad =
         hasLegalRoadPlacement(
             longestRoadUpdatedGame,
@@ -200,9 +202,7 @@ function hasLegalRoadPlacement(
         const occupied =
             game.players.some(
                 (candidate) =>
-                    candidate.roads.includes(
-                        edge.id
-                    )
+                    candidate.roads.includes(edge.id)
             );
         if (occupied) {
             return false;

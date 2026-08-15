@@ -1,10 +1,7 @@
 import type { GameState } from "../../engine/GameState";
 import { createEvent } from "../../engine/createEvent";
+import { getEffectiveCityCost } from "../../guilds/builder/passive/getEffectiveCityCost";
 import { evaluateMilestones } from "../milestones/evaluateMilestones";
-const CITY_COST = {
-    ore: 3,
-    wheat: 2,
-};
 export function buildCity(
     game: GameState,
     playerId: string,
@@ -31,25 +28,23 @@ export function buildCity(
     if (player.cities.length >= 4) {
         return game;
     }
-    // The node must contain one of this player's settlements.
     const settlement = player.settlements.find(
         (candidate) => candidate.nodeId === nodeId
     );
     if (!settlement) {
         return game;
     }
-    // Player must be able to afford the city.
+    const cityCost = getEffectiveCityCost(player);
     if (
-        player.resources.ore < CITY_COST.ore ||
-        player.resources.wheat < CITY_COST.wheat
+        player.resources.ore < cityCost.ore ||
+        player.resources.wheat < cityCost.wheat
     ) {
         return game;
     }
-    // Remove the settlement being upgraded.
-    const updatedSettlements = player.settlements.filter(
-        (candidate) => candidate.nodeId !== nodeId
-    );
-    // Add the city at the same node.
+    const updatedSettlements =
+        player.settlements.filter(
+            (candidate) => candidate.nodeId !== nodeId
+        );
     const updatedCities = [
         ...player.cities,
         nodeId,
@@ -65,16 +60,18 @@ export function buildCity(
                     ...candidate.resources,
                     ore:
                         candidate.resources.ore -
-                        CITY_COST.ore,
+                        cityCost.ore,
                     wheat:
                         candidate.resources.wheat -
-                        CITY_COST.wheat,
+                        cityCost.wheat,
                 },
                 settlements: updatedSettlements,
                 cities: updatedCities,
-                // Settlement = 1 VP
-                // City = 2 VP
-                // Therefore upgrading adds +1 VP.
+                guildPassiveUsedThisTurn:
+                    candidate.guild === "builder" &&
+                    !candidate.guildPassiveUsedThisTurn
+                        ? true
+                        : candidate.guildPassiveUsedThisTurn,
                 vp: candidate.vp + 1,
             };
         }
@@ -83,10 +80,10 @@ export function buildCity(
         ...game.resourceBank,
         ore:
             game.resourceBank.ore +
-            CITY_COST.ore,
+            cityCost.ore,
         wheat:
             game.resourceBank.wheat +
-            CITY_COST.wheat,
+            cityCost.wheat,
     };
     return evaluateMilestones({
         ...game,

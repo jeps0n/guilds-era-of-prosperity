@@ -1,4 +1,4 @@
-import type { GuildType, Resources } from "../engine/types";
+import type { GuildType, Resources } from "../../engine/types";
 export type GuildPassiveAction =
     | "settlement"
     | "city"
