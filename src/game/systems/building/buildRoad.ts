@@ -1,16 +1,19 @@
 import type { GameState } from "../../engine/GameState";
+import type { Resources } from "../../engine/types";
 import { createEvent } from "../../engine/createEvent";
 import { updateLongestRoad } from "../achievements/updateLongestRoad";
 import { evaluateMilestones } from "../milestones/evaluateMilestones";
 import { getEffectiveRoadCost } from "../../guilds/explorer/passive/getEffectiveRoadCost";
-const ROAD_COST = {
-    brick: 1,
-    lumber: 1,
-};
+type Resource = keyof Resources;
+const ROAD_COST: Resource[] = [
+    "brick",
+    "lumber",
+];
 export function buildRoad(
     game: GameState,
     playerId: string,
-    edgeId: string
+    edgeId: string,
+    keepResource?: Resource
 ): GameState {
     if (game.phase !== "playing") {
         return game;
@@ -40,21 +43,47 @@ export function buildRoad(
      * roads are completely free and do not consume
      * the Explorer passive.
      */
-    const roadCost =
-        !isRoadBuilding &&
-        player.guild === "explorer" &&
-        !player.guildPassiveUsedThisTurn
-            ? getEffectiveRoadCost(player)
-            : ROAD_COST;
-    /*
-     * Normal road/passive road affordability.
-     */
+    let paymentResources: Resource[] = [];
     if (!isRoadBuilding) {
+        /*
+         * Explorer passive mirrors the Merchant discount flow:
+         * determine the effective payment resources first.
+         */
         if (
-            player.resources.brick < roadCost.brick ||
-            player.resources.lumber < roadCost.lumber
+            player.guild === "explorer" &&
+            !player.guildPassiveUsedThisTurn
         ) {
-            return game;
+            const effectiveRoadCost =
+                getEffectiveRoadCost(
+                    player,
+                    keepResource
+                );
+            /*
+             * undefined means:
+             * - Explorer has no brick/lumber, OR
+             * - Explorer has both and has not made
+             *   the required keep-resource choice.
+             */
+            if (!effectiveRoadCost) {
+                return game;
+            }
+            paymentResources =
+                effectiveRoadCost;
+        } else {
+            /*
+             * Non-Explorer players and Explorers who
+             * have already consumed their passive
+             * pay the normal road cost.
+             */
+            paymentResources = ROAD_COST;
+        }
+        /*
+         * Final affordability check.
+         */
+        for (const resource of paymentResources) {
+            if (player.resources[resource] < 1) {
+                return game;
+            }
         }
     }
     const edge = game.board.edges.find(
@@ -80,6 +109,12 @@ export function buildRoad(
     ) {
         return game;
     }
+    /*
+     * Explorer passive is consumed only when an
+     * actual discounted road is successfully built.
+     *
+     * Road Building never consumes it.
+     */
     const usesExplorerPassive =
         !isRoadBuilding &&
         player.guild === "explorer" &&
@@ -89,19 +124,15 @@ export function buildRoad(
             if (candidate.id !== playerId) {
                 return candidate;
             }
+            const updatedResources = {
+                ...candidate.resources,
+            };
+            for (const resource of paymentResources) {
+                updatedResources[resource] -= 1;
+            }
             return {
                 ...candidate,
-                resources: isRoadBuilding
-                    ? candidate.resources
-                    : {
-                        ...candidate.resources,
-                        brick:
-                            candidate.resources.brick -
-                            roadCost.brick,
-                        lumber:
-                            candidate.resources.lumber -
-                            roadCost.lumber,
-                    },
+                resources: updatedResources,
                 roads: [
                     ...candidate.roads,
                     edgeId,
@@ -112,18 +143,12 @@ export function buildRoad(
                         : candidate.guildPassiveUsedThisTurn,
             };
         });
-    const updatedResourceBank =
-        isRoadBuilding
-            ? game.resourceBank
-            : {
-                ...game.resourceBank,
-                brick:
-                    game.resourceBank.brick +
-                    roadCost.brick,
-                lumber:
-                    game.resourceBank.lumber +
-                    roadCost.lumber,
-            };
+    const updatedResourceBank = {
+        ...game.resourceBank,
+    };
+    for (const resource of paymentResources) {
+        updatedResourceBank[resource] += 1;
+    }
     const roadPlacedEvent = createEvent(
         "ROAD_PLACED",
         isRoadBuilding

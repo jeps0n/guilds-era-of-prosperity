@@ -29,9 +29,54 @@ export function getActionAvailability(
         };
     }
     const resources = currentPlayer.resources;
+    /*
+     * Explorer passive availability:
+     *
+     * Explorer receives one discounted road per turn.
+     * The passive is available until it is consumed.
+     */
+    const isExplorer =
+        currentPlayer.guild === "explorer";
+    const explorerPassiveAvailable =
+        isExplorer &&
+        !currentPlayer.guildPassiveUsedThisTurn;
+    /*
+     * Explorer with an unused passive:
+     *
+     * Requires at least one of the two normal road
+     * resources (brick or lumber).
+     *
+     * If the Explorer has only one resource, the road
+     * can be built automatically using that resource.
+     *
+     * If the Explorer has both resources, the UI will
+     * open the Explorer discount menu and let the player
+     * choose which resource to keep.
+     */
+    const roadResourcesAvailable =
+        ["brick", "lumber"].filter(
+            (resource) =>
+                resources[
+                    resource as "brick" | "lumber"
+                ] >= 1
+        ).length;
     const canRoad =
-        resources.brick >= 1 &&
-        resources.lumber >= 1;
+        (
+            explorerPassiveAvailable &&
+            roadResourcesAvailable >= 1
+        ) ||
+        (
+            /*
+             * Normal player, or Explorer whose passive
+             * has already been used:
+             *
+             * Requires the normal road cost of
+             * 1 brick + 1 lumber.
+             */
+            !explorerPassiveAvailable &&
+            resources.brick >= 1 &&
+            resources.lumber >= 1
+        );
     const canSettlement =
         resources.brick >= 1 &&
         resources.lumber >= 1 &&
@@ -40,6 +85,12 @@ export function getActionAvailability(
     const canCity =
         resources.ore >= 3 &&
         resources.wheat >= 2;
+    /*
+     * Merchant passive availability:
+     *
+     * Merchant receives one discounted development card
+     * purchase per turn.
+     */
     const isMerchant =
         currentPlayer.guild === "merchant";
     const merchantPassiveAvailable =
@@ -59,11 +110,11 @@ export function getActionAvailability(
         game.developmentDeck.length > 0 &&
         (
             /*
-            * Normal player, or Merchant whose passive
-            * has already been used:
-            *
-            * Requires all three resources.
-            */
+             * Normal player, or Merchant whose passive
+             * has already been used:
+             *
+             * Requires all three resources.
+             */
             (
                 !merchantPassiveAvailable &&
                 requiredDevelopmentResources.every(
@@ -72,11 +123,15 @@ export function getActionAvailability(
                 )
             ) ||
             /*
-            * Merchant with an unused passive:
-            *
-            * Requires at least two of the three
-            * development-card resources.
-            */
+             * Merchant with an unused passive:
+             *
+             * Requires at least two of the three
+             * development-card resources.
+             *
+             * If all three are available, the UI opens
+             * the Merchant discount menu so the player
+             * can choose which resource to keep.
+             */
             (
                 merchantPassiveAvailable &&
                 developmentResourcesAvailable >= 2

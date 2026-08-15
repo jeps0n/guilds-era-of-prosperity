@@ -44,6 +44,7 @@ function App() {
         | "trade"
         | "development"
         | "merchantDevelopment"
+        | "explorerRoad"
         | undefined;
     const [secondaryMenu, setSecondaryMenu] =
         useState<SecondaryMenuMode>(undefined);
@@ -53,6 +54,10 @@ function App() {
         useState<keyof Resources | undefined>(undefined);
     const [merchantKeepResource, setMerchantKeepResource] =
         useState<keyof Resources | undefined>(undefined);
+    const [explorerRoadEdgeId, setExplorerRoadEdgeId] =
+        useState<string | undefined>(undefined);
+    const [explorerKeepResource, setExplorerKeepResource] =
+        useState<"brick" | "lumber" | undefined>(undefined);
     /*
      * Year of Plenty selection tracks BOTH:
      * - the resource selected
@@ -115,6 +120,45 @@ function App() {
         }
     }
     function handleBuildRoad(edgeId: string) {
+        const player = game.players.find(
+            (candidate) =>
+                candidate.id === game.currentPlayerId
+        );
+        if (!player) {
+            return;
+        }
+        const isExplorer =
+            player.guild === "explorer";
+        const explorerPassiveAvailable =
+            isExplorer &&
+            !player.guildPassiveUsedThisTurn;
+        const hasBrick =
+            player.resources.brick >= 1;
+        const hasLumber =
+            player.resources.lumber >= 1;
+        /*
+         * Explorer with an unused passive and both
+         * road resources must choose which resource
+         * to keep before the road is resolved.
+         */
+        if (
+            explorerPassiveAvailable &&
+            hasBrick &&
+            hasLumber
+        ) {
+            setExplorerRoadEdgeId(edgeId);
+            setExplorerKeepResource(undefined);
+            setSecondaryMenu("explorerRoad");
+            return;
+        }
+        /*
+         * Every other case follows the normal buildRoad
+         * resolution path.
+         *
+         * Explorer with only one resource will have
+         * the effective cost resolved by the engine.
+         * Non-Explorer and used-passive Explorer pay normal price.
+         */
         const nextGame = buildRoad(
             game,
             game.currentPlayerId,
@@ -216,6 +260,26 @@ function App() {
         }
         setGame(nextGame);
         setMerchantKeepResource(undefined);
+        setSecondaryMenu(undefined);
+    }
+    function handleExplorerRoadBuild(
+        keepResource: "brick" | "lumber"
+    ) {
+        if (!explorerRoadEdgeId) {
+            return;
+        }
+        const nextGame = buildRoad(
+            game,
+            game.currentPlayerId,
+            explorerRoadEdgeId,
+            keepResource
+        );
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
+        setExplorerRoadEdgeId(undefined);
+        setExplorerKeepResource(undefined);
         setSecondaryMenu(undefined);
     }
     // ABC - OPEN DEV CARD MENU
@@ -997,6 +1061,69 @@ function App() {
                                     </div>
                                 </>
                             )}
+                        </SecondaryMenu>
+                    )}
+                    {/* SECONDARY MENU > EXPLORER ROAD DISCOUNT */}
+                    {secondaryMenu === "explorerRoad" && game.phase === "playing" && (
+                        <SecondaryMenu
+                            title="Explorer Discount"
+                            onClose={() => {
+                                setExplorerRoadEdgeId(undefined);
+                                setExplorerKeepResource(undefined);
+                                setSecondaryMenu(undefined);
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: "13px",
+                                    color: "#d1d5db",
+                                    marginBottom: "12px",
+                                }}
+                            >
+                                Choose one resource to keep:
+                            </div>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "8px",
+                                }}
+                            >
+                                {(
+                                    ["brick", "lumber"] as const
+                                ).map((resource) => (
+                                    <SecondaryMenuButton
+                                        key={resource}
+                                        active={
+                                            explorerKeepResource === resource
+                                        }
+                                        onClick={() =>
+                                            handleExplorerRoadBuild(
+                                                resource
+                                            )
+                                        }
+                                    >
+                                        <span
+                                            style={{
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: "8px",
+                                                width: "100%",
+                                                justifyContent:
+                                                    "flex-start",
+                                            }}
+                                        >
+                                            {renderResourceBadge(
+                                                resource,
+                                                1
+                                            )}
+                                            <span>
+                                                Keep {resource}
+                                            </span>
+                                        </span>
+                                    </SecondaryMenuButton>
+                                ))}
+                            </div>
                         </SecondaryMenu>
                     )}
                     {/* SECONDARY MENU > MERCHANT DEV CARD DISCOUNT */}
