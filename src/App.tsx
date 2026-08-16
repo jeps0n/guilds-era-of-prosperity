@@ -102,8 +102,18 @@ function App() {
         console.log(game);
         console.log("----------------------------------------");
         function handleKeyDown(event: KeyboardEvent) {
-            if (event.key.toLowerCase() === "t") {
+            const key = event.key.toLowerCase();
+            if (key === "t") {
                 handleRestoreCheckpoint();
+                return;
+            }
+            if (key === "r") {
+                handleRollDice();
+                return;
+            }
+            if (key === "e") {
+                handleEndTurn();
+                return;
             }
         }
         window.addEventListener("keydown", handleKeyDown);
@@ -847,7 +857,7 @@ function App() {
          * Don't allow a manual End Turn to interrupt
          * the secondary-roll reveal.
          */
-        if (secondaryRollRevealing) {
+        if (secondaryRollRevealing || game.robberPending || game.roadBuildingPending) {
             return;
         }
         // Cancel any unfinished secondary action first.
@@ -1834,48 +1844,58 @@ function App() {
                                     gap: "8px",
                                 }}
                             >
-                                {tradeResources.flatMap(
-                                    (resource) =>
-                                        [0, 1].map(
-                                            (
-                                                slot
-                                            ) => {
-                                                const isFirstSelection =
-                                                    yearOfPlentySelection?.resource === resource &&
-                                                    yearOfPlentySelection?.slot === slot;
-                                                return (
-                                                    <SecondaryMenuButton
-                                                        key={`${resource}-${slot}`}
-                                                        active={isFirstSelection}
-                                                        disabled={isFirstSelection}
-                                                        onClick={() =>
-                                                            handleSelectYearOfPlentyResource(
-                                                                resource,
-                                                                slot
-                                                            )
-                                                        }
-                                                    >
-                                                        <span
-                                                            style={{
-                                                                display: "inline-flex",
-                                                                alignItems: "center",
-                                                                gap: "8px",
-                                                                width: "100%",
-                                                                justifyContent: "flex-start",
-                                                            }}
-                                                        >
-                                                            {renderResourceBadge(
-                                                                resource,
-                                                                1
-                                                            )}
-                                                            <span>
-                                                                {resource}
-                                                            </span>
-                                                        </span>
-                                                    </SecondaryMenuButton>
-                                                );
-                                            }
-                                        )
+                                {tradeResources.flatMap((resource) =>
+                                    [0, 1].map((slot) => {
+                                        const isFirstSelection =
+                                            yearOfPlentySelection?.resource === resource &&
+                                            yearOfPlentySelection?.slot === slot;
+                                        const bankCount =
+                                            game.resourceBank[resource];
+                                        /*
+                                         * Each resource has two buttons.
+                                         *
+                                         * 0 in bank  -> both disabled
+                                         * 1 in bank  -> first enabled, second disabled
+                                         * 2+ in bank -> both enabled
+                                         */
+                                        const unavailableByBank =
+                                            bankCount <= slot;
+                                        return (
+                                            <SecondaryMenuButton
+                                                key={`${resource}-${slot}`}
+                                                active={isFirstSelection}
+                                                disabled={
+                                                    isFirstSelection ||
+                                                    unavailableByBank
+                                                }
+                                                onClick={() =>
+                                                    handleSelectYearOfPlentyResource(
+                                                        resource,
+                                                        slot
+                                                    )
+                                                }
+                                            >
+                                                <span
+                                                    style={{
+                                                        display: "inline-flex",
+                                                        alignItems: "center",
+                                                        gap: "8px",
+                                                        width: "100%",
+                                                        justifyContent:
+                                                            "flex-start",
+                                                    }}
+                                                >
+                                                    {renderResourceBadge(
+                                                        resource,
+                                                        1
+                                                    )}
+                                                    <span>
+                                                        {resource}
+                                                    </span>
+                                                </span>
+                                            </SecondaryMenuButton>
+                                        );
+                                    })
                                 )}
                             </div>
                         </SecondaryMenu>

@@ -27,6 +27,12 @@ export function canOpenGuildDiscountMenu(
     if (!player) {
         return false;
     }
+    if (
+        game.phase === "playing" &&
+        game.lastDiceRoll === undefined
+    ) {
+        return false;
+    }
     if (action === "settlement") {
         return canPlaceSettlement(
             game,
