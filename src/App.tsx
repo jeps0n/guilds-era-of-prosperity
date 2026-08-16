@@ -34,6 +34,9 @@ import {
     restorePhaseCheckpoint,
     canRestorePhaseCheckpoint,
 } from "./store/gameStore";
+import {
+    canOpenGuildDiscountMenu,
+} from "./game/systems/actions/canOpenGuildDiscountMenu";
 const initialGame = createInitialState();
 if (import.meta.env.DEV) {
     validateBoard(initialGame.board);
@@ -130,10 +133,21 @@ function App() {
         }
     }
     function handleBuildRoad(edgeId: string) {
+        if (
+            !canOpenGuildDiscountMenu(
+                game,
+                "road",
+                edgeId
+            )
+        ) {
+            return;
+        }
+
         const player = game.players.find(
             (candidate) =>
                 candidate.id === game.currentPlayerId
         );
+
         if (!player) {
             return;
         }
@@ -182,10 +196,21 @@ function App() {
     function handleBuildSettlement(
         nodeId: string
     ) {
+        if (
+            !canOpenGuildDiscountMenu(
+                game,
+                "settlement",
+                nodeId
+            )
+        ) {
+            return;
+        }
+
         const player = game.players.find(
             (candidate) =>
                 candidate.id === game.currentPlayerId
         );
+
         if (!player) {
             return;
         }
@@ -200,11 +225,6 @@ function App() {
             "wheat",
             "sheep",
         ] as const;
-        const availableResources =
-            settlementResources.filter(
-                (resource) =>
-                    player.resources[resource] >= 1
-            );
         /*
          * Builder with an unused passive must choose
          * which settlement resource to keep.
@@ -212,13 +232,40 @@ function App() {
          * The availability layer guarantees that at least
          * three of the four resources are available.
          */
-        if (
-            builderPassiveAvailable &&
-            availableResources.length >= 3
-        ) {
-            setBuilderSettlementNodeId(nodeId);
-            setBuilderSettlementResource(undefined);
-            setSecondaryMenu("builderSettlement");
+        if (builderPassiveAvailable) {
+            const missingResources = settlementResources.filter(
+                (resource) => player.resources[resource] < 1
+            );
+
+            // Exactly one resource is missing:
+            // the discount is forced, so resolve it automatically.
+            if (missingResources.length === 1) {
+                const nextGame = buildSettlement(
+                    game,
+                    game.currentPlayerId,
+                    nodeId,
+                    missingResources[0]
+                );
+
+                if (nextGame === game) {
+                    return;
+                }
+
+                setGame(nextGame);
+                return;
+            }
+
+            // All four resources are available:
+            // the player legitimately gets to choose the discount.
+            if (missingResources.length === 0) {
+                setBuilderSettlementNodeId(nodeId);
+                setBuilderSettlementResource(undefined);
+                setSecondaryMenu("builderSettlement");
+                return;
+            }
+
+            // Two or more resources are missing:
+            // Builder's one-resource discount cannot make it affordable.
             return;
         }
         /*
@@ -256,13 +303,25 @@ function App() {
         setSecondaryMenu(undefined);
     }
     function handleBuildCity(nodeId: string) {
+        if (
+            !canOpenGuildDiscountMenu(
+                game,
+                "city",
+                nodeId
+            )
+        ) {
+            return;
+        }
+
         const player = game.players.find(
             (candidate) =>
                 candidate.id === game.currentPlayerId
         );
+
         if (!player) {
             return;
         }
+
         const isBuilder =
             player.guild === "builder";
         const builderPassiveAvailable =
@@ -1080,8 +1139,7 @@ function App() {
                                     : undefined
                         }
                         onSelectEdge={
-                            game.phase === "initial_placement" &&
-                                game.placementAction === "road"
+                            game.phase === "initial_placement" && game.placementAction === "road"
                                 ? handlePlaceRoad
                                 : game.phase === "playing" && !game.robberPending &&
                                     (
