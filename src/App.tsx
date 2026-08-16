@@ -142,12 +142,10 @@ function App() {
         ) {
             return;
         }
-
         const player = game.players.find(
             (candidate) =>
                 candidate.id === game.currentPlayerId
         );
-
         if (!player) {
             return;
         }
@@ -205,12 +203,10 @@ function App() {
         ) {
             return;
         }
-
         const player = game.players.find(
             (candidate) =>
                 candidate.id === game.currentPlayerId
         );
-
         if (!player) {
             return;
         }
@@ -236,7 +232,6 @@ function App() {
             const missingResources = settlementResources.filter(
                 (resource) => player.resources[resource] < 1
             );
-
             // Exactly one resource is missing:
             // the discount is forced, so resolve it automatically.
             if (missingResources.length === 1) {
@@ -246,15 +241,12 @@ function App() {
                     nodeId,
                     missingResources[0]
                 );
-
                 if (nextGame === game) {
                     return;
                 }
-
                 setGame(nextGame);
                 return;
             }
-
             // All four resources are available:
             // the player legitimately gets to choose the discount.
             if (missingResources.length === 0) {
@@ -263,7 +255,6 @@ function App() {
                 setSecondaryMenu("builderSettlement");
                 return;
             }
-
             // Two or more resources are missing:
             // Builder's one-resource discount cannot make it affordable.
             return;
@@ -312,16 +303,13 @@ function App() {
         ) {
             return;
         }
-
         const player = game.players.find(
             (candidate) =>
                 candidate.id === game.currentPlayerId
         );
-
         if (!player) {
             return;
         }
-
         const isBuilder =
             player.guild === "builder";
         const builderPassiveAvailable =
@@ -1100,6 +1088,7 @@ function App() {
                     }}
                 >
                     <BoardView
+                        era={game.era}
                         board={game.board}
                         settlements={game.players.flatMap(
                             (player) =>

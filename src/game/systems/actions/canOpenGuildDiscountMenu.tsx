@@ -1,12 +1,9 @@
-
 import type { GameState } from "../../engine/GameState";
 import { canPlaceSettlement } from "../validation/canPlaceSettlement";
-
 type GuildDiscountAction =
     | "settlement"
     | "city"
     | "road";
-
 /**
  * UI guard for guild discount flows.
  *
@@ -27,25 +24,21 @@ export function canOpenGuildDiscountMenu(
         (candidate) =>
             candidate.id === game.currentPlayerId
     );
-
     if (!player) {
         return false;
     }
-
     if (action === "settlement") {
         return canPlaceSettlement(
             game,
             targetId
         );
     }
-
     if (action === "city") {
         return player.settlements.some(
             (settlement) =>
                 settlement.nodeId === targetId
         );
     }
-
     if (action === "road") {
         return canPlaceRoadForGuildMenu(
             game,
@@ -53,10 +46,8 @@ export function canOpenGuildDiscountMenu(
             targetId
         );
     }
-
     return false;
 }
-
 function canPlaceRoadForGuildMenu(
     game: GameState,
     playerId: string,
@@ -66,29 +57,23 @@ function canPlaceRoadForGuildMenu(
         (candidate) =>
             candidate.id === playerId
     );
-
     if (!player) {
         return false;
     }
-
     const edge = game.board.edges.find(
         (candidate) =>
             candidate.id === edgeId
     );
-
     if (!edge) {
         return false;
     }
-
     const occupied = game.players.some(
         (candidate) =>
             candidate.roads.includes(edgeId)
     );
-
     if (occupied) {
         return false;
     }
-
     const playerStructureNodes = new Set([
         ...player.settlements.map(
             (settlement) =>
@@ -96,7 +81,6 @@ function canPlaceRoadForGuildMenu(
         ),
         ...player.cities,
     ]);
-
     const opponentStructureNodes = new Set(
         game.players
             .filter(
@@ -111,25 +95,21 @@ function canPlaceRoadForGuildMenu(
                 ...candidate.cities,
             ])
     );
-
     const candidateNodes = [
         edge.nodeA,
         edge.nodeB,
     ];
-
     for (const nodeId of candidateNodes) {
         if (
             playerStructureNodes.has(nodeId)
         ) {
             return true;
         }
-
         if (
             opponentStructureNodes.has(nodeId)
         ) {
             continue;
         }
-
         const connectedToPlayerRoad =
             game.board.edges.some(
                 (candidateEdge) => {
@@ -139,7 +119,6 @@ function canPlaceRoadForGuildMenu(
                     ) {
                         return false;
                     }
-
                     if (
                         !player.roads.includes(
                             candidateEdge.id
@@ -147,7 +126,6 @@ function canPlaceRoadForGuildMenu(
                     ) {
                         return false;
                     }
-
                     return (
                         candidateEdge.nodeA ===
                             nodeId ||
@@ -156,11 +134,9 @@ function canPlaceRoadForGuildMenu(
                     );
                 }
             );
-
         if (connectedToPlayerRoad) {
             return true;
         }
     }
-
     return false;
 }
