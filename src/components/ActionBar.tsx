@@ -6,6 +6,7 @@ const DEFAULT_BUTTON_BACKGROUND = "#111827";
 const ACTIVE_BUTTON_BORDER = "#60a5fa";
 const DEFAULT_BUTTON_BORDER = "#374151";
 interface ActionBarProps {
+    prosperityRollSequenceActive?: boolean;
     onRollDice?: () => void;
     onEndTurn?: () => void;
     onTrade?: () => void;
@@ -113,6 +114,7 @@ function hexToRgba(
     return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }
 function ActionBar({
+    prosperityRollSequenceActive = false,
     onRollDice,
     onEndTurn,
     onTrade,
@@ -159,6 +161,8 @@ function ActionBar({
         false;
     const actionBarBackground =
         hexToRgba(playerColor, 0.50);
+    const actionBarLocked =
+        prosperityRollSequenceActive;
     if (diceOnly) {
         return (
             <ActionButton
@@ -168,8 +172,16 @@ function ActionBar({
                         ? `Rolled ${lastDiceRoll}`
                         : "Roll Dice"
                 }
-                active={canRoll && !roadBuildingPending}
-                disabled={!canRoll || roadBuildingPending}
+                active={
+                    !actionBarLocked &&
+                    canRoll &&
+                    !roadBuildingPending
+                }
+                disabled={
+                    actionBarLocked ||
+                    !canRoll ||
+                    roadBuildingPending
+                }
                 onClick={onRollDice}
             />
         );
@@ -208,71 +220,107 @@ function ActionBar({
                                 ? `Rolled ${lastDiceRoll}`
                                 : "Roll Dice"
                         }
-                        active={canRoll}
-                        disabled={!canRoll}
+                        active={canRoll && !actionBarLocked}
+                        disabled={actionBarLocked || !canRoll}
                         onClick={onRollDice}
                     />
                 )}
                 <ActionButton
                     icon="💰"
                     label="Trade"
-                    active={canTrade}
-                    disabled={!canTrade}
+                    active={canTrade && !actionBarLocked}
+                    disabled={actionBarLocked || !canTrade}
                     onClick={onTrade}
                 />
                 <ActionButton
                     icon="🎴"
                     label="Buy Dev Card"
-                    active={canBuyDevelopmentCard}
-                    disabled={!canBuyDevelopmentCard}
+                    active={
+                        canBuyDevelopmentCard &&
+                        !actionBarLocked
+                    }
+                    disabled={
+                        actionBarLocked ||
+                        !canBuyDevelopmentCard
+                    }
                     onClick={onBuyDevelopmentCard}
                 />
                 <ActionButton
                     icon="🃏"
                     label="Play Dev Card"
-                    active={canPlayDevelopmentCard}
-                    disabled={!canPlayDevelopmentCard}
+                    active={
+                        canPlayDevelopmentCard &&
+                        !actionBarLocked
+                    }
+                    disabled={
+                        actionBarLocked ||
+                        !canPlayDevelopmentCard
+                    }
                     onClick={onPlayDevelopmentCard}
                 />
                 <ActionButton
                     icon="🛣️"
                     label="Road"
                     active={
-                        isInitialPlacement
-                            ? placementAction === "road"
-                            : canRoad
+                        !actionBarLocked &&
+                        (
+                            isInitialPlacement
+                                ? placementAction === "road"
+                                : canRoad
+                        )
                     }
                     disabled={
-                        isInitialPlacement
-                            ? placementAction !== "road"
-                            : !canRoad
+                        actionBarLocked ||
+                        (
+                            isInitialPlacement
+                                ? placementAction !== "road"
+                                : !canRoad
+                        )
                     }
                 />
                 <ActionButton
                     icon="🏠"
                     label="Settlement"
                     active={
-                        isInitialPlacement
-                            ? placementAction === "settlement"
-                            : canSettlement
+                        !actionBarLocked &&
+                        (
+                            isInitialPlacement
+                                ? placementAction === "settlement"
+                                : canSettlement
+                        )
                     }
                     disabled={
-                        isInitialPlacement
-                            ? placementAction !== "settlement"
-                            : !canSettlement
+                        actionBarLocked ||
+                        (
+                            isInitialPlacement
+                                ? placementAction !== "settlement"
+                                : !canSettlement
+                        )
                     }
                 />
                 <ActionButton
                     icon="🏙️"
                     label="City"
-                    active={canCity}
-                    disabled={!canCity}
+                    active={
+                        canCity &&
+                        !actionBarLocked
+                    }
+                    disabled={
+                        actionBarLocked ||
+                        !canCity
+                    }
                 />
                 <ActionButton
                     icon="⏭️"
                     label="End Turn"
-                    active={canEndTurn}
-                    disabled={!canEndTurn}
+                    active={
+                        canEndTurn &&
+                        !actionBarLocked
+                    }
+                    disabled={
+                        actionBarLocked ||
+                        !canEndTurn
+                    }
                     onClick={onEndTurn}
                 />
             </div>

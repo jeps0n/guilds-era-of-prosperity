@@ -114,6 +114,9 @@ export function createInitialState(): GameState {
     // Dice / Turn Resolution
     // lastDiceRoll: undefined,
     // discardPendingPlayerIds: undefined,
+    // Prosperity / Secondary Dice
+    // secondaryRoll: undefined,
+    secondaryRollPending: false,
     // Robber
     robberPending: false,
     robberTileId: desertTile!.id,

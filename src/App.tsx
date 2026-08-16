@@ -29,6 +29,7 @@ import { playDevelopmentCard } from "./game/systems/developmentCards/playDevelop
 import { resolveYearOfPlenty } from "./game/systems/developmentCards/resolveYearOfPlenty";
 import { resolveMonopoly } from "./game/systems/developmentCards/resolveMonopoly";
 import { calculateLongestRoad } from "./game/systems/achievements/calculateLongestRoad";
+import { rollSecondaryDice, } from "./game/guilds/prosperity/rollSecondaryDice";
 import {
     savePhaseCheckpoint,
     restorePhaseCheckpoint,
@@ -71,6 +72,16 @@ function App() {
         useState<string | undefined>(undefined);
     const [builderCityResource, setBuilderCityResource] =
         useState<"ore" | "wheat" | undefined>(undefined);
+    const [prosperityRollSequenceActive, setProsperityRollSequenceActive] =
+        useState(false);
+    const [secondaryRollRevealing, setSecondaryRollRevealing] =
+        useState(false);
+    const [superUnlockRevealing, setSuperUnlockRevealing] =
+        useState(false);
+    const [superUnlockPlayerName, setSuperUnlockPlayerName] =
+        useState<string | undefined>(undefined);
+    const prosperityRollTimeoutRef =
+        useRef<number | null>(null);
     /*
      * Year of Plenty selection tracks BOTH:
      * - the resource selected
@@ -90,6 +101,18 @@ function App() {
         console.log("===== GAME STATE UPDATED [Turn: " + game.turnNumber + "] =====");
         console.log(game);
         console.log("----------------------------------------");
+        function handleKeyDown(event: KeyboardEvent) {
+            if (event.key.toLowerCase() === "t") {
+                handleRestoreCheckpoint();
+            }
+        }
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener(
+                "keydown",
+                handleKeyDown
+            );
+        };
     }, [game]);
     function handleGuildSelection(guild: GuildType) {
         const nextGame = selectGuild(
@@ -820,6 +843,13 @@ function App() {
         setGame(nextGame);
     }
     function handleEndTurn() {
+        /*
+         * Don't allow a manual End Turn to interrupt
+         * the secondary-roll reveal.
+         */
+        if (secondaryRollRevealing) {
+            return;
+        }
         // Cancel any unfinished secondary action first.
         const gameBeforeEndTurn = {
             ...game,
@@ -837,21 +867,134 @@ function App() {
         setSecondaryMenu(undefined);
         setSelectedGiveResource(undefined);
         setYearOfPlentySelection(undefined);
-        // End the turn using the CLEANED game state.
+        // Begin or complete the turn-ending process.
         const nextGame = endTurn(gameBeforeEndTurn);
         if (nextGame === gameBeforeEndTurn) {
             return;
         }
+        /*
+         * If Prosperity just entered its secondary-roll phase,
+         * lock the action bar for the whole sequence.
+         */
+        if (
+            gameBeforeEndTurn.era === "prosperity" &&
+            nextGame.secondaryRollPending
+        ) {
+            setProsperityRollSequenceActive(true);
+        }
         setGame(nextGame);
         savePhaseCheckpoint(nextGame);
     }
+    function handleRollSecondaryDice() {
+        const rolledGame = rollSecondaryDice(game);
+        if (rolledGame === game) {
+            return;
+        }
+        setSecondaryRollRevealing(true);
+        setGame(rolledGame);
+        const previousPlayer = game.players.find(
+            (player) =>
+                player.id === game.currentPlayerId
+        );
+        const rolledPlayer = rolledGame.players.find(
+            (player) =>
+                player.id === rolledGame.currentPlayerId
+        );
+        const justUnlocked =
+            !previousPlayer?.superUnlocked &&
+            rolledPlayer?.superUnlocked === true;
+        if (justUnlocked) {
+            setSuperUnlockPlayerName(
+                rolledPlayer?.name
+            );
+        }
+        prosperityRollTimeoutRef.current =
+            window.setTimeout(() => {
+                prosperityRollTimeoutRef.current = null;
+                /*
+                 * Sixth unique number:
+                        /*
+                         * Sixth unique number:
+                         *
+                         * Show the Super Unlock announcement
+                         * instead of immediately ending the turn.
+                         */
+                if (justUnlocked) {
+                    setSecondaryRollRevealing(false);
+                    setSuperUnlockRevealing(true);
+                    prosperityRollTimeoutRef.current =
+                        window.setTimeout(() => {
+                            prosperityRollTimeoutRef.current = null;
+                            setSuperUnlockRevealing(false);
+                            setGame((currentGame) => {
+                                const readyToEnd = {
+                                    ...currentGame,
+                                    secondaryRollPending: false,
+                                };
+                                const nextGame = endTurn(readyToEnd);
+                                if (nextGame === readyToEnd) {
+                                    return currentGame;
+                                }
+                                // The turn has successfully advanced.
+                                // Re-enable the ActionBar.
+                                setProsperityRollSequenceActive(false);
+                                savePhaseCheckpoint(nextGame);
+                                return nextGame;
+                            });
+                        }, 4200);
+                    return;
+                }
+                /*
+                 * Normal secondary roll:
+                 * finish the turn after the reveal.
+                 */
+                setGame((currentGame) => {
+                    const readyToEnd = {
+                        ...currentGame,
+                        secondaryRollPending: false,
+                    };
+                    const nextGame = endTurn(readyToEnd);
+                    if (nextGame === readyToEnd) {
+                        return currentGame;
+                    }
+                    // The turn has successfully advanced.
+                    // Re-enable the ActionBar.
+                    setProsperityRollSequenceActive(false);
+                    savePhaseCheckpoint(nextGame);
+                    return nextGame;
+                });
+                setSecondaryRollRevealing(false);
+            }, 1800);
+    }
     function handleRestoreCheckpoint() {
+        /*
+        * Cancel any pending Prosperity Roll timer.
+        * This prevents an old secondary-roll sequence
+        * from modifying the restored checkpoint.
+        */
+        if (prosperityRollTimeoutRef.current !== null) {
+            window.clearTimeout(
+                prosperityRollTimeoutRef.current
+            );
+            prosperityRollTimeoutRef.current = null;
+        }
         const restoredGame =
             restorePhaseCheckpoint(game);
         if (!restoredGame) {
             return;
         }
         handleCloseTrade();
+        /*
+         * Clear any Prosperity animation/announcement UI
+         * that may have been active when Turn Back was clicked.
+         */
+        setSecondaryRollRevealing(false);
+        setSuperUnlockRevealing(false);
+        setSuperUnlockPlayerName(undefined);
+        setProsperityRollSequenceActive(
+            restoredGame.era === "prosperity" &&
+            restoredGame.secondaryRollPending
+        );
         setGame(restoredGame);
     }
     const currentPlayer = game.players.find(
@@ -997,6 +1140,9 @@ function App() {
     ) {
         return (
             <ActionBar
+                prosperityRollSequenceActive={
+                    prosperityRollSequenceActive
+                }
                 playerColor={
                     currentPlayerColor
                 }
@@ -1089,6 +1235,39 @@ function App() {
                 >
                     <BoardView
                         era={game.era}
+                        onRollSecondaryDice={
+                            handleRollSecondaryDice
+                        }
+                        secondaryRollPending={
+                            game.secondaryRollPending
+                        }
+                        secondaryRoll={
+                            game.secondaryRoll
+                        }
+                        secondaryRolls={
+                            game.players.find(
+                                (player) =>
+                                    player.id === game.currentPlayerId
+                            )?.secondaryRolls ?? []
+                        }
+                        superUnlocked={
+                            game.players.find(
+                                (player) =>
+                                    player.id === game.currentPlayerId
+                            )?.superUnlocked ?? false
+                        }
+                        secondaryRollRevealing={
+                            secondaryRollRevealing
+                        }
+                        superUnlockRevealing={
+                            superUnlockRevealing
+                        }
+                        superUnlockPlayerName={
+                            superUnlockPlayerName
+                        }
+                        superUnlockPlayerColor={
+                            currentPlayerColor
+                        }
                         board={game.board}
                         settlements={game.players.flatMap(
                             (player) =>
