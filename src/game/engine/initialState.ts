@@ -7,7 +7,7 @@ export function createInitialState(): GameState {
   const players = [
     {
       id: "player-1",
-      name: "Player A",
+      name: "Zeke",
       guild: undefined,
       guildPassiveUsedThisTurn: false,
       vp: 0,
@@ -33,13 +33,14 @@ export function createInitialState(): GameState {
       developmentCardPlayedThisTurn: false,
       playedDevelopmentCardIds: [],
       knightsPlayed: 0,
+      longestRoad: 0,
       superUnlocked: false,
       superUsed: false,
       secondaryRolls: [],
     },
     {
       id: "player-2",
-      name: "Player B",
+      name: "Julie",
       guild: undefined,
       guildPassiveUsedThisTurn: false,
       vp: 0,
@@ -65,6 +66,7 @@ export function createInitialState(): GameState {
       developmentCardPlayedThisTurn: false,
       playedDevelopmentCardIds: [],
       knightsPlayed: 0,
+      longestRoad: 0,
       superUnlocked: false,
       superUsed: false,
       secondaryRolls: [],

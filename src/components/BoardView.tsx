@@ -313,6 +313,7 @@ function BoardView({
               minWidth: "240px",
               padding: "24px 30px",
               textAlign: "center",
+              userSelect: "none",
               background:
                 "linear-gradient(145deg, #3b2a0f, #8a6a25 50%, #3b2a0f)",
               border:
@@ -489,6 +490,7 @@ function BoardView({
               width: "360px",
               padding: "34px 36px",
               textAlign: "center",
+              userSelect: "none",
               background:
                 "linear-gradient(145deg, #241805, #6F5424 35%, #B89545 50%, #6F5424 65%, #241805)",
               border:

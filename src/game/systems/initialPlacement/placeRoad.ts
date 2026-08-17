@@ -1,5 +1,6 @@
 import type { GameState } from "../../engine/GameState";
 import { createEvent } from "../../engine/createEvent";
+import { updateLongestRoad } from "../achievements/updateLongestRoad";
 export function placeRoad(
   game: GameState,
   playerId: string,
@@ -19,9 +20,9 @@ export function placeRoad(
       edge.id === edgeId &&
       (
         edge.nodeA ===
-          game.lastPlacedSettlementNodeId ||
+        game.lastPlacedSettlementNodeId ||
         edge.nodeB ===
-          game.lastPlacedSettlementNodeId
+        game.lastPlacedSettlementNodeId
       )
   );
   if (!validEdge) {
@@ -31,15 +32,15 @@ export function placeRoad(
     (player) =>
       player.id === playerId
         ? {
-            ...player,
-            roads: [
-              ...player.roads,
-              edgeId,
-            ],
-          }
+          ...player,
+          roads: [
+            ...player.roads,
+            edgeId,
+          ],
+        }
         : player
   );
-  return advancePlacement({
+  const updatedGame: GameState = {
     ...game,
     players: updatedPlayers,
     placementAction: "settlement",
@@ -52,7 +53,12 @@ export function placeRoad(
         `${player.name} placed a road.`
       ),
     ],
-  });
+  };
+  const longestRoadUpdatedGame =
+    updateLongestRoad(updatedGame);
+  return advancePlacement(
+    longestRoadUpdatedGame
+  );
 }
 function advancePlacement(
   game: GameState
@@ -69,8 +75,8 @@ function advancePlacement(
       : nextStep,
     currentPlayerId: complete
       ? game.placementOrder[
-          game.placementOrder.length - 1
-        ]
+      game.placementOrder.length - 1
+      ]
       : game.placementOrder[nextStep],
     phase: complete
       ? "playing"

@@ -162,65 +162,202 @@ function PlayerPanel({
                   borderColor: "#374151",
                 }}
               />
+              {/* DEVELOPMENT / ACHIEVEMENT STATUS */}
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  marginBottom: "8px",
+                  width: "100%",
+                  fontSize: "12px",
+                  whiteSpace: "nowrap",
                 }}
               >
-                <span
+                {/* DEVELOPMENT CARDS */}
+                <div
                   style={{
-                    display: "inline-flex",
+                    display: "flex",
                     alignItems: "center",
-                    gap: "8px",
-                    color: "#f9fafb",
-                    fontWeight: "bold",
+                    gap: "5px",
                   }}
                 >
+                  <span>Development Cards:</span>
                   <span
                     style={{
                       width: "28px",
-                      height: "20px",
-                      borderRadius: "4px",
-                      border: "1px solid #60a5fa",
-                      background:
-                        "linear-gradient(135deg, #1e3a8a, #312e81)",
+                      height: "24px",
+                      borderRadius: "7px",
+                      background: "#d1d5db",
+                      color: "#111827",
                       display: "inline-flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: "12px",
+                      fontWeight: "bold",
+                      fontSize: "13px",
                     }}
                   >
-                    🎴
+                    {player.developmentCards.length}
                   </span>
-                  Development Cards
-                </span>
-                <strong
+                </div>
+                {/* LARGEST ARMY */}
+                <div
                   style={{
-                    color: "#f9fafb",
-                    fontSize: "16px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
                   }}
                 >
-                  {player.developmentCards.length}
-                </strong>
+                  <span>Largest Army:</span>
+                  <span
+                    style={{
+                      width: "28px",
+                      height: "24px",
+                      borderRadius: "7px",
+                      background: "#d1d5db",
+                      color: "#111827",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "bold",
+                      fontSize: "13px",
+                    }}
+                  >
+                    {player.knightsPlayed}
+                  </span>
+                </div>
+                {/* LONGEST ROAD */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                  }}
+                >
+                  <span>Longest Road:</span>
+                  <span
+                    style={{
+                      width: "28px",
+                      height: "24px",
+                      borderRadius: "7px",
+                      background: "#d1d5db",
+                      color: "#111827",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "bold",
+                      fontSize: "13px",
+                    }}
+                  >
+                    {player.longestRoad}
+                  </span>
+                </div>
               </div>
-              <div style={{ fontSize: "12px" }}>
-                🛣️ Knights Played:{" "}
-                {player.knightsPlayed}
-              </div>
-              <div style={{ fontSize: "12px" }}>
-                🛣️ Roads Remaining:{" "}
-                {15 - player.roads.length}
-              </div>
-              <div style={{ fontSize: "12px" }}>
-                🏠 Settlements Remaining:{" "}
-                {5 - player.settlements.length}
-              </div>
-              <div style={{ fontSize: "12px" }}>
-                🏙️ Cities Remaining:{" "}
-                {4 - player.cities.length}
+              <hr
+                style={{
+                  margin: "8px 0",
+                  borderColor: "#374151",
+                }}
+              />
+              {/* PIECES REMAINING */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  fontSize: "12px",
+                }}
+              >
+                {/* ROADS */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <span>Roads:</span>
+                  <span
+                    style={{
+                      width: "28px",
+                      height: "24px",
+                      borderRadius: "7px",
+                      background:
+                        player.id === "player-1"
+                          ? "#f97316"
+                          : "#9333ea",
+                      color: "#000000",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "bold",
+                      fontSize: "13px",
+                    }}
+                  >
+                    {15 - player.roads.length}
+                  </span>
+                </div>
+                {/* SETTLEMENTS */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <span>Settlements:</span>
+                  <span
+                    style={{
+                      width: "28px",
+                      height: "24px",
+                      borderRadius: "7px",
+                      background:
+                        player.id === "player-1"
+                          ? "#f97316"
+                          : "#9333ea",
+                      color: "#000000",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "bold",
+                      fontSize: "13px",
+                    }}
+                  >
+                    {5 - player.settlements.length}
+                  </span>
+                </div>
+                {/* CITIES */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <span>Cities:</span>
+                  <span
+                    style={{
+                      width: "28px",
+                      height: "24px",
+                      borderRadius: "7px",
+                      background:
+                        player.id === "player-1"
+                          ? "#f97316"
+                          : "#9333ea",
+                      color: "#000000",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "bold",
+                      fontSize: "13px",
+                    }}
+                  >
+                    {4 - player.cities.length}
+                  </span>
+                </div>
               </div>
             </Panel>
           </div>

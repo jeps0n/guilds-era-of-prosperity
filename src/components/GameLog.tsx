@@ -94,15 +94,15 @@ function GameLog({
         message: string
     ) {
         const parts = message.split(
-            /(Player A|Player B|\(\d+\)\s\[(?:brick|lumber|wheat|sheep|ore)\]|\(\?\)\[desert\]|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/
+            /(Zeke|Julie|\(\d+\)\s\[(?:brick|lumber|wheat|sheep|ore)\]|\(\?\)\[desert\]|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/
         );
         return parts.map((part, index) => {
             if (
-                part === "Player A" ||
-                part === "Player B"
+                part === "Zeke" ||
+                part === "Julie"
             ) {
                 const color =
-                    part === "Player A"
+                    part === "Zeke"
                         ? "#f97316"
                         : "#9333ea";
                 return (

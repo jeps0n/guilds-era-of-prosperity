@@ -27,6 +27,7 @@ export interface Player {
   developmentCardPlayedThisTurn: boolean;
   playedDevelopmentCardIds: string[];
   knightsPlayed: number;
+  longestRoad: number;
   superUnlocked: boolean;
   superUsed: boolean;
   secondaryRolls: number[];

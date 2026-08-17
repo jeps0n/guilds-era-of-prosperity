@@ -34,6 +34,23 @@ export function updateLongestRoad(
             player.id
         ),
     }));
+    const updatedPlayers = game.players.map(
+        (player) => {
+            const roadLength =
+                roadLengths.find(
+                    (entry) =>
+                        entry.playerId === player.id
+                )?.length ?? 0;
+            return {
+                ...player,
+                longestRoad: roadLength,
+            };
+        }
+    );
+    const updatedGame: GameState = {
+        ...game,
+        players: updatedPlayers,
+    };
     /*
      * ------------------------------------------------------------
      * 2. Find the highest qualifying road length.
@@ -58,10 +75,10 @@ export function updateLongestRoad(
         /*
          * If somebody currently owns the award, remove it.
          */
-        if (game.longestRoadPlayerId) {
-            return removeLongestRoadHolder(game);
+        if (updatedGame.longestRoadPlayerId) {
+            return removeLongestRoadHolder(updatedGame);
         }
-        return game;
+        return updatedGame;
     }
     /*
      * ------------------------------------------------------------
@@ -78,7 +95,7 @@ export function updateLongestRoad(
      * ------------------------------------------------------------
      */
     const currentHolderId =
-        game.longestRoadPlayerId;
+        updatedGame.longestRoadPlayerId;
     if (currentHolderId) {
         const currentHolderLength =
             roadLengths.find(
@@ -100,7 +117,7 @@ export function updateLongestRoad(
                     currentHolderId
             )
         ) {
-            return game;
+            return updatedGame;
         }
         /*
          * The current holder has fallen behind.
@@ -110,7 +127,7 @@ export function updateLongestRoad(
          */
         if (leaders.length === 1) {
             return transferLongestRoad(
-                game,
+                updatedGame,
                 currentHolderId,
                 leaders[0].playerId
             );
@@ -120,7 +137,7 @@ export function updateLongestRoad(
          *
          * Nobody can take the award during the tie.
          */
-        return removeLongestRoadHolder(game);
+        return removeLongestRoadHolder(updatedGame);
     }
     /*
      * ------------------------------------------------------------
@@ -133,12 +150,12 @@ export function updateLongestRoad(
      */
     if (leaders.length === 1) {
         return transferLongestRoad(
-            game,
+            updatedGame,
             undefined,
             leaders[0].playerId
         );
     }
-    return game;
+    return updatedGame;
 }
 /**
  * Transfer Longest Road from one player to another.
