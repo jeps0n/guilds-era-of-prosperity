@@ -63,6 +63,9 @@ export function rollDice(
   if (game.lastDiceRoll !== undefined) {
     return game;
   }
+  if (game.robberPending) {
+    return game;
+  }
   const currentPlayer =
     game.players.find(
       (player) =>

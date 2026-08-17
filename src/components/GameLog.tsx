@@ -94,7 +94,7 @@ function GameLog({
         message: string
     ) {
         const parts = message.split(
-            /(Zeke|Julie|\(\d+\)\s\[(?:brick|lumber|wheat|sheep|ore)\]|\(\?\)\[desert\]|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/
+            /(Zeke|Julie|\(\d+\)\s\[(?:brick|lumber|wheat|sheep|ore)\]|\(\?\)\s\[desert\]|\[(?:brick|lumber|wheat|sheep|ore)\] \d+)/
         );
         return parts.map((part, index) => {
             if (
@@ -114,7 +114,7 @@ function GameLog({
                     </strong>
                 );
             }
-            if (part === "(?)[desert]") {
+            if (part === "(?) [desert]") {
                 return renderResourceBadge(
                     "desert",
                     index + 2000

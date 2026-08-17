@@ -1,4 +1,5 @@
 import type { GameState } from "../../engine/GameState";
+import { hasPlayableKnight } from "../developmentCards/hasPlayableKnight";
 export interface ActionAvailability {
     canRollDice: boolean;
     canTrade: boolean;
@@ -7,6 +8,7 @@ export interface ActionAvailability {
     canCity: boolean;
     canBuyDevelopmentCard: boolean;
     canPlayDevelopmentCard: boolean;
+    hasPlayableKnight: boolean;
     canEndTurn: boolean;
 }
 export function getActionAvailability(
@@ -25,6 +27,7 @@ export function getActionAvailability(
             canCity: false,
             canBuyDevelopmentCard: false,
             canPlayDevelopmentCard: false,
+            hasPlayableKnight: false,
             canEndTurn: false,
         };
     }
@@ -234,10 +237,21 @@ export function getActionAvailability(
         game.phase === "playing" &&
         hasRolled &&
         hasDevelopmentCard;
+    /*
+     * A Knight is special because it can be played
+     * before the player rolls the dice.
+     */
+    const playerHasPlayableKnight =
+        game.phase === "playing" &&
+        hasPlayableKnight(
+            game,
+            currentPlayer.id
+        );
     return {
         canRollDice:
             game.phase === "playing" &&
-            !hasRolled,
+            !hasRolled &&
+            !game.robberPending,
         canTrade,
         canRoad:
             game.phase === "playing" &&
@@ -256,6 +270,8 @@ export function getActionAvailability(
             hasRolled &&
             canBuyDevelopmentCard,
         canPlayDevelopmentCard,
+        hasPlayableKnight:
+            playerHasPlayableKnight,
         canEndTurn:
             game.phase === "playing" &&
             hasRolled,

@@ -22,6 +22,7 @@ interface ActionBarProps {
     hideDice?: boolean;
     playerColor?: string;
     roadBuildingPending?: boolean;
+    hasPlayableKnight?: boolean;
 }
 interface ActionButtonProps {
     label: string;
@@ -128,6 +129,7 @@ function ActionBar({
     hideDice = false,
     playerColor = "DEFAULT_BUTTON_BACKGROUND",
     roadBuildingPending = false,
+    hasPlayableKnight = false,
 }: ActionBarProps) {
     const isInitialPlacement =
         phase === "initial_placement";
@@ -159,6 +161,13 @@ function ActionBar({
     const canPlayDevelopmentCard =
         availability?.canPlayDevelopmentCard ??
         false;
+    const canPlayDevCardButton =
+        canPlayDevelopmentCard ||
+        (
+            isPlaying &&
+            lastDiceRoll === undefined &&
+            hasPlayableKnight
+        );
     const actionBarBackground =
         hexToRgba(playerColor, 0.50);
     const actionBarLocked =
@@ -249,12 +258,12 @@ function ActionBar({
                     icon="🃏"
                     label="Play Dev Card"
                     active={
-                        canPlayDevelopmentCard &&
+                        canPlayDevCardButton &&
                         !actionBarLocked
                     }
                     disabled={
                         actionBarLocked ||
-                        !canPlayDevelopmentCard
+                        !canPlayDevCardButton
                     }
                     onClick={onPlayDevelopmentCard}
                 />

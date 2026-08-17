@@ -1184,6 +1184,9 @@ function App() {
                 roadBuildingPending={
                     game.roadBuildingPending
                 }
+                hasPlayableKnight={
+                    actionAvailability.hasPlayableKnight
+                }
                 {...options}
             />
         );
@@ -1777,11 +1780,17 @@ function App() {
                                                 );
                                             const isVictoryPoint =
                                                 card.type === "victory_point";
+                                            const hasRolled =
+                                                game.lastDiceRoll !== undefined;
                                             const isPlayable =
                                                 card.type !== "victory_point" &&
                                                 !isPlayed &&
                                                 !isPurchasedThisTurn &&
-                                                !currentPlayer.developmentCardPlayedThisTurn;
+                                                !currentPlayer.developmentCardPlayedThisTurn &&
+                                                (
+                                                    hasRolled ||
+                                                    card.type === "knight"
+                                                );
                                             return (
                                                 <SecondaryMenuButton
                                                     key={card.id}
