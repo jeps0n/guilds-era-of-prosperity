@@ -63,7 +63,7 @@ function PlayerPanel({
   return (
     <div style={{ marginTop: "8px" }}>
       <Panel>
-        <strong>🏦 Resource Bank</strong>
+        <strong>Resource Bank</strong>
         <hr
           style={{
             margin: "8px 0",
@@ -97,7 +97,19 @@ function PlayerPanel({
                 "box-shadow 0.5s ease",
             }}
           >
-            <Panel>
+            {/* PLAYER CARDS */}
+            <Panel
+              background={
+                player.id === game.currentPlayerId
+                  ? "#292f38"
+                  : "#111827"
+              }
+              border={
+                player.id === game.currentPlayerId
+                  ? "1px solid rgba(212, 175, 85, 0.69)"
+                  : "1px solid #374151"
+              }
+            >
               <div
                 style={{
                   display: "flex",
@@ -107,17 +119,30 @@ function PlayerPanel({
                 }}
               >
                 <div>
-                  <strong
+                  <span
                     style={{
-                      color:
-                        player.id === "player-1"
-                          ? "#f97316"
-                          : "#9333ea",
-                      fontSize: "18px",
+                      display: "inline-block",
+                      padding: "4px 10px",
+                      borderRadius: "8px",
+                      background: "rgba(0, 0, 0, 0.45)",
+                      border:
+                        player.id === game.currentPlayerId
+                          ? "1px solid rgba(212, 175, 85, 0.36)"
+                          : "1px solid transparent",
                     }}
                   >
-                    {player.name}
-                  </strong>
+                    <strong
+                      style={{
+                        color:
+                          player.id === "player-1"
+                            ? "#f97316"
+                            : "#9333ea",
+                        fontSize: "18px",
+                      }}
+                    >
+                      {player.name}
+                    </strong>
+                  </span>
                   <div
                     style={{
                       marginTop: "4px",

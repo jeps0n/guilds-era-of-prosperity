@@ -7,6 +7,7 @@ import GameLayout from "./components/layout/GameLayout";
 import GameLog from "./components/GameLog";
 import PlayerPanel from "./components/PlayerPanel";
 import RobberActionBar from "./components/RobberActionBar";
+import GuildInformationPanel from "./components/GuildInformationPanel";
 import { SecondaryMenu, SecondaryMenuButton, } from "./components/SecondaryMenu";
 import type { GuildType, Resources } from "./game/engine/types";
 import type { DevelopmentCardType } from "./game/domain/DevelopmentCard";
@@ -1994,16 +1995,24 @@ function App() {
                 </>
             }
             bottom={
-                game.robberPending || game.roadBuildingPending ? (
-                    <RobberActionBar
-                        playerColor={currentPlayerColor}
-                        roadBuildingPending={game.roadBuildingPending}
-                    />
-                ) : (
-                    renderActionBar({
-                        hideDice: true,
-                    })
-                )
+                <>
+                    {game.robberPending || game.roadBuildingPending ? (
+                        <RobberActionBar
+                            playerColor={currentPlayerColor}
+                            roadBuildingPending={game.roadBuildingPending}
+                        />
+                    ) : (
+                        renderActionBar({
+                            hideDice: true,
+                        })
+                    )}
+                    {currentPlayer && (
+                        <GuildInformationPanel
+                            player={currentPlayer}
+                            prosperityRollSequenceActive={prosperityRollSequenceActive}
+                        />
+                    )}
+                </>
             }
         />
     );

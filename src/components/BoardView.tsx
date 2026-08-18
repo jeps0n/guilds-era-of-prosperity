@@ -40,11 +40,9 @@ function BoardView({
   secondaryRollPending = false,
   secondaryRoll,
   secondaryRolls = [],
-  superUnlocked = false,
-  secondaryRollRevealing = false,
+  superUnlocked = false, // used for super announcement animation timing
+  secondaryRollRevealing = false, // used for super announcement animation timing
   superUnlockRevealing = false,
-  superUnlockPlayerName,
-  superUnlockPlayerColor,
   onRollSecondaryDice,
   board,
   settlements,
@@ -497,11 +495,11 @@ function BoardView({
                 "3px solid #D4AF55",
               borderRadius: "20px",
               boxShadow: `
-                    0 0 20px rgba(212, 175, 85, 0.55),
-                    0 0 45px rgba(212, 175, 85, 0.28),
-                    inset 0 0 18px rgba(255, 220, 130, 0.16),
-                    inset 0 0 0 1px rgba(255, 239, 190, 0.5)
-                `,
+              0 0 20px rgba(212, 175, 85, 0.55),
+              0 0 45px rgba(212, 175, 85, 0.28),
+              inset 0 0 18px rgba(255, 220, 130, 0.16),
+              inset 0 0 0 1px rgba(255, 239, 190, 0.5)
+          `,
               color: "#FFF8DF",
               animation:
                 "superUnlockReveal 0.7s ease-out",
@@ -513,7 +511,7 @@ function BoardView({
                 fontSize: "20px",
                 color: "#F5E6B3",
                 letterSpacing: "8px",
-                marginBottom: "12px",
+                marginBottom: "14px",
               }}
             >
               ✦ ✦ ✦
@@ -525,7 +523,7 @@ function BoardView({
                 letterSpacing: "2px",
                 textTransform: "uppercase",
                 color: "#D8BD72",
-                marginBottom: "8px",
+                marginBottom: "14px",
                 fontWeight: "bold",
               }}
             >
@@ -540,35 +538,13 @@ function BoardView({
                 textTransform: "uppercase",
                 color: "#FFF8DF",
                 textShadow: `
-                        0 0 8px rgba(255, 225, 145, 0.65),
-                        0 0 18px rgba(212, 175, 85, 0.45)
-                    `,
-                marginBottom: "20px",
+                0 0 8px rgba(255, 225, 145, 0.65),
+                0 0 18px rgba(212, 175, 85, 0.45)
+            `,
+                marginBottom: "14px",
               }}
             >
               Super Unlocked
-            </div>
-            {/* PLAYER NAME */}
-            <div
-              style={{
-                display: "inline-block",
-                padding: "8px 12px",
-                fontSize: "32px",
-                fontWeight: "900",
-                letterSpacing: "1px",
-                color: superUnlockPlayerColor,
-                background: "rgba(256, 256, 256, 0.38)",
-                border: "1px solid rgba(255, 236, 180, 0.22)",
-                borderRadius: "10px",
-                marginBottom: "4px",
-                boxShadow: `
-                  inset 0 1px 2px rgba(255,255,255,0.08),
-                  0 2px 6px rgba(0,0,0,0.25)
-                `,
-                WebkitTextStroke: "2px #000",
-              }}
-            >
-              {superUnlockPlayerName}
             </div>
             {/* MESSAGE */}
             <div
@@ -576,23 +552,15 @@ function BoardView({
                 fontSize: "16px",
                 lineHeight: 1.5,
                 color: "#FFF4D0",
+                padding: "0 4px",
               }}
             >
-              has unlocked their
-              <br />
-              <strong
-                style={{
-                  color: "#FFFFFF",
-                  fontSize: "18px",
-                }}
-              >
-                Guild Super Ability!
-              </strong>
+              Available on your next turn!
             </div>
             {/* BOTTOM ORNAMENT */}
             <div
               style={{
-                marginTop: "22px",
+                marginTop: "14px",
                 fontSize: "20px",
                 color: "#F5E6B3",
                 letterSpacing: "8px",

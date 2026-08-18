@@ -3,17 +3,21 @@ interface PanelProps {
   children: ReactNode;
   width?: string;
   minHeight?: string;
+  background?: string;
+  border?: string;
 }
 function Panel({
   children,
   width,
   minHeight,
+  background = "#111827",
+  border = "1px solid #374151",
 }: PanelProps) {
   return (
     <div
       style={{
-        background: "#111827",
-        border: "1px solid #374151",
+        background,
+        border,
         borderRadius: "12px",
         padding: "12px",
         width,
