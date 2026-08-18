@@ -118,20 +118,17 @@ function GuildInformationPanel({
                     style={{
                         display: "grid",
                         gridTemplateColumns: "repeat(3, 1fr)",
-                        borderTop: "1px solid #374151",
                     }}
                 >
                     <GuildColumn
                         guildType="builder"
                         guildName="BUILDER"
                         playerGuild={player.guild}
-                        showRightBorder
                     />
                     <GuildColumn
                         guildType="explorer"
                         guildName="EXPLORER"
                         playerGuild={player.guild}
-                        showRightBorder
                     />
                     <GuildColumn
                         guildType="merchant"
@@ -147,27 +144,27 @@ interface GuildColumnProps {
     guildType: GuildType;
     guildName: string;
     playerGuild?: GuildType;
-    showRightBorder?: boolean;
 }
 function GuildColumn({
     guildType,
     guildName,
     playerGuild,
-    showRightBorder = false,
 }: GuildColumnProps) {
     const guild = GUILDS.find(
         (guild) => guild.type === guildType
     );
+    const superName = guild?.superName;
+    const superDescription = guild?.superDescription;
+    const passiveName = guild?.passiveName;
+    const passiveDescrition = guild?.passiveDescription;
+
     const isActive = guildType === playerGuild;
     return (
         <div
             style={{
                 position: "relative",
-                padding: "9px 8px",
+                padding: "9px 9px",
                 boxSizing: "border-box",
-                borderRight: showRightBorder
-                    ? "1px solid #374151"
-                    : undefined,
                 opacity: isActive ? 1 : 0.45,
                 transform: isActive
                     ? "translateY(-2px)"
@@ -183,30 +180,35 @@ function GuildColumn({
                     : "0",
                 boxShadow: isActive
                     ? `
-        0 3px 6px rgba(0, 0, 0, 0.34),
-        0 0 5px ${guild?.color ?? "#D4AF55"}18,
-        inset 0 1px 0 rgba(255, 255, 255, 0.08),
-        inset 0 -2px 4px rgba(0, 0, 0, 0.20)
-    `
+                        0 3px 6px rgba(0, 0, 0, 0.34),
+                        0 0 5px ${guild?.color ?? "#D4AF55"}18,
+                        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+                        inset 0 -2px 4px rgba(0, 0, 0, 0.20)
+                    `
                     : "none",
                 transition: "transform 0.15s ease",
                 zIndex: isActive ? 2 : 1,
             }}
         >
-            <strong
-                style={{
-                    color: guild?.color,
-                }}
-            >
-                {guildName}
-            </strong>
+            <div style={{
+                textAlign: "center"
+            }}>
+                <strong
+                    style={{
+                        color: guild?.color,
+                        textAlign: "center"
+                    }}
+                >
+                    {guildName}
+                </strong>
+            </div>
+
             <div
                 style={{
-                    marginTop: "6px",
-                    fontSize: "12px",
+                    marginTop: "3px",
                 }}
             >
-                SUPER: Master Builder
+                <strong>{superName}</strong><span>(Super)</span>
             </div>
             <div
                 style={{
@@ -214,17 +216,17 @@ function GuildColumn({
                     color: "#9ca3af",
                 }}
             >
-                Build a Settlement or City for free.
+                {superDescription}
             </div>
             <div
                 style={{
-                    marginTop: "8px",
-                    paddingTop: "6px",
+                    marginTop: "3px",
                     borderTop: "1px solid #374151",
                     fontSize: "12px",
                 }}
             >
-                <strong>Passive</strong>
+                <strong>{passiveName}</strong><span>(Passive)</span>
+
             </div>
             <div
                 style={{
@@ -232,8 +234,9 @@ function GuildColumn({
                     color: "#9ca3af",
                 }}
             >
-                Passive explanation...
+                {passiveDescrition}
             </div>
+
         </div>
     );
 }
