@@ -8,6 +8,7 @@ import GameLog from "./components/GameLog";
 import PlayerPanel from "./components/PlayerPanel";
 import RobberActionBar from "./components/RobberActionBar";
 import GuildInformationPanel from "./components/GuildInformationPanel";
+import SuperMenu from "./components/SuperMenu";
 import { SecondaryMenu, SecondaryMenuButton, } from "./components/SecondaryMenu";
 import type { GuildType, Resources } from "./game/engine/types";
 import type { DevelopmentCardType } from "./game/domain/DevelopmentCard";
@@ -31,6 +32,7 @@ import { resolveYearOfPlenty } from "./game/systems/developmentCards/resolveYear
 import { resolveMonopoly } from "./game/systems/developmentCards/resolveMonopoly";
 import { calculateLongestRoad } from "./game/systems/achievements/calculateLongestRoad";
 import { rollSecondaryDice, } from "./game/guilds/prosperity/rollSecondaryDice";
+import { SuperOrchestrator } from "./game/guilds/SuperOrchestrator";
 import {
     savePhaseCheckpoint,
     restorePhaseCheckpoint,
@@ -81,6 +83,8 @@ function App() {
         useState(false);
     const [superUnlockPlayerName, setSuperUnlockPlayerName] =
         useState<string | undefined>(undefined);
+    const [showSuperMenu, setShowSuperMenu] =
+        useState(false);
     const [superPending, setSuperPending] =
         useState<GuildType | undefined>(undefined);
     const prosperityRollTimeoutRef =
@@ -974,21 +978,21 @@ function App() {
     }
     function handleUseSuper() {
         const currentPlayer = getCurrentPlayer();
-
         if (!currentPlayer) {
             return;
         }
-
-        if (!currentPlayer.superUnlocked) {
-            return;
-        }
-
         if (prosperityRollSequenceActive) {
             return;
         }
-
+        if (!currentPlayer.superUnlocked) {
+            return;
+        }
         setSuperPending(currentPlayer.guild);
-        // Super menu logic will go here later.
+        setShowSuperMenu(true);
+    }
+    function handleCancelSuper() {
+        setShowSuperMenu(false);
+        setSuperPending(undefined);
     }
     function handleRestoreCheckpoint() {
         /*
@@ -1154,6 +1158,9 @@ function App() {
                     1
             )
             : [];
+    const superTitle = superPending
+        ? SuperOrchestrator.getSuperTitle(superPending)
+        : "SUPER";
     function renderActionBar(
         options: {
             diceOnly?: boolean;
@@ -1336,6 +1343,12 @@ function App() {
                                     ? handleBuildRoad
                                     : undefined
                         }
+                    />
+                    <SuperMenu
+                        visible={showSuperMenu}
+                        title={superTitle}
+                        onCancel={handleCancelSuper}
+                        game={game}
                     />
                     {/* SECONDARY MENU > RENDER TRADE OPTIONS */}
                     {secondaryMenu === "trade" && game.phase === "playing" && (

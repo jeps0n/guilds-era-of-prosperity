@@ -160,7 +160,6 @@ function GuildColumn({
     const superDescription = guild?.superDescription;
     const passiveName = guild?.passiveName;
     const passiveDescrition = guild?.passiveDescription;
-
     const isActive = guildType === playerGuild;
     return (
         <div
@@ -239,7 +238,6 @@ function GuildColumn({
             >
                 {passiveDescrition}
             </div>
-
         </div>
     );
 }
