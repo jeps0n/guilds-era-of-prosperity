@@ -198,7 +198,7 @@ function ActionBar({
     return (
         <div
             style={{
-                marginTop: "16px",
+                marginTop: "12px",
                 display: "flex",
                 justifyContent: "center",
                 width: "100%",

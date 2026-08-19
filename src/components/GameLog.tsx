@@ -174,15 +174,15 @@ function GameLog({
     return (
         <div
             style={{
-                marginTop: "8px",
-                marginBottom: "8px",
+                marginTop: "12px",
+                marginBottom: "0px",
             }}
         >
             <Panel>
                 <strong>Game Log</strong>
                 <hr
                     style={{
-                        margin: "8px 0",
+                        margin: "12px 0",
                         borderColor: "#374151",
                     }}
                 />

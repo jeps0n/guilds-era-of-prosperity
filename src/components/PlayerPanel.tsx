@@ -61,7 +61,7 @@ function PlayerPanel({
   game,
 }: PlayerPanelProps) {
   return (
-    <div style={{ marginTop: "8px" }}>
+    <div style={{ marginTop: "12px" }}>
       <Panel>
         <strong>Resource Bank</strong>
         <hr

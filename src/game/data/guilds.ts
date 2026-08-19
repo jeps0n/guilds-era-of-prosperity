@@ -17,7 +17,7 @@ export const GUILDS: GuildDefinition[] = [
     icon: "🔨",
     color: "#C08457",
     description: "Focuses on construction and improvement.",
-    superName: "Master Builder ",
+    superName: "Master Builder",
     superDescription: "Build 1 free Settlement or City",
     passiveName: "Construct ",
     passiveDescription: "Pay 1 less required resource to build a Settlement or build a City"
@@ -28,7 +28,7 @@ export const GUILDS: GuildDefinition[] = [
     icon: "🧭",
     color: "#2D9CDB",
     description: "Focuses on expansion and exploration.",
-    superName: "Grand Expedition ",
+    superName: "Grand Expedition",
     superDescription: "Build up to 3 free Roads",
     passiveName: "Explore ",
     passiveDescription: "Pay 1 less required resource to build a Road"
@@ -39,7 +39,7 @@ export const GUILDS: GuildDefinition[] = [
     icon: "📜",
     color: "#D4A017",
     description: "Focuses on trading and development.",
-    superName: "Market Insight ",
+    superName: "Market Insight",
     superDescription: "Get 2 free Development Cards",
     passiveName: "Barter ",
     passiveDescription: "Pay 1 less required resource to make a Bank Trade or buy a Development Card"

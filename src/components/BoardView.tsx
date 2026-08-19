@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Board } from "../game/domain/Board";
 import type { Settlement } from "../game/domain/Settlement";
 import PortBadge from "./PortBadge";
@@ -58,6 +58,22 @@ function BoardView({
     useState<string | null>(null);
   const [hoveredNode, setHoveredNode] =
     useState<string | null>(null);
+    useEffect(() => {
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (
+      event.key.toLowerCase() === "r" &&
+      secondaryRollPending &&
+      onRollSecondaryDice
+    ) {
+      event.preventDefault();
+      onRollSecondaryDice();
+    }
+  };
+  window.addEventListener("keydown", handleKeyDown);
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, [secondaryRollPending, onRollSecondaryDice]);
   /*
    * Keep the secondary-roll overlay visible
    * while the result is being revealed.
