@@ -125,6 +125,17 @@ function App() {
             );
         };
     }, [game]);
+    // useEffect(() => {
+    //     console.log("----------------------------------------");
+    //     console.log("superPending UPDATED:", superPending);
+    //     console.log("----------------------------------------");
+    // }, [superPending]);
+    function getCurrentPlayer() {
+        return game.players.find(
+            (player) =>
+                player.id === game.currentPlayerId
+        );
+    }
     function handleGuildSelection(guild: GuildType) {
         const nextGame = selectGuild(
             game,
@@ -176,10 +187,7 @@ function App() {
         ) {
             return;
         }
-        const player = game.players.find(
-            (candidate) =>
-                candidate.id === game.currentPlayerId
-        );
+        const player = getCurrentPlayer();
         if (!player) {
             return;
         }
@@ -237,10 +245,7 @@ function App() {
         ) {
             return;
         }
-        const player = game.players.find(
-            (candidate) =>
-                candidate.id === game.currentPlayerId
-        );
+        const player = getCurrentPlayer();
         if (!player) {
             return;
         }
@@ -337,10 +342,7 @@ function App() {
         ) {
             return;
         }
-        const player = game.players.find(
-            (candidate) =>
-                candidate.id === game.currentPlayerId
-        );
+        const player = getCurrentPlayer();
         if (!player) {
             return;
         }
@@ -460,18 +462,14 @@ function App() {
         }
     }
     function handleBuyDevelopmentCard() {
-        const player = game.players.find(
-            (candidate) =>
-                candidate.id === game.currentPlayerId
-        );
+        const player = getCurrentPlayer();
         if (!player) {
             return;
         }
         const isMerchant =
             player.guild === "merchant";
         const merchantPassiveAvailable =
-            isMerchant &&
-            !player.guildPassiveUsedThisTurn;
+            isMerchant && !player.guildPassiveUsedThisTurn;
         const requiredResources: (keyof Resources)[] = [
             "ore",
             "wheat",
@@ -561,10 +559,7 @@ function App() {
     }
     // ABC - OPEN TRADE MENU
     function handleTrade() {
-        const player = game.players.find(
-            (candidate) =>
-                candidate.id === game.currentPlayerId
-        );
+        const player = getCurrentPlayer();
         if (!player) {
             return;
         }
@@ -699,10 +694,7 @@ function App() {
         if (!tile) {
             return;
         }
-        const currentPlayer = game.players.find(
-            (player) =>
-                player.id === game.currentPlayerId
-        );
+        const currentPlayer = getCurrentPlayer();
         if (!currentPlayer) {
             return;
         }
@@ -903,10 +895,7 @@ function App() {
         }
         setSecondaryRollRevealing(true);
         setGame(rolledGame);
-        const previousPlayer = game.players.find(
-            (player) =>
-                player.id === game.currentPlayerId
-        );
+        const previousPlayer = getCurrentPlayer();
         const rolledPlayer = rolledGame.players.find(
             (player) =>
                 player.id === rolledGame.currentPlayerId
@@ -933,10 +922,12 @@ function App() {
                 if (justUnlocked) {
                     setSecondaryRollRevealing(false);
                     setSuperUnlockRevealing(true);
+                    console.log("setSuperUnlockRevealing(true);");
                     prosperityRollTimeoutRef.current =
                         window.setTimeout(() => {
                             prosperityRollTimeoutRef.current = null;
                             setSuperUnlockRevealing(false);
+                            console.log("setSuperUnlockRevealing(false);");
                             setGame((currentGame) => {
                                 const readyToEnd = {
                                     ...currentGame,
@@ -1001,6 +992,7 @@ function App() {
          */
         setSecondaryRollRevealing(false);
         setSuperUnlockRevealing(false);
+        console.log("setSuperUnlockRevealing(false);");
         setSuperUnlockPlayerName(undefined);
         setProsperityRollSequenceActive(
             restoredGame.era === "prosperity" &&
@@ -1008,10 +1000,7 @@ function App() {
         );
         setGame(restoredGame);
     }
-    const currentPlayer = game.players.find(
-        (player) =>
-            player.id === game.currentPlayerId
-    );
+    const currentPlayer = getCurrentPlayer();
     useEffect(() => {
         if (secondaryMenu === "development") {
             developmentCardListRef.current?.scrollTo({
@@ -1259,16 +1248,10 @@ function App() {
                             game.secondaryRoll
                         }
                         secondaryRolls={
-                            game.players.find(
-                                (player) =>
-                                    player.id === game.currentPlayerId
-                            )?.secondaryRolls ?? []
+                            getCurrentPlayer()?.secondaryRolls ?? []
                         }
                         superUnlocked={
-                            game.players.find(
-                                (player) =>
-                                    player.id === game.currentPlayerId
-                            )?.superUnlocked ?? false
+                            getCurrentPlayer()?.superUnlocked ?? false
                         }
                         secondaryRollRevealing={
                             secondaryRollRevealing

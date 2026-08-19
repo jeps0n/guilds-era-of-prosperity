@@ -14,7 +14,7 @@ function GuildInformationPanel({
     const showSuperButton =
         player.superUnlocked && !prosperityRollSequenceActive;
     return (
-        <div style={{ marginTop: "16px" }}>
+        <div style={{ marginTop: "12px" }}>
             <Panel>
                 {/* SUPER PROGRESS / SUPER BUTTON */}
                 {!showSuperButton ? (
@@ -190,25 +190,25 @@ function GuildColumn({
                 zIndex: isActive ? 2 : 1,
             }}
         >
-            <div style={{
-                textAlign: "center"
+           <div style={{
+                textAlign: "center",
             }}>
                 <strong
                     style={{
                         color: guild?.color,
-                        textAlign: "center"
+                        textAlign: "center",
                     }}
                 >
                     {guildName}
                 </strong>
             </div>
-
             <div
                 style={{
-                    marginTop: "3px",
+                    margin: "1px 0px",
                 }}
             >
-                <strong>{superName}</strong><span>(Super)</span>
+                <strong>{superName}</strong>
+                <span> (Super)</span>
             </div>
             <div
                 style={{
@@ -218,15 +218,15 @@ function GuildColumn({
             >
                 {superDescription}
             </div>
+            <hr style={{ margin: "3px" }} />
             <div
                 style={{
-                    marginTop: "3px",
-                    borderTop: "1px solid #374151",
+                    margin: "1px 0px",
                     fontSize: "12px",
                 }}
             >
-                <strong>{passiveName}</strong><span>(Passive)</span>
-
+                <strong>{passiveName}</strong>
+                <span> (Passive)</span>
             </div>
             <div
                 style={{
