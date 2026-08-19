@@ -1,6 +1,7 @@
 import { GUILDS } from "../data/guilds";
 import type { GuildType, Resources } from "../engine/types";
 import type { GameState } from "../engine/GameState";
+import { resolveSuper } from "./resolveSuper";
 export interface SuperButtonModel {
     id: string;
     resource: keyof Resources;
@@ -47,5 +48,28 @@ export class SuperOrchestrator {
     }
     getSelectedButtons(): string[] {
         return Array.from(this.selectedButtons);
+    }
+    confirmSuper(game: GameState): GameState {
+        const selectedResources = Array.from(
+            this.selectedButtons
+        ).map((buttonId) => {
+            const [resource] = buttonId.split("-");
+            return resource as keyof Resources;
+        });
+        if (
+            selectedResources.length < 1 ||
+            selectedResources.length > 3
+        ) {
+            return game;
+        }
+        const nextGame = resolveSuper(
+            game,
+            game.currentPlayerId,
+            selectedResources
+        );
+        if (nextGame !== game) {
+            this.selectedButtons.clear();
+        }
+        return nextGame;
     }
 }

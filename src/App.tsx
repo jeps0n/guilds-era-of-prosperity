@@ -1348,6 +1348,10 @@ function App() {
                         visible={showSuperMenu}
                         title={superTitle}
                         onCancel={handleCancelSuper}
+                        onConfirm={(nextGame) => {
+                            setGame(nextGame);
+                            setShowSuperMenu(false);
+                        }}
                         game={game}
                     />
                     {/* SECONDARY MENU > RENDER TRADE OPTIONS */}

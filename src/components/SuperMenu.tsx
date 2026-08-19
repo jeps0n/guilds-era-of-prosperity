@@ -6,6 +6,7 @@ interface SuperMenuProps {
     visible: boolean;
     title: string;
     onCancel: () => void;
+    onConfirm: (game: GameState) => void;
     game: GameState;
 }
 const superOrchestrator = new SuperOrchestrator();
@@ -13,6 +14,7 @@ function SuperMenu({
     visible,
     title,
     onCancel,
+    onConfirm,
     game,
 }: SuperMenuProps) {
     if (!visible) {
@@ -134,23 +136,36 @@ function SuperMenu({
                 <button
                     type="button"
                     onClick={() => {
-                        console.log(
-                            "Super selection:",
-                            superOrchestrator.getSelectedButtons()
-                        );
+                        const nextGame =
+                            superOrchestrator.confirmSuper(game);
+                        if (nextGame !== game) {
+                            onConfirm(nextGame);
+                        }
                     }}
+                    disabled={
+                        superOrchestrator.getSelectedButtons().length === 0
+                    }
                     style={{
                         marginTop: "16px",
                         padding: "8px 20px",
                         borderRadius: "8px",
                         border: "1px solid #D4AF55",
-                        background: "#3A2A12",
-                        color: "#FFF8DF",
+                        background:
+                            superOrchestrator.getSelectedButtons().length > 0
+                                ? "linear-gradient(180deg, #D4AF55, #9F7B2F)"
+                                : "#3A2A12",
+                        color:
+                            superOrchestrator.getSelectedButtons().length > 0
+                                ? "#FFF8DF"
+                                : "#8a7a55",
                         fontWeight: "bold",
-                        cursor: "pointer",
+                        cursor:
+                            superOrchestrator.getSelectedButtons().length > 0
+                                ? "pointer"
+                                : "not-allowed",
                     }}
                 >
-                    USE SUPER
+                    CONFIRM
                 </button>
             </div>
         </div>
