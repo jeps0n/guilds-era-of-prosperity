@@ -21,6 +21,18 @@ function SuperMenu({
         return null;
     }
     const [, setSelectionVersion] = useState(0);
+    const currentPlayer = game.players.find(
+        (player) => player.id === game.currentPlayerId
+    );
+    const isMerchant =
+        currentPlayer?.guild === "merchant";
+    const marketInsightCards = isMerchant
+        ? superOrchestrator.getMarketInsightCards(game)
+        : [];
+    const resourceSelectionHeader = "Pick up to 3 free resources: "
+    const merchantSelectionHeader = game.developmentDeck.length >= 3
+        ? "Pick 2 free dev cards, 1 goes back on top of development deck: "
+        : "There is less than 3 dev cards in development deck. You will get: ";
     return (
         <div
             style={{
@@ -38,7 +50,7 @@ function SuperMenu({
                 style={{
                     position: "relative",
                     width: "420px",
-                    height: "420px",
+                    height: "360px",
                     padding: "24px",
                     textAlign: "center",
                     userSelect: "none",
@@ -58,7 +70,10 @@ function SuperMenu({
                 {/* CANCEL */}
                 <button
                     type="button"
-                    onClick={onCancel}
+                    onClick={() => {
+                        superOrchestrator.resetSelections();
+                        onCancel();
+                    }}
                     onMouseEnter={(e) => {
                         e.currentTarget.style.color =
                             "#D4AF55";
@@ -98,7 +113,7 @@ function SuperMenu({
                 {/* TITLE */}
                 <h2
                     style={{
-                        margin: 0,
+                        margin: "4px",
                         color: "#FFF8DF",
                         fontSize: "28px",
                         fontWeight: "900",
@@ -107,10 +122,20 @@ function SuperMenu({
                 >
                     {title}
                 </h2>
+                <div
+                    style={{
+                        fontSize: "12px",
+                        letterSpacing: "1px",
+                        color: "#D8BD72",
+                        margin: "2px",
+                    }}
+                >
+                    {resourceSelectionHeader}
+                </div>
                 {/* RESOURCE BUTTON GRID */}
                 <div
                     style={{
-                        marginTop: "23px",
+                        marginTop: "12px",
                         display: "grid",
                         gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
                         gridTemplateRows: "repeat(3, 1fr)",
@@ -125,14 +150,95 @@ function SuperMenu({
                             active={button.active}
                             resource={button.resource}
                             onClick={() => {
-                                superOrchestrator.toggleButton(button.id);
-                                setSelectionVersion((version) => version + 1);
+                                superOrchestrator.toggleButton(
+                                    button.id
+                                );
+                                setSelectionVersion(
+                                    (version) =>
+                                        version + 1
+                                );
                             }}
                         >
                             {button.label}
                         </ResourceSelectButton>
                     ))}
                 </div>
+                {/* MERCHANT *SUB-MENU */}
+                {isMerchant && (
+                    <>
+                        <div
+                            style={{
+                                marginTop: "12px",
+                                fontSize: "12px",
+                                letterSpacing: "1px",
+                                color: "#D8BD72",
+                            }}
+                        >
+                            {merchantSelectionHeader}
+                        </div>
+                        <div
+                            style={{
+                                marginTop: "12px",
+                                display: "flex",
+                                justifyContent: "center",
+                                gap: "8px",
+                            }}
+                        >
+                            {marketInsightCards.map((card) => {
+                                const autoSelected =
+                                    marketInsightCards.length < 3;
+                                return (
+                                    <button
+                                        key={card.id}
+                                        type="button"
+                                        disabled={autoSelected}
+                                        onClick={() => {
+                                            if (autoSelected) {
+                                                return;
+                                            }
+                                            superOrchestrator.toggleMarketInsightCard(
+                                                card.id
+                                            );
+                                            setSelectionVersion(
+                                                (version) =>
+                                                    version + 1
+                                            );
+                                        }}
+                                        style={{
+                                            width: "105px",
+                                            height: "70px",
+                                            padding: "6px",
+                                            borderRadius: "10px",
+                                            border:
+                                                card.active ||
+                                                    autoSelected
+                                                    ? "2px solid #FFF0B0"
+                                                    : "2px solid #D4AF55",
+                                            background:
+                                                card.active ||
+                                                    autoSelected
+                                                    ? "linear-gradient(180deg, #D4AF55, #9F7B2F)"
+                                                    : "#3A2A12",
+                                            color: "#FFF8DF",
+                                            cursor:
+                                                autoSelected
+                                                    ? "not-allowed"
+                                                    : "pointer",
+                                            fontWeight: autoSelected
+                                                ? "bold"
+                                                : "normal",
+                                            fontSize: "11px",
+                                            textTransform:
+                                                "none",
+                                        }}
+                                    >
+                                        {card.type}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </>
+                )}
                 <button
                     type="button"
                     onClick={() => {
@@ -143,24 +249,24 @@ function SuperMenu({
                         }
                     }}
                     disabled={
-                        superOrchestrator.getSelectedButtons().length === 0
+                        !superOrchestrator.canConfirmSuper(game)
                     }
                     style={{
-                        marginTop: "16px",
+                        marginTop: "12px",
                         padding: "8px 20px",
                         borderRadius: "8px",
                         border: "1px solid #D4AF55",
                         background:
-                            superOrchestrator.getSelectedButtons().length > 0
+                            superOrchestrator.canConfirmSuper(game)
                                 ? "linear-gradient(180deg, #D4AF55, #9F7B2F)"
                                 : "#3A2A12",
                         color:
-                            superOrchestrator.getSelectedButtons().length > 0
+                            superOrchestrator.canConfirmSuper(game)
                                 ? "#FFF8DF"
                                 : "#8a7a55",
                         fontWeight: "bold",
                         cursor:
-                            superOrchestrator.getSelectedButtons().length > 0
+                            superOrchestrator.canConfirmSuper(game)
                                 ? "pointer"
                                 : "not-allowed",
                     }}
@@ -234,7 +340,9 @@ function ResourceSelectButton({
                 cursor: disabled
                     ? "not-allowed"
                     : "pointer",
-                fontWeight: "bold",
+                fontWeight: active
+                    ? "bold"
+                    : "normal",
                 textAlign: "left",
                 transition:
                     "background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease",
@@ -284,7 +392,10 @@ function ResourceSelectButton({
         </button>
     );
 }
-const resourceColors: Record<keyof Resources, string> = {
+const resourceColors: Record<
+    keyof Resources,
+    string
+> = {
     brick: "#b45309",
     lumber: "#166534",
     wheat: "#eab308",

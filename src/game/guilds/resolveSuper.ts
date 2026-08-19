@@ -66,7 +66,6 @@ export function resolveSuper(
                         candidate.resources.ore +
                         selectedCounts.ore,
                 },
-                superUsed: true,
             };
         }
     );
