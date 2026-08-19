@@ -223,7 +223,7 @@ export default function HexTileView({
                 <g>
                     <circle
                         cx={tile.x}
-                        cy={tile.y - 38}
+                        cy={tile.y - 34}
                         r="11"
                         fill="#ef4444"
                         stroke="#111827"
@@ -232,7 +232,7 @@ export default function HexTileView({
                     />
                     <text
                         x={tile.x}
-                        y={tile.y - 33}
+                        y={tile.y - 29}
                         textAnchor="middle"
                         fontSize="14"
                         fill="#111827"

@@ -81,6 +81,8 @@ function App() {
         useState(false);
     const [superUnlockPlayerName, setSuperUnlockPlayerName] =
         useState<string | undefined>(undefined);
+    const [superPending, setSuperPending] =
+        useState<GuildType | undefined>(undefined);
     const prosperityRollTimeoutRef =
         useRef<number | null>(null);
     /*
@@ -99,8 +101,10 @@ function App() {
         } | undefined>(undefined);
     // FOR DEBUGGING - DELETE useEffect EVENTUALLY
     useEffect(() => {
-        console.log("===== GAME STATE UPDATED [Turn: " + game.turnNumber + "] =====");
+        console.log("=================== / GAME / ===================");
         console.log(game);
+        console.log("===== " + currentPlayer?.id + " : " + currentPlayer?.name + " ===== [Turn: " + game.turnNumber + "] =====");
+        console.log(currentPlayer);
         console.log("----------------------------------------");
         function handleKeyDown(event: KeyboardEvent) {
             const key = event.key.toLowerCase();
@@ -125,11 +129,11 @@ function App() {
             );
         };
     }, [game]);
-    // useEffect(() => {
-    //     console.log("----------------------------------------");
-    //     console.log("superPending UPDATED:", superPending);
-    //     console.log("----------------------------------------");
-    // }, [superPending]);
+    useEffect(() => {
+        console.log("----------------------------------------");
+        console.log("superPending UPDATED:", superPending);
+        console.log("----------------------------------------");
+    }, [superPending]);
     function getCurrentPlayer() {
         return game.players.find(
             (player) =>
@@ -967,6 +971,24 @@ function App() {
                 });
                 setSecondaryRollRevealing(false);
             }, 1800);
+    }
+    function handleUseSuper() {
+        const currentPlayer = getCurrentPlayer();
+
+        if (!currentPlayer) {
+            return;
+        }
+
+        if (!currentPlayer.superUnlocked) {
+            return;
+        }
+
+        if (prosperityRollSequenceActive) {
+            return;
+        }
+
+        setSuperPending(currentPlayer.guild);
+        // Super menu logic will go here later.
     }
     function handleRestoreCheckpoint() {
         /*
@@ -1993,6 +2015,7 @@ function App() {
                         <GuildInformationPanel
                             player={currentPlayer}
                             prosperityRollSequenceActive={prosperityRollSequenceActive}
+                            onUseSuper={handleUseSuper}
                         />
                     )}
                 </>

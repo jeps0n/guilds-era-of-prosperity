@@ -26,7 +26,7 @@ export default function RobberActionBar({
     return (
         <div
             style={{
-                marginTop: "16px",
+                marginTop: "12px",
                 display: "flex",
                 justifyContent: "center",
                 width: "100%",

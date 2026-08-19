@@ -5,10 +5,12 @@ import type { GuildType } from "../game/engine/types";
 interface GuildInformationPanelProps {
     player: GameState["players"][number];
     prosperityRollSequenceActive: boolean;
+    onUseSuper: () => void;
 }
 function GuildInformationPanel({
     player,
     prosperityRollSequenceActive,
+    onUseSuper,
 }: GuildInformationPanelProps) {
     const secondaryRolls = player.secondaryRolls;
     const showSuperButton =
@@ -90,6 +92,7 @@ function GuildInformationPanel({
                     >
                         <button
                             type="button"
+                            onClick={onUseSuper}
                             style={{
                                 width: "352px",
                                 height: "52px",
