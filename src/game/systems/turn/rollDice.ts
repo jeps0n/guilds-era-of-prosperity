@@ -341,7 +341,16 @@ export function rollDice(
   /*
    * Log resources actually received by each player.
    */
-  for (const player of updatedPlayers) {
+  const playersInLogOrder = [
+    ...updatedPlayers.filter(
+      (player) => player.id === currentPlayer.id
+    ),
+    ...updatedPlayers.filter(
+      (player) => player.id !== currentPlayer.id
+    ),
+  ];
+
+  for (const player of playersInLogOrder) {
     const before =
       game.players.find(
         (originalPlayer) =>
