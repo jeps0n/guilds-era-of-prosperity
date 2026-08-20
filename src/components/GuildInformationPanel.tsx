@@ -93,26 +93,39 @@ function GuildInformationPanel({
                         <button
                             type="button"
                             onClick={onUseSuper}
+                            disabled={player.superUsed}
                             style={{
                                 width: "352px",
                                 height: "52px",
                                 padding: "0",
                                 borderRadius: "10px",
-                                border: "2px solid #D4AF55",
-                                background:
-                                    "linear-gradient(180deg, #D4AF55, #9F7B2F)",
-                                color: "#FFF8DF",
-                                fontSize: "20px",
-                                fontWeight: "bold",
-                                letterSpacing: "3px",
-                                boxShadow:
-                                    "0 0 10px rgba(212, 175, 85, 0.35)",
-                                textShadow:
-                                    "0 1px 2px rgba(0,0,0,0.5)",
-                                cursor: "pointer",
+                                fontSize: player.superUsed
+                                    ? "12px"
+                                    : "24px",
+                                fontWeight: player.superUsed
+                                    ? "normal"
+                                    : "bold",
+                                border: player.superUsed
+                                    ? "1px solid #374151"
+                                    : "2px solid #D4AF55",
+                                background: player.superUsed
+                                    ? "#252b33"
+                                    : "linear-gradient(180deg, #D4AF55, #9F7B2F)",
+                                color: player.superUsed
+                                    ? "#6b7280"
+                                    : "#FFF8DF",
+                                boxShadow: player.superUsed
+                                    ? "inset 0 1px 3px rgba(0,0,0,0.3)"
+                                    : "0 0 10px rgba(212, 175, 85, 0.35)",
+                                textShadow: player.superUsed
+                                    ? "none"
+                                    : "0 1px 2px rgba(0,0,0,0.5)",
+                                cursor: player.superUsed
+                                    ? "default"
+                                    : "pointer",
                             }}
                         >
-                            USE SUPER
+                            {player.superUsed ? "SUPER HAS BEEN USED" : "USE SUPER"}
                         </button>
                     </div>
                 )}
