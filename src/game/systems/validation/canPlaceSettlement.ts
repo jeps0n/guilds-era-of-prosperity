@@ -12,13 +12,17 @@ export function canPlaceSettlement(
     }
     /*
      * Rule 1:
-     * Node cannot already contain a settlement.
+     * Node cannot already contain a settlement or city.
      */
     const occupied = game.players.some(
         (player) =>
             player.settlements.some(
                 (settlement) =>
                     settlement.nodeId === nodeId
+            ) ||
+            player.cities.some(
+                (cityId) =>
+                    cityId === nodeId
             )
     );
     if (occupied) {
@@ -29,7 +33,7 @@ export function canPlaceSettlement(
      * Settlement distance rule.
      *
      * A settlement cannot be placed directly
-     * adjacent to another settlement.
+     * adjacent to another settlement or city.
      */
     const adjacentNodes =
         getAdjacentNodes(game, nodeId);
@@ -40,6 +44,10 @@ export function canPlaceSettlement(
                     adjacentNodes.includes(
                         settlement.nodeId
                     )
+            ) ||
+            player.cities.some(
+                (cityId) =>
+                    adjacentNodes.includes(cityId)
             )
     );
     if (blocked) {

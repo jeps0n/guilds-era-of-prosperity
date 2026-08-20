@@ -314,7 +314,6 @@ function SuperMenu({
                             >
                                 {builderSelectionHeader}
                             </div>
-
                             {/* BUILDING OPTIONS */}
                             <div
                                 style={{
@@ -342,7 +341,6 @@ function SuperMenu({
                                 ).map((option) => {
                                     const active =
                                         selectedMasterBuilder === option.id;
-
                                     return (
                                         <button
                                             key={option.id}
@@ -352,11 +350,9 @@ function SuperMenu({
                                                 if (!option.available) {
                                                     return;
                                                 }
-
                                                 superOrchestrator.toggleMasterBuilderSelection(
                                                     option.id
                                                 );
-
                                                 setSelectionVersion(
                                                     (version) => version + 1
                                                 );
