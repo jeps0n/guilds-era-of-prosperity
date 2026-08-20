@@ -349,7 +349,6 @@ export function rollDice(
       (player) => player.id !== currentPlayer.id
     ),
   ];
-
   for (const player of playersInLogOrder) {
     const before =
       game.players.find(

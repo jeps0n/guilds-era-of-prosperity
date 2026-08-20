@@ -1434,7 +1434,7 @@ function App() {
                                     </div>
                                 )}
                             </div>
-                            {selectedGiveResource && (
+                            {selectedGiveResource && tradeGiveOptions.length > 0 && (
                                 <>
                                     <div
                                         style={{
