@@ -89,6 +89,13 @@ export interface GameState {
   roadBuildingPending: boolean;
   roadBuildingCardId?: string;
   roadBuildingRoadsPlaced: number;
+  // Grand Expedition
+  grandExpeditionPending: boolean;
+  grandExpeditionRoadsPlaced: number;
+  grandExpeditionRoadsToPlace: number;
+  // Master Builder
+  masterBuilderPending: boolean;
+  masterBuilderSelection?: "city" | "settlement";
   // Game Progression
   phase: GamePhase;
   era: GameEra;

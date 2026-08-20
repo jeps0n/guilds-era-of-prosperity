@@ -155,3 +155,30 @@ export function buildCity(
         ],
     });
 }
+export function hasLegalCityPlacement(
+    game: GameState,
+    playerId: string
+): boolean {
+    if (game.phase !== "playing") {
+        return false;
+    }
+    if (game.currentPlayerId !== playerId) {
+        return false;
+    }
+    if (game.robberPending) {
+        return false;
+    }
+    if (game.lastDiceRoll === undefined) {
+        return false;
+    }
+    const player = game.players.find(
+        (candidate) => candidate.id === playerId
+    );
+    if (!player) {
+        return false;
+    }
+    if (player.cities.length >= 4) {
+        return false;
+    }
+    return player.settlements.length > 0;
+}

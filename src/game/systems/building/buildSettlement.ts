@@ -83,13 +83,13 @@ export function buildSettlement(
      */
     if (
         player.resources.brick <
-            settlementCost.brick ||
+        settlementCost.brick ||
         player.resources.lumber <
-            settlementCost.lumber ||
+        settlementCost.lumber ||
         player.resources.wheat <
-            settlementCost.wheat ||
+        settlementCost.wheat ||
         player.resources.sheep <
-            settlementCost.sheep
+        settlementCost.sheep
     ) {
         return game;
     }
@@ -144,9 +144,8 @@ export function buildSettlement(
                 settlements: [
                     ...candidate.settlements,
                     {
-                        id: `settlement-${
-                            candidate.settlements.length + 1
-                        }`,
+                        id: `settlement-${candidate.settlements.length + 1
+                            }`,
                         playerId,
                         nodeId,
                     },
@@ -216,5 +215,41 @@ function connectsToPlayerRoad(
             return false;
         }
         return player.roads.includes(edge.id);
+    });
+}
+export function hasLegalSettlementPlacement(
+    game: GameState,
+    playerId: string
+): boolean {
+    if (game.phase !== "playing") {
+        return false;
+    }
+    if (game.currentPlayerId !== playerId) {
+        return false;
+    }
+    if (game.robberPending) {
+        return false;
+    }
+    if (game.lastDiceRoll === undefined) {
+        return false;
+    }
+    const player = game.players.find(
+        (candidate) => candidate.id === playerId
+    );
+    if (!player) {
+        return false;
+    }
+    if (player.settlements.length >= 5) {
+        return false;
+    }
+    return game.board.nodes.some((node) => {
+        if (!canPlaceSettlement(game, node.id)) {
+            return false;
+        }
+        return connectsToPlayerRoad(
+            game,
+            playerId,
+            node.id
+        );
     });
 }

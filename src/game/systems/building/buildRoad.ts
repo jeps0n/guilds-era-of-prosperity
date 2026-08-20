@@ -209,7 +209,7 @@ export function buildRoad(
         roadBuildingPending: hasSecondLegalRoad,
     });
 }
-function hasLegalRoadPlacement(
+export function hasLegalRoadPlacement(
     game: GameState,
     playerId: string
 ): boolean {
@@ -319,4 +319,61 @@ function connectsToPlayerNetwork(
         }
     }
     return false;
+}
+export function getMaxLegalRoadPlacements(
+    game: GameState,
+    playerId: string
+): number {
+    const player = game.players.find(
+        (candidate) => candidate.id === playerId
+    );
+    if (!player) {
+        return 0;
+    }
+    const remainingRoads =
+        15 - player.roads.length;
+    if (remainingRoads <= 0) {
+        return 0;
+    }
+    let simulatedGame = game;
+    let roadsPlaced = 0;
+    while (roadsPlaced < remainingRoads) {
+        const legalEdge = simulatedGame.board.edges.find(
+            (edge) => {
+                const occupied =
+                    simulatedGame.players.some(
+                        (candidate) =>
+                            candidate.roads.includes(edge.id)
+                    );
+                if (occupied) {
+                    return false;
+                }
+                return connectsToPlayerNetwork(
+                    simulatedGame,
+                    playerId,
+                    edge.id
+                );
+            }
+        );
+        if (!legalEdge) {
+            break;
+        }
+        simulatedGame = {
+            ...simulatedGame,
+            players: simulatedGame.players.map(
+                (candidate) =>
+                    candidate.id === playerId
+                        ? {
+                            ...candidate,
+                            roads: [
+                                ...candidate.roads,
+                                legalEdge.id,
+                            ],
+                        }
+                        : candidate
+            ),
+        };
+        roadsPlaced += 1;
+    }
+    return roadsPlaced;
 }

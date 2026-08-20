@@ -26,7 +26,7 @@ function GuildInformationPanel({
                             justifyContent: "center",
                             alignItems: "center",
                             gap: "8px",
-                            marginBottom: "10px",
+                            marginBottom: "12px",
                         }}
                     >
                         {[1, 2, 3, 4, 5, 6].map((number) => {
@@ -71,9 +71,6 @@ function GuildInformationPanel({
                                                 0 1px 1px rgba(255, 255, 255, 0.03)
                                             `,
                                         opacity: claimed ? 1 : 0.45,
-                                        transform: claimed
-                                            ? "translateY(-2px)"
-                                            : "translateY(2px)",
                                     }}
                                 >
                                     {diceFaces[number - 1]}
@@ -87,7 +84,7 @@ function GuildInformationPanel({
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
-                            marginBottom: "10px",
+                            marginBottom: "12px",
                         }}
                     >
                         <button
@@ -181,9 +178,6 @@ function GuildColumn({
                 padding: "9px 9px",
                 boxSizing: "border-box",
                 opacity: isActive ? 1 : 0.45,
-                transform: isActive
-                    ? "translateY(-2px)"
-                    : "translateY(0)",
                 background: isActive
                     ? "#292f38"
                     : "transparent",

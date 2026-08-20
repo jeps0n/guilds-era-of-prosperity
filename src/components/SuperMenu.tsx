@@ -24,16 +24,38 @@ function SuperMenu({
     const currentPlayer = game.players.find(
         (player) => player.id === game.currentPlayerId
     );
+    const selectionHeaderTextColor = "#ffffff"
+    const selectionHeaderBackgroundColor = "rgba(0, 0, 0, 0.12)"
     const isMerchant =
         currentPlayer?.guild === "merchant";
     const marketInsightCards = isMerchant
         ? superOrchestrator.getMarketInsightCards(game)
         : [];
-    const resourceSelectionHeader = "Pick up to 3 free resources: "
-    const merchantSelectionHeader = game.developmentDeck.length >= 3
-        ? "Pick 2 free dev cards, 1 goes back on top of development deck: "
-        : "There is less than 3 dev cards in development deck. You will get: ";
+    const merchantSelectionHeader =
+        game.developmentDeck.length >= 3
+            ? "Pick 2 free dev cards, 1 goes back on top of development deck: "
+            : "There is less than 3 dev cards in development deck. You will get: ";
+    const isExplorer =
+        currentPlayer?.guild === "explorer";
+    const grandExpeditionRoadsToPlace = isExplorer
+        ? superOrchestrator.getGrandExpedition(game).roadsToPlace
+        : undefined;
+    const explorerSelectionHeader =
+        grandExpeditionRoadsToPlace === 0
+            ? "No roads can be placed."
+            : "Place " + grandExpeditionRoadsToPlace + " free roads.";
+    const isBuilder =
+        currentPlayer?.guild === "builder";
+    const masterBuilderVariable =
+        superOrchestrator.getMasterBuilder(game);
+    const builderSelectionHeader =
+        "Choose your building: ";
+    const selectedMasterBuilder =
+        superOrchestrator.getSelectedMasterBuilder();
+    const resourceSelectionHeader =
+        "Pick up to 3 free resources: "
     return (
+        // OVERLAY
         <div
             style={{
                 position: "absolute",
@@ -46,6 +68,7 @@ function SuperMenu({
                 background: "rgba(8, 12, 20, 0.72)",
             }}
         >
+            {/* *GOLD MENU */}
             <div
                 style={{
                     position: "relative",
@@ -122,123 +145,285 @@ function SuperMenu({
                 >
                     {title}
                 </h2>
+                {/* RESOURCE SELECTION: STATIC SECTION */}
+                <div>
+                    {/* HEADER */}
+                    <div
+                        style={{
+                            fontSize: "12px",
+                            letterSpacing: "1px",
+                            color: selectionHeaderTextColor,
+                            margin: "2px",
+                            // display: "inline-block",
+                            padding: "4px 10px",
+                            borderRadius: "69px",
+                            backgroundColor: selectionHeaderBackgroundColor,
+                        }}
+                    >
+                        {resourceSelectionHeader}
+                    </div>
+                    {/* GRID BUTTONS */}
+                    <div
+                        style={{
+                            marginTop: "12px",
+                            display: "grid",
+                            gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+                            gridTemplateRows: "repeat(3, 1fr)",
+                            gridAutoFlow: "column",
+                            gap: "3px",
+                        }}
+                    >
+                        {superOrchestrator.getSuperButtons(game).map((button) => (
+                            <ResourceSelectButton
+                                key={button.id}
+                                disabled={button.disabled}
+                                active={button.active}
+                                resource={button.resource}
+                                onClick={() => {
+                                    superOrchestrator.toggleButton(
+                                        button.id
+                                    );
+                                    setSelectionVersion(
+                                        (version) =>
+                                            version + 1
+                                    );
+                                }}
+                            >
+                                {button.label}
+                            </ResourceSelectButton>
+                        ))}
+                    </div>
+                </div>
+                {/* GUILD SECTION: DYNAMIC SECTION */}
                 <div
                     style={{
-                        fontSize: "12px",
-                        letterSpacing: "1px",
-                        color: "#D8BD72",
-                        margin: "2px",
-                    }}
-                >
-                    {resourceSelectionHeader}
-                </div>
-                {/* RESOURCE BUTTON GRID */}
-                <div
-                    style={{
-                        marginTop: "12px",
-                        display: "grid",
-                        gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-                        gridTemplateRows: "repeat(3, 1fr)",
-                        gridAutoFlow: "column",
-                        gap: "3px",
-                    }}
-                >
-                    {superOrchestrator.getSuperButtons(game).map((button) => (
-                        <ResourceSelectButton
-                            key={button.id}
-                            disabled={button.disabled}
-                            active={button.active}
-                            resource={button.resource}
-                            onClick={() => {
-                                superOrchestrator.toggleButton(
-                                    button.id
-                                );
-                                setSelectionVersion(
-                                    (version) =>
-                                        version + 1
-                                );
-                            }}
-                        >
-                            {button.label}
-                        </ResourceSelectButton>
-                    ))}
-                </div>
-                {/* MERCHANT *SUB-MENU */}
-                {isMerchant && (
-                    <>
+                        minHeight: "100px",
+                    }}>
+                    {/* MERCHANT *SUB-MENU */}
+                    {isMerchant && (
+                        <>
+                            {/* HEADER */}
+                            <div
+                                style={{
+                                    marginTop: "12px",
+                                    fontSize: "12px",
+                                    letterSpacing: "1px",
+                                    color: selectionHeaderTextColor,
+                                    padding: "4px 10px",
+                                    borderRadius: "69px",
+                                    backgroundColor: selectionHeaderBackgroundColor,
+                                }}
+                            >
+                                {merchantSelectionHeader}
+                            </div>
+                            {/* DEVELOPMENT CARDS */}
+                            <div
+                                style={{
+                                    marginTop: "12px",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    gap: "8px",
+                                }}
+                            >
+                                {marketInsightCards.map((card) => {
+                                    const autoSelected =
+                                        marketInsightCards.length < 3;
+                                    return (
+                                        <button
+                                            key={card.id}
+                                            type="button"
+                                            disabled={autoSelected}
+                                            onClick={() => {
+                                                if (autoSelected) {
+                                                    return;
+                                                }
+                                                superOrchestrator.toggleMarketInsightCard(
+                                                    card.id
+                                                );
+                                                setSelectionVersion(
+                                                    (version) =>
+                                                        version + 1
+                                                );
+                                            }}
+                                            style={{
+                                                width: "105px",
+                                                height: "70px",
+                                                padding: "6px",
+                                                borderRadius: "10px",
+                                                border:
+                                                    card.active ||
+                                                        autoSelected
+                                                        ? "2px solid #FFF0B0"
+                                                        : "2px solid #D4AF55",
+                                                background:
+                                                    card.active ||
+                                                        autoSelected
+                                                        ? "linear-gradient(180deg, #D4AF55, #9F7B2F)"
+                                                        : "#3A2A12",
+                                                color: "#FFF8DF",
+                                                cursor:
+                                                    autoSelected
+                                                        ? "not-allowed"
+                                                        : "pointer",
+                                                fontWeight: autoSelected
+                                                    ? "bold"
+                                                    : "normal",
+                                                fontSize: "11px",
+                                                textTransform:
+                                                    "none",
+                                            }}
+                                        >
+                                            {card.type}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    )}
+                    {/* EXPLORER *SUB-MENU */}
+                    {isExplorer && (
                         <div
                             style={{
                                 marginTop: "12px",
                                 fontSize: "12px",
                                 letterSpacing: "1px",
-                                color: "#D8BD72",
+                                color: selectionHeaderTextColor,
+                                padding: "4px 10px",
+                                borderRadius: "69px",
+                                backgroundColor: selectionHeaderBackgroundColor,
                             }}
                         >
-                            {merchantSelectionHeader}
+                            {explorerSelectionHeader}
                         </div>
-                        <div
-                            style={{
-                                marginTop: "12px",
-                                display: "flex",
-                                justifyContent: "center",
-                                gap: "8px",
-                            }}
-                        >
-                            {marketInsightCards.map((card) => {
-                                const autoSelected =
-                                    marketInsightCards.length < 3;
-                                return (
-                                    <button
-                                        key={card.id}
-                                        type="button"
-                                        disabled={autoSelected}
-                                        onClick={() => {
-                                            if (autoSelected) {
-                                                return;
-                                            }
-                                            superOrchestrator.toggleMarketInsightCard(
-                                                card.id
-                                            );
-                                            setSelectionVersion(
-                                                (version) =>
-                                                    version + 1
-                                            );
-                                        }}
-                                        style={{
-                                            width: "105px",
-                                            height: "70px",
-                                            padding: "6px",
-                                            borderRadius: "10px",
-                                            border:
-                                                card.active ||
-                                                    autoSelected
+                    )}
+                    {/* BUILDER SUB-MENU */}
+                    {isBuilder && (
+                        <>
+                            {/* HEADER */}
+                            <div
+                                style={{
+                                    marginTop: "12px",
+                                    fontSize: "12px",
+                                    letterSpacing: "1px",
+                                    color: selectionHeaderTextColor,
+                                    padding: "4px 10px",
+                                    borderRadius: "69px",
+                                    backgroundColor:
+                                        selectionHeaderBackgroundColor,
+                                }}
+                            >
+                                {builderSelectionHeader}
+                            </div>
+
+                            {/* BUILDING OPTIONS */}
+                            <div
+                                style={{
+                                    marginTop: "12px",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    gap: "8px",
+                                }}
+                            >
+                                {(
+                                    [
+                                        {
+                                            id: "settlement",
+                                            label: "SETTLEMENT",
+                                            available:
+                                                masterBuilderVariable.canBuildSettlement,
+                                        },
+                                        {
+                                            id: "city",
+                                            label: "CITY",
+                                            available:
+                                                masterBuilderVariable.canBuildCity,
+                                        },
+                                    ] as const
+                                ).map((option) => {
+                                    const active =
+                                        selectedMasterBuilder === option.id;
+
+                                    return (
+                                        <button
+                                            key={option.id}
+                                            type="button"
+                                            disabled={!option.available}
+                                            onClick={() => {
+                                                if (!option.available) {
+                                                    return;
+                                                }
+
+                                                superOrchestrator.toggleMasterBuilderSelection(
+                                                    option.id
+                                                );
+
+                                                setSelectionVersion(
+                                                    (version) => version + 1
+                                                );
+                                            }}
+                                            onMouseEnter={(event) => {
+                                                if (option.available) {
+                                                    event.currentTarget.style.background =
+                                                        "linear-gradient(180deg, #D4AF55, #9F7B2F)";
+                                                    event.currentTarget.style.borderColor =
+                                                        "#FFF0B0";
+                                                    event.currentTarget.style.boxShadow =
+                                                        "0 0 10px rgba(212, 175, 85, 0.35)";
+                                                }
+                                            }}
+                                            onMouseLeave={(event) => {
+                                                if (option.available) {
+                                                    event.currentTarget.style.background =
+                                                        active
+                                                            ? "linear-gradient(180deg, #D4AF55, #9F7B2F)"
+                                                            : "#3A2A12";
+                                                    event.currentTarget.style.borderColor =
+                                                        active
+                                                            ? "#FFF0B0"
+                                                            : "#D4AF55";
+                                                    event.currentTarget.style.boxShadow =
+                                                        "none";
+                                                }
+                                            }}
+                                            style={{
+                                                width: "105px",
+                                                height: "70px",
+                                                padding: "6px",
+                                                borderRadius: "10px",
+                                                border: active
                                                     ? "2px solid #FFF0B0"
                                                     : "2px solid #D4AF55",
-                                            background:
-                                                card.active ||
-                                                    autoSelected
+                                                background: active
                                                     ? "linear-gradient(180deg, #D4AF55, #9F7B2F)"
-                                                    : "#3A2A12",
-                                            color: "#FFF8DF",
-                                            cursor:
-                                                autoSelected
-                                                    ? "not-allowed"
-                                                    : "pointer",
-                                            fontWeight: autoSelected
-                                                ? "bold"
-                                                : "normal",
-                                            fontSize: "11px",
-                                            textTransform:
-                                                "none",
-                                        }}
-                                    >
-                                        {card.type}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </>
-                )}
+                                                    : option.available
+                                                        ? "#3A2A12"
+                                                        : "#211C14",
+                                                color: option.available
+                                                    ? "#FFF8DF"
+                                                    : "#6f6655",
+                                                cursor: option.available
+                                                    ? "pointer"
+                                                    : "not-allowed",
+                                                fontWeight: active
+                                                    ? "bold"
+                                                    : "normal",
+                                                fontSize: "11px",
+                                                textTransform: "none",
+                                                opacity: option.available
+                                                    ? 1
+                                                    : 0.55,
+                                                transition:
+                                                    "background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease",
+                                            }}
+                                        >
+                                            {option.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    )}
+                </div>
                 <button
                     type="button"
                     onClick={() => {
