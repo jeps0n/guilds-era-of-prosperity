@@ -110,7 +110,7 @@ export function SecondaryMenuButton({
         padding: "8px",
         borderRadius: "10px",
         border: active
-          ? "2px solid #60a5fa"
+          ? "1px solid #60a5fa"
           : "1px solid #374151",
         background: active
           ? "#1d4ed8"

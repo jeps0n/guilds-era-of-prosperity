@@ -145,7 +145,7 @@ function PlayerPanel({
                   </span>
                   <div
                     style={{
-                      marginTop: "4px",
+                      margin: "4px 8px 0px",
                       color: "#d1d5db",
                     }}
                   >
