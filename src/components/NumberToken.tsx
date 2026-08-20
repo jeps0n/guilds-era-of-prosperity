@@ -16,16 +16,20 @@ export default function NumberToken({
         width="36"
         height="36"
         rx="15"
-        fill="#f9fafb"
+        fill="#FFEBDE  "
         stroke="#c0c0c0"
         strokeWidth="2"
       />
       <text
         x={x}
-        y={y + 6}
+        y={y + 8}
         textAnchor="middle"
         fontWeight="bold"
-        fontSize="18"
+        fontSize="20"
+        fill={
+          value === 6 || value === 8
+            ? "#dc2626"
+            : "#000000"}
       >
         {value}
       </text>

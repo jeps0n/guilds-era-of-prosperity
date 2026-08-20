@@ -105,32 +105,38 @@ function generateTiles(): HexTile[] {
     }
   );
 }
-function validateSixEightRule(
+function validateNumberTokenSpacing(
   tiles: HexTile[]
 ): boolean {
-  const highNumberTiles =
-    tiles.filter(
-      tile =>
-        tile.numberToken === 6
-        ||
-        tile.numberToken === 8
-    );
+  const numberedTiles = tiles.filter(
+    (tile) => tile.numberToken !== undefined
+  );
   for (
     let i = 0;
-    i < highNumberTiles.length;
+    i < numberedTiles.length;
     i++
   ) {
     for (
       let j = i + 1;
-      j < highNumberTiles.length;
+      j < numberedTiles.length;
       j++
     ) {
+      const a = numberedTiles[i];
+      const b = numberedTiles[j];
+      if (!isAdjacent(a, b)) {
+        continue;
+      }
+      // 6 and 8 may not touch each other.
       if (
-        isAdjacent(
-          highNumberTiles[i],
-          highNumberTiles[j]
-        )
+        (a.numberToken === 6 &&
+          b.numberToken === 8) ||
+        (a.numberToken === 8 &&
+          b.numberToken === 6)
       ) {
+        return false;
+      }
+      // Identical number tokens may not touch.
+      if (a.numberToken === b.numberToken) {
         return false;
       }
     }
@@ -145,7 +151,7 @@ function createValidTiles(): HexTile[] {
     const tiles =
       generateTiles();
     if (
-      validateSixEightRule(
+      validateNumberTokenSpacing(
         tiles
       )
     ) {
