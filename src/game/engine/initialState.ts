@@ -12,11 +12,11 @@ export function createInitialState(): GameState {
       guildPassiveUsedThisTurn: false,
       vp: 0,
       resources: {
-        brick: 42,
-        lumber: 42,
-        wheat: 42,
-        sheep: 42,
-        ore: 42,
+        brick: 0,
+        lumber: 0,
+        wheat: 0,
+        sheep: 0,
+        ore: 0,
       },
       tradeRatios: {
         brick: 4,
@@ -36,7 +36,7 @@ export function createInitialState(): GameState {
       longestRoad: 0,
       superUnlocked: false,
       superUsed: false,
-      secondaryRolls: [1, 2, 3, 5, 6],
+      secondaryRolls: [],
     },
     {
       id: "player-2",
@@ -45,11 +45,11 @@ export function createInitialState(): GameState {
       guildPassiveUsedThisTurn: false,
       vp: 0,
       resources: {
-        brick: 42,
-        lumber: 42,
-        wheat: 42,
-        sheep: 42,
-        ore: 42,
+        brick: 0,
+        lumber: 0,
+        wheat: 0,
+        sheep: 0,
+        ore: 0,
       },
       tradeRatios: {
         brick: 4,
@@ -69,7 +69,7 @@ export function createInitialState(): GameState {
       longestRoad: 0,
       superUnlocked: false,
       superUsed: false,
-      secondaryRolls: [1, 2, 3, 4, 5],
+      secondaryRolls: [],
     },
   ];
   const shuffledPlayers =
