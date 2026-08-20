@@ -93,7 +93,7 @@ export function createInitialState(): GameState {
     // Players / Turn
     players,
     currentPlayerId:
-      placementOrder[0],
+      guildSelectionPlayer.id,
     guildSelectionPlayerId:
       guildSelectionPlayer.id,
     turnNumber: 0,
