@@ -230,9 +230,9 @@ export function hasLegalSettlementPlacement(
     if (game.robberPending) {
         return false;
     }
-    if (game.lastDiceRoll === undefined) {
-        return false;
-    }
+    // if (game.lastDiceRoll === undefined) {
+    //     return false;
+    // }
     const player = game.players.find(
         (candidate) => candidate.id === playerId
     );
