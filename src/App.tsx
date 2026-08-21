@@ -2032,6 +2032,8 @@ function App() {
                         <GuildInformationPanel
                             player={currentPlayer}
                             prosperityRollSequenceActive={prosperityRollSequenceActive}
+                            roadBuildingPending={game.roadBuildingPending}
+                            robberPending={game.robberPending}
                             onUseSuper={handleUseSuper}
                         />
                     )}

@@ -5,16 +5,22 @@ import type { GuildType } from "../game/engine/types";
 interface GuildInformationPanelProps {
     player: GameState["players"][number];
     prosperityRollSequenceActive: boolean;
+    roadBuildingPending: boolean;
+    robberPending: boolean;
     onUseSuper: () => void;
 }
 function GuildInformationPanel({
     player,
     prosperityRollSequenceActive,
+    roadBuildingPending,
+    robberPending,
     onUseSuper,
 }: GuildInformationPanelProps) {
     const secondaryRolls = player.secondaryRolls;
     const showSuperButton =
         player.superUnlocked && !prosperityRollSequenceActive;
+    const boardPending = roadBuildingPending || robberPending;
+    const superDisabled = player.superUsed || boardPending;
     return (
         <div style={{ marginTop: "12px" }}>
             <Panel>
@@ -90,7 +96,7 @@ function GuildInformationPanel({
                         <button
                             type="button"
                             onClick={onUseSuper}
-                            disabled={player.superUsed}
+                            disabled={superDisabled}
                             style={{
                                 width: "352px",
                                 height: "52px",
@@ -104,25 +110,38 @@ function GuildInformationPanel({
                                     : "bold",
                                 border: player.superUsed
                                     ? "1px solid #374151"
-                                    : "2px solid #D4AF55",
+                                    : boardPending
+                                        ? "2px solid #75643d"
+                                        : "2px solid #D4AF55",
                                 background: player.superUsed
                                     ? "#252b33"
-                                    : "linear-gradient(180deg, #D4AF55, #9F7B2F)",
+                                    : boardPending
+                                        ? "linear-gradient(180deg, #5a4a2a, #3a321f)"
+                                        : "linear-gradient(180deg, #D4AF55, #9F7B2F)",
                                 color: player.superUsed
                                     ? "#6b7280"
-                                    : "#FFF8DF",
+                                    : boardPending
+                                        ? "#a89b7a"
+                                        : "#FFF8DF",
                                 boxShadow: player.superUsed
                                     ? "inset 0 1px 3px rgba(0,0,0,0.3)"
-                                    : "0 0 10px rgba(212, 175, 85, 0.35)",
-                                textShadow: player.superUsed
+                                    : boardPending
+                                        ? "none"
+                                        : "0 0 10px rgba(212, 175, 85, 0.35)",
+                                textShadow: player.superUsed ||
+                                    boardPending
                                     ? "none"
                                     : "0 1px 2px rgba(0,0,0,0.5)",
                                 cursor: player.superUsed
                                     ? "default"
-                                    : "pointer",
+                                    : boardPending
+                                        ? "not-allowed"
+                                        : "pointer",
                             }}
                         >
-                            {player.superUsed ? "SUPER HAS BEEN USED" : "USE SUPER"}
+                            {player.superUsed
+                                ? "SUPER HAS BEEN USED"
+                                : "USE SUPER"}
                         </button>
                     </div>
                 )}
@@ -199,7 +218,7 @@ function GuildColumn({
                 zIndex: isActive ? 2 : 1,
             }}
         >
-           <div style={{
+            <div style={{
                 textAlign: "center",
             }}>
                 <strong
