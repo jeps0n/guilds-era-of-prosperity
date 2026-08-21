@@ -110,15 +110,25 @@ function PlayerPanel({
                   : "1px solid #374151"
               }
             >
+              {/* PLAYER NAME / GUILD / VP / RESOURCES */}
               <div
                 style={{
-                  display: "flex",
-                  justifyContent:
-                    "space-between",
-                  alignItems: "flex-start",
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gridTemplateRows: "auto auto",
+                  rowGap: "8px",
+                  alignItems: "center",
                 }}
               >
-                <div>
+                {/* PLAYER NAME + VP - TOP LEFT */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifySelf: "start",
+                    gap: "8px",
+                  }}
+                >
                   <span
                     style={{
                       display: "inline-block",
@@ -143,17 +153,20 @@ function PlayerPanel({
                       {player.name}
                     </strong>
                   </span>
-                  <div
+                  {/* VP */}
+                  <span
                     style={{
-                      margin: "4px 8px 0px",
                       color: "#d1d5db",
+                      fontWeight: "bold",
                     }}
                   >
                     VP: {player.vp}
-                  </div>
+                  </span>
                 </div>
+                {/* GUILD - TOP RIGHT */}
                 <div
                   style={{
+                    justifySelf: "end",
                     color: "#f9fafb",
                     fontWeight: "bold",
                     textAlign: "right",
@@ -163,10 +176,33 @@ function PlayerPanel({
                     ? `${player.guild.charAt(0).toUpperCase()}${player.guild.slice(1)} Guild`
                     : "No Guild"}
                 </div>
+                {/* RESOURCES - BOTTOM LEFT */}
+                <div
+                  style={{
+                    color:
+                      Object.values(player.resources).reduce(
+                        (total, amount) => total + amount,
+                        0
+                      ) > 9
+                        ? "#ef4444"
+                        : "#f9fafb",
+                    fontWeight: "normal",
+                    textAlign: "left",
+                    fontSize: "13px",
+                  }}
+                >
+                  Resources:{" "}
+                  {Object.values(player.resources).reduce(
+                    (total, amount) => total + amount,
+                    0
+                  )}
+                </div>
+                {/* EMPTY BOTTOM RIGHT */}
+                <div />
               </div>
               <hr
                 style={{
-                  margin: "8px 0",
+                  margin: "1px 0px 8px",
                   borderColor: "#374151",
                 }}
               />

@@ -5,6 +5,7 @@ interface HexTileViewProps {
     robberPending?: boolean;
     robberTileId?: string;
     onSelectTile?: (tileId: string) => void;
+    playerColor?: string;
 }
 const SIZE = 75;
 function hexPoints(x: number, y: number) {
@@ -30,6 +31,7 @@ export default function HexTileView({
     robberPending = false,
     robberTileId,
     onSelectTile,
+    playerColor
 }: HexTileViewProps) {
     const isRobberTile = robberTileId === tile.id;
     // const isValidRobberTarget = robberPending && !isRobberTile;
@@ -97,12 +99,22 @@ export default function HexTileView({
                         strokeWidth="2"
                     >
                         {robberPending && (
-                            <animate
-                                attributeName="r"
-                                values="25;28;25"
-                                dur="1.2s"
-                                repeatCount="indefinite"
-                            />
+                            <>
+                                <animate
+                                    attributeName="r"
+                                    values="25;28;25"
+                                    dur="1.7s"
+                                    repeatCount="indefinite"
+                                />
+                                <animate
+                                    attributeName="fill"
+                                    dur="1.7s"
+                                    repeatCount="indefinite"
+                                    values={
+                                        `#1c1c1c;${playerColor};#1c1c1c`
+                                    }
+                                />
+                            </>
                         )}
                     </circle>
                     <g transform="translate(0 1)">
@@ -225,44 +237,6 @@ export default function HexTileView({
                             fill="black"
                         />
                     </g>
-                </g>
-            )}
-            {/* ROBBER SELECTION INDICATOR */}
-            {robberPending && !isRobberTile && (
-                <g>
-                    <circle
-                        cx={tile.x}
-                        cy={tile.y - 34}
-                        r="11"
-                        fill="#ef4444"
-                        stroke="#111827"
-                        strokeWidth="2"
-                        pointerEvents="none"
-                    >
-                        <animate
-                            attributeName="r"
-                            values="11;13;11"
-                            dur="1.2s"
-                            repeatCount="indefinite"
-                        />
-                        <animate
-                            attributeName="opacity"
-                            values="1;0.65;1"
-                            dur="1.2s"
-                            repeatCount="indefinite"
-                        />
-                    </circle>
-                    <text
-                        x={tile.x}
-                        y={tile.y - 29}
-                        textAnchor="middle"
-                        fontSize="15"
-                        fill="#ffffff"
-                        fontWeight="bold"
-                        pointerEvents="none"
-                    >
-                        ?
-                    </text>
                 </g>
             )}
         </g>

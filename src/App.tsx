@@ -1343,6 +1343,9 @@ function App() {
                                     ? handleBuildRoad
                                     : undefined
                         }
+                        playerColor={
+                            currentPlayerColor
+                        }
                     />
                     <SuperMenu
                         visible={showSuperMenu}

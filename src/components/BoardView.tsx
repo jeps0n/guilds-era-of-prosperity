@@ -34,6 +34,7 @@ interface BoardViewProps {
   robberPending?: boolean;
   robberTileId?: string;
   onSelectTile?: (tileId: string) => void;
+  playerColor?: string;
 }
 function BoardView({
   era,
@@ -53,27 +54,28 @@ function BoardView({
   robberPending = false,
   robberTileId,
   onSelectTile,
+  playerColor
 }: BoardViewProps) {
   const [hoveredEdge, setHoveredEdge] =
     useState<string | null>(null);
   const [hoveredNode, setHoveredNode] =
     useState<string | null>(null);
-    useEffect(() => {
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (
-      event.key.toLowerCase() === "r" &&
-      secondaryRollPending &&
-      onRollSecondaryDice
-    ) {
-      event.preventDefault();
-      onRollSecondaryDice();
-    }
-  };
-  window.addEventListener("keydown", handleKeyDown);
-  return () => {
-    window.removeEventListener("keydown", handleKeyDown);
-  };
-}, [secondaryRollPending, onRollSecondaryDice]);
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key.toLowerCase() === "r" &&
+        secondaryRollPending &&
+        onRollSecondaryDice
+      ) {
+        event.preventDefault();
+        onRollSecondaryDice();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [secondaryRollPending, onRollSecondaryDice]);
   /*
    * Keep the secondary-roll overlay visible
    * while the result is being revealed.
@@ -149,6 +151,7 @@ function BoardView({
             robberPending={robberPending}
             robberTileId={robberTileId}
             onSelectTile={onSelectTile}
+            playerColor={playerColor}
           />
         ))}
         {/* EDGES */}
@@ -210,6 +213,53 @@ function BoardView({
             />
           );
         })}
+        {/* ROBBER SELECTION INDICATORS */}
+        {robberPending &&
+          board.tiles.map((tile) => {
+            const isRobberTile =
+              robberTileId === tile.id;
+            if (isRobberTile) {
+              return null;
+            }
+            return (
+              <g
+                key={`robber-indicator-${tile.id}`}
+                pointerEvents="none"
+              >
+                <circle
+                  cx={tile.x}
+                  cy={tile.y - 34}
+                  r="13"
+                  fill="#ef4444"
+                  stroke="#111827"
+                  strokeWidth="2"
+                >
+                  <animate
+                    attributeName="r"
+                    values="17;23;17"
+                    dur="1.7s"
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="opacity"
+                    values="1;0.5;1"
+                    dur="1.7s"
+                    repeatCount="indefinite"
+                  />
+                </circle>
+                <text
+                  x={tile.x}
+                  y={tile.y - 26}
+                  textAnchor="middle"
+                  fontSize="23"
+                  fill="#8B0000"
+                  fontWeight="bold"
+                >
+                  ?
+                </text>
+              </g>
+            );
+          })}
         {/* PORT BADGES */}
         {board.ports.map((port) => {
           const a = board.nodes.find(
@@ -291,7 +341,7 @@ function BoardView({
                 "1px solid rgba(231, 207, 143, 0.75)",
               boxShadow: `
                 inset 0 0 0 1px rgba(91, 68, 27, 0.6),
-                inset 0 0 0 3px rgba(212, 183, 102, 0.4)
+                inset 0 0 0 1px rgba(212, 183, 102, 0.4)
               `,
             }}
           />
@@ -302,7 +352,7 @@ function BoardView({
               inset: "2px",
               borderRadius: "15px",
               border:
-                "1px solid rgba(235, 214, 158, 0.65)",
+                "2px solid rgba(235, 214, 158, 0.65)",
             }}
           />
         </div>
