@@ -181,6 +181,35 @@ function BoardView({
             />
           );
         })}
+        {/* NODES */}
+        {board.nodes.map((node) => {
+          const settlement =
+            settlements.find(
+              (s) => s.nodeId === node.id
+            );
+          const city = cities.find(
+            (c) => c.nodeId === node.id
+          );
+          const isPortNode =
+            board.ports.some(
+              (p) =>
+                p.nodeIds.includes(node.id)
+            );
+          return (
+            <BoardNodeView
+              key={node.id}
+              node={node}
+              settlement={settlement}
+              city={city}
+              isPortNode={isPortNode}
+              hovered={
+                hoveredNode === node.id
+              }
+              onHover={setHoveredNode}
+              onSelectNode={onSelectNode}
+            />
+          );
+        })}
         {/* PORT BADGES */}
         {board.ports.map((port) => {
           const a = board.nodes.find(
@@ -214,12 +243,12 @@ function BoardView({
           const badgeX =
             midX +
             normalX *
-            38 *
+            54 *
             direction;
           const badgeY =
             midY +
             normalY *
-            38 *
+            54 *
             direction;
           return (
             <PortBadge
@@ -228,35 +257,6 @@ function BoardView({
               y={badgeY}
               type={port.type}
               ratio={port.ratio}
-            />
-          );
-        })}
-        {/* NODES */}
-        {board.nodes.map((node) => {
-          const settlement =
-            settlements.find(
-              (s) => s.nodeId === node.id
-            );
-          const city = cities.find(
-            (c) => c.nodeId === node.id
-          );
-          const isPortNode =
-            board.ports.some(
-              (p) =>
-                p.nodeIds.includes(node.id)
-            );
-          return (
-            <BoardNodeView
-              key={node.id}
-              node={node}
-              settlement={settlement}
-              city={city}
-              isPortNode={isPortNode}
-              hovered={
-                hoveredNode === node.id
-              }
-              onHover={setHoveredNode}
-              onSelectNode={onSelectNode}
             />
           );
         })}

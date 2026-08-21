@@ -95,7 +95,16 @@ export default function HexTileView({
                         fill="#1c1c1c"
                         stroke="#000000"
                         strokeWidth="2"
-                    />
+                    >
+                        {robberPending && (
+                            <animate
+                                attributeName="r"
+                                values="25;28;25"
+                                dur="1.2s"
+                                repeatCount="indefinite"
+                            />
+                        )}
+                    </circle>
                     <g transform="translate(0 1)">
                         {/* PUMPKIN: HEAD */}
                         <path
@@ -229,13 +238,26 @@ export default function HexTileView({
                         stroke="#111827"
                         strokeWidth="2"
                         pointerEvents="none"
-                    />
+                    >
+                        <animate
+                            attributeName="r"
+                            values="11;13;11"
+                            dur="1.2s"
+                            repeatCount="indefinite"
+                        />
+                        <animate
+                            attributeName="opacity"
+                            values="1;0.65;1"
+                            dur="1.2s"
+                            repeatCount="indefinite"
+                        />
+                    </circle>
                     <text
                         x={tile.x}
                         y={tile.y - 29}
                         textAnchor="middle"
-                        fontSize="14"
-                        fill="#111827"
+                        fontSize="15"
+                        fill="#ffffff"
                         fontWeight="bold"
                         pointerEvents="none"
                     >

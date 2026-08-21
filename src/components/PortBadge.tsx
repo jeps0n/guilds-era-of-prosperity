@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Port } from "../game/domain/Port";
 interface PortBadgeProps {
     x: number;
@@ -6,7 +7,7 @@ interface PortBadgeProps {
     ratio: number;
 }
 const RESOURCE_COLORS = {
-    generic: "#94a3b8", // placeholder, polish later
+    generic: "#94a3b8",
     brick: "#b45309",
     lumber: "#166534",
     wheat: "#eab308",
@@ -27,11 +28,25 @@ export default function PortBadge({
     type,
     ratio,
 }: PortBadgeProps) {
+    const [hovered, setHovered] = useState(false);
     return (
         <g
-            pointerEvents="none"
+            pointerEvents="auto"
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            style={{ cursor: "default" }}
         >
-            <g>
+            <g
+                style={{
+                    transformBox: "fill-box",
+                    transformOrigin: "center",
+                    transform: hovered
+                        ? "scale(1.75)"
+                        : "scale(1)",
+                    transition:
+                        "transform 0.15s ease",
+                }}
+            >
                 {/* white badge background */}
                 <rect
                     x={x - 20}
@@ -70,7 +85,7 @@ export default function PortBadge({
                 {/* resource name */}
                 <text
                     x={x}
-                    y={y - 2}
+                    y={y}
                     textAnchor="middle"
                     fontSize="8"
                     fontWeight="700"
