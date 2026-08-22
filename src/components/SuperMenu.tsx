@@ -9,7 +9,7 @@ interface SuperMenuProps {
     onConfirm: (game: GameState) => void;
     game: GameState;
 }
-const superOrchestrator = new SuperOrchestrator();
+export const superOrchestrator = new SuperOrchestrator();
 function SuperMenu({
     visible,
     title,
@@ -24,6 +24,9 @@ function SuperMenu({
     const currentPlayer = game.players.find(
         (player) => player.id === game.currentPlayerId
     );
+    const currentPlayerColor = currentPlayer?.id === "player-1"
+        ? "#f97316"
+        : "#9333ea";
     const selectionHeaderTextColor = "#ffffff"
     const selectionHeaderBackgroundColor = "rgba(0, 0, 0, 0.12)"
     const isMerchant =
@@ -34,7 +37,12 @@ function SuperMenu({
     const merchantSelectionHeader =
         game.developmentDeck.length >= 3
             ? "Pick 2 free dev cards, 1 goes back on top of development deck: "
-            : "There is less than 3 dev cards in development deck. You will get: ";
+            : game.developmentDeck.length === 0
+                ? "There are no more dev cards left in the development deck."
+                : game.developmentDeck.length === 1
+                    ? "There is " + game.developmentDeck.length + " dev card left in the development deck. You will get: "
+                    // game.developmentDeck.length === 2
+                    : "There are " + game.developmentDeck.length + " dev cards left in the development deck. You will get: ";
     const isExplorer =
         currentPlayer?.guild === "explorer";
     const grandExpeditionRoadsToPlace = isExplorer
@@ -72,8 +80,8 @@ function SuperMenu({
             <div
                 style={{
                     position: "relative",
-                    width: "420px",
-                    height: "360px",
+                    width: "500px",
+                    height: "388px",
                     padding: "24px",
                     textAlign: "center",
                     userSelect: "none",
@@ -170,7 +178,7 @@ function SuperMenu({
                             gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
                             gridTemplateRows: "repeat(3, 1fr)",
                             gridAutoFlow: "column",
-                            gap: "3px",
+                            gap: "5px",
                         }}
                     >
                         {superOrchestrator.getSuperButtons(game).map((button) => (
@@ -432,24 +440,67 @@ function SuperMenu({
                     disabled={
                         !superOrchestrator.canConfirmSuper(game)
                     }
+                    onMouseEnter={(event) => {
+                        if (superOrchestrator.canConfirmSuper(game)) {
+                            event.currentTarget.style.boxShadow =
+                                `
+                                    0 0 10px rgba(212, 175, 85, 0.45),
+                                    0 0 22px ${currentPlayerColor},
+                                    0 0 38px ${currentPlayerColor}
+                                `;
+                            event.currentTarget.style.color = "#ffffff";
+                        }
+                    }}
+                    onMouseLeave={(event) => {
+                        event.currentTarget.style.boxShadow =
+                            "0 4px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.25)";
+                        event.currentTarget.style.color =
+                            superOrchestrator.canConfirmSuper(game)
+                                ? "#241805"
+                                : "#8a7a55";
+                    }}
                     style={{
-                        marginTop: "12px",
-                        padding: "8px 20px",
-                        borderRadius: "8px",
-                        border: "1px solid #D4AF55",
+                        margin: "16px 0px",
+                        minWidth: "150px",
+                        height: "42px",
+                        padding: "0 28px",
+                        borderRadius: "21px",
+                        border: "2px solid #D4AF55",
                         background:
                             superOrchestrator.canConfirmSuper(game)
-                                ? "linear-gradient(180deg, #D4AF55, #9F7B2F)"
+                                ? `
+                    linear-gradient(
+                        180deg,
+                        #F1D77A 0%,
+                        #D4AF55 45%,
+                        #9F7B2F 100%
+                    )
+                `
                                 : "#3A2A12",
                         color:
                             superOrchestrator.canConfirmSuper(game)
-                                ? "#FFF8DF"
+                                ? "#241805"
                                 : "#8a7a55",
-                        fontWeight: "bold",
+                        fontWeight: "900",
+                        fontSize: "13px",
+                        letterSpacing: "1.75px",
                         cursor:
                             superOrchestrator.canConfirmSuper(game)
                                 ? "pointer"
                                 : "not-allowed",
+                        boxShadow:
+                            superOrchestrator.canConfirmSuper(game)
+                                ? `
+                    0 4px 8px rgba(0, 0, 0, 0.35),
+                    inset 0 1px 0 rgba(255,255,255,0.25)
+                `
+                                : "none",
+                        textShadow:
+                            superOrchestrator.canConfirmSuper(game)
+                                ? "0 1px 1px rgba(255,255,255,0.25)"
+                                : "none",
+                        transition:
+                            "box-shadow 0.2s ease, transform 0.2s ease",
                     }}
                 >
                     CONFIRM
@@ -504,10 +555,8 @@ function ResourceSelectButton({
             }}
             style={{
                 fontSize: "11px",
-                width: "100%",
-                // minWidth: "90px",
                 height: "42px",
-                padding: "3px",
+                padding: "0px 8px",
                 borderRadius: "10px",
                 border: active
                     ? "2px solid #FFF0B0"

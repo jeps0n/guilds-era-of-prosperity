@@ -33,6 +33,7 @@ import { resolveMonopoly } from "./game/systems/developmentCards/resolveMonopoly
 import { calculateLongestRoad } from "./game/systems/achievements/calculateLongestRoad";
 import { rollSecondaryDice, } from "./game/guilds/prosperity/rollSecondaryDice";
 import { SuperOrchestrator } from "./game/guilds/SuperOrchestrator";
+import { superOrchestrator } from "./components/SuperMenu";
 import {
     savePhaseCheckpoint,
     restorePhaseCheckpoint,
@@ -1011,7 +1012,10 @@ function App() {
         if (!restoredGame) {
             return;
         }
+        // Close any open secondary/super menus.
         handleCloseTrade();
+        superOrchestrator.resetSelections();
+        setShowSuperMenu(false);
         /*
          * Clear any Prosperity animation/announcement UI
          * that may have been active when Turn Back was clicked.
