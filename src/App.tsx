@@ -261,6 +261,7 @@ function App() {
     function handleBuildSettlement(
         nodeId: string
     ) {
+        // The target must be valid before opening the guild flow.
         if (
             !canOpenGuildDiscountMenu(
                 game,
@@ -270,34 +271,30 @@ function App() {
         ) {
             return;
         }
+        // Get the current player.
         const player = getCurrentPlayer();
         if (!player) {
             return;
         }
+        // Check whether the Builder discount is still available.
         const isBuilder =
             player.guild === "builder";
         const builderPassiveAvailable =
             isBuilder &&
             !player.guildPassiveUsedThisTurn;
+        // Resources required for a normal settlement.
         const settlementResources = [
             "brick",
             "lumber",
             "wheat",
             "sheep",
         ] as const;
-        /*
-         * Builder with an unused passive must choose
-         * which settlement resource to keep.
-         *
-         * The availability layer guarantees that at least
-         * three of the four resources are available.
-         */
+        // Builder can remove one missing resource from the cost.
         if (builderPassiveAvailable) {
             const missingResources = settlementResources.filter(
                 (resource) => player.resources[resource] < 1
             );
-            // Exactly one resource is missing:
-            // the discount is forced, so resolve it automatically.
+            // One resource is missing, so the discount is automatic.
             if (missingResources.length === 1) {
                 const nextGame = buildSettlement(
                     game,
@@ -311,22 +308,18 @@ function App() {
                 setGame(nextGame);
                 return;
             }
-            // All four resources are available:
-            // the player legitimately gets to choose the discount.
+            // All resources are available, so let the player choose.
             if (missingResources.length === 0) {
                 setBuilderSettlementNodeId(nodeId);
                 setBuilderSettlementResource(undefined);
                 setSecondaryMenu("builderSettlement");
                 return;
             }
-            // Two or more resources are missing:
-            // Builder's one-resource discount cannot make it affordable.
+            // Two or more resources are missing, so the settlement
+            // cannot be built with the one-resource discount.
             return;
         }
-        /*
-         * Normal players and Builders whose passive has
-         * already been used follow the normal engine path.
-         */
+        // Use the normal settlement cost.
         const nextGame = buildSettlement(
             game,
             game.currentPlayerId,
@@ -337,6 +330,89 @@ function App() {
         }
         setGame(nextGame);
     }
+    function handleBuildCity(nodeId: string) {
+        // The target must be valid before opening the guild flow.
+        if (
+            !canOpenGuildDiscountMenu(
+                game,
+                "city",
+                nodeId
+            )
+        ) {
+            return;
+        }
+        // Get the current player.
+        const player = getCurrentPlayer();
+        if (!player) {
+            return;
+        }
+        // Check whether the Builder discount is still available.
+        const isBuilder =
+            player.guild === "builder";
+        const builderPassiveAvailable =
+            isBuilder &&
+            !player.guildPassiveUsedThisTurn;
+        // Check which discounted city costs the Builder can afford.
+        if (builderPassiveAvailable) {
+            const hasOreDiscountOnly =
+                player.resources.ore >= 2 &&
+                player.resources.ore < 3 &&
+                player.resources.wheat >= 2;
+            const hasWheatDiscountOnly =
+                player.resources.ore >= 3 &&
+                player.resources.wheat >= 1 &&
+                player.resources.wheat < 2;
+            const hasFullCityCost =
+                player.resources.ore >= 3 &&
+                player.resources.wheat >= 2;
+            // Missing one ore, so the ore discount is automatic.
+            if (hasOreDiscountOnly) {
+                const nextGame = buildCity(
+                    game,
+                    game.currentPlayerId,
+                    nodeId,
+                    "ore"
+                );
+                if (nextGame === game) {
+                    return;
+                }
+                setGame(nextGame);
+                return;
+            }
+            // Missing one wheat, so the wheat discount is automatic.
+            if (hasWheatDiscountOnly) {
+                const nextGame = buildCity(
+                    game,
+                    game.currentPlayerId,
+                    nodeId,
+                    "wheat"
+                );
+                if (nextGame === game) {
+                    return;
+                }
+                setGame(nextGame);
+                return;
+            }
+            // All resources are available, so let the player choose.
+            if (hasFullCityCost) {
+                setBuilderCityNodeId(nodeId);
+                setBuilderCityResource(undefined);
+                setSecondaryMenu("builderCity");
+                return;
+            }
+        }
+        // Use the normal city cost.
+        const nextGame = buildCity(
+            game,
+            game.currentPlayerId,
+            nodeId
+        );
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
+    }
+    // BUILDER DISCOUNT
     function handleBuilderSettlement(
         discountedResource: keyof Resources
     ) {
@@ -356,97 +432,6 @@ function App() {
         setBuilderSettlementNodeId(undefined);
         setBuilderSettlementResource(undefined);
         setSecondaryMenu(undefined);
-    }
-    function handleBuildCity(nodeId: string) {
-        if (
-            !canOpenGuildDiscountMenu(
-                game,
-                "city",
-                nodeId
-            )
-        ) {
-            return;
-        }
-        const player = getCurrentPlayer();
-        if (!player) {
-            return;
-        }
-        const isBuilder =
-            player.guild === "builder";
-        const builderPassiveAvailable =
-            isBuilder &&
-            !player.guildPassiveUsedThisTurn;
-        /*
-         * Builder with an unused passive:
-         *
-         * 2 ore + 2 wheat:
-         *   Automatically discount ore.
-         *
-         * 3 ore + 1 wheat:
-         *   Automatically discount wheat.
-         *
-         * 3 ore + 2 wheat:
-         *   All five required resources are available,
-         *   so the player chooses which resource to keep.
-         */
-        if (builderPassiveAvailable) {
-            const hasOreDiscountOnly =
-                player.resources.ore >= 2 &&
-                player.resources.ore < 3 &&
-                player.resources.wheat >= 2;
-            const hasWheatDiscountOnly =
-                player.resources.ore >= 3 &&
-                player.resources.wheat >= 1 &&
-                player.resources.wheat < 2;
-            const hasFullCityCost =
-                player.resources.ore >= 3 &&
-                player.resources.wheat >= 2;
-            if (hasOreDiscountOnly) {
-                const nextGame = buildCity(
-                    game,
-                    game.currentPlayerId,
-                    nodeId,
-                    "ore"
-                );
-                if (nextGame === game) {
-                    return;
-                }
-                setGame(nextGame);
-                return;
-            }
-            if (hasWheatDiscountOnly) {
-                const nextGame = buildCity(
-                    game,
-                    game.currentPlayerId,
-                    nodeId,
-                    "wheat"
-                );
-                if (nextGame === game) {
-                    return;
-                }
-                setGame(nextGame);
-                return;
-            }
-            if (hasFullCityCost) {
-                setBuilderCityNodeId(nodeId);
-                setBuilderCityResource(undefined);
-                setSecondaryMenu("builderCity");
-                return;
-            }
-        }
-        /*
-         * Normal players and Builders whose passive has
-         * already been used follow the normal engine path.
-         */
-        const nextGame = buildCity(
-            game,
-            game.currentPlayerId,
-            nodeId
-        );
-        if (nextGame === game) {
-            return;
-        }
-        setGame(nextGame);
     }
     function handleBuilderCity(
         discountedResource: "ore" | "wheat"
@@ -870,6 +855,12 @@ function App() {
         };
         setGame(nextGame);
     }
+    function closeAllMenus() {
+        setSecondaryMenu(undefined);
+        handleCloseTrade();
+        handleCloseYearOfPlenty();
+        handleCloseMonopoly();
+    }
     function handleEndTurn() {
         /*
          * Don't allow a manual End Turn to interrupt
@@ -891,10 +882,10 @@ function App() {
             roadBuildingCardId: undefined,
             roadBuildingRoadsPlaced: 0,
         };
-        // Close all secondary menus immediately.
-        setSecondaryMenu(undefined);
-        setSelectedGiveResource(undefined);
-        setYearOfPlentySelection(undefined);
+        // Close all secondary menus & super menu
+        closeAllMenus();
+        superOrchestrator.resetSelections();
+        handleCancelSuper();
         // Begin or complete the turn-ending process.
         const nextGame = endTurn(gameBeforeEndTurn);
         if (nextGame === gameBeforeEndTurn) {
@@ -1004,6 +995,7 @@ function App() {
         if (!currentPlayer.superUnlocked) {
             return;
         }
+        closeAllMenus();
         setSuperPending(currentPlayer.guild);
         setShowSuperMenu(true);
     }
@@ -1028,8 +1020,8 @@ function App() {
         if (!restoredGame) {
             return;
         }
-        // Close any open secondary/super menus.
-        handleCloseTrade();
+        // Close any open secondary menus & super menu
+        closeAllMenus();
         superOrchestrator.resetSelections();
         handleCancelSuper();
         /*
