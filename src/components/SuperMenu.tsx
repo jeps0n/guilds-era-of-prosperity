@@ -54,6 +54,17 @@ function SuperMenu({
             : grandExpeditionRoadsToPlace === 1
                 ? "Place " + grandExpeditionRoadsToPlace + " free road."
                 : "Place " + grandExpeditionRoadsToPlace + " free roads.";
+    const grandExpeditionRoadCards =
+        grandExpeditionRoadsToPlace
+            ? Array.from(
+                { length: grandExpeditionRoadsToPlace },
+                (_, index) => ({
+                    id: `grand-expedition-road-${index}`,
+                    type: "road",
+                    active: true,
+                })
+            )
+            : [];
     const isBuilder =
         currentPlayer?.guild === "builder";
     const masterBuilderWhatToBuild =
@@ -279,6 +290,7 @@ function SuperMenu({
                                                     ? "bold"
                                                     : "normal",
                                                 fontSize: "11px",
+                                                letterSpacing: "1px",
                                                 textTransform:
                                                     "none",
                                             }}
@@ -292,19 +304,57 @@ function SuperMenu({
                     )}
                     {/* EXPLORER *SUB-MENU */}
                     {isExplorer && (
-                        <div
-                            style={{
-                                marginTop: "12px",
-                                fontSize: "12px",
-                                letterSpacing: "1px",
-                                color: selectionHeaderTextColor,
-                                padding: "4px 10px",
-                                borderRadius: "69px",
-                                backgroundColor: selectionHeaderBackgroundColor,
-                            }}
-                        >
-                            {explorerSelectionHeader}
-                        </div>
+                        <>
+                            {/* HEADER */}
+                            <div
+                                style={{
+                                    marginTop: "12px",
+                                    fontSize: "12px",
+                                    letterSpacing: "1px",
+                                    color: selectionHeaderTextColor,
+                                    padding: "4px 10px",
+                                    borderRadius: "69px",
+                                    backgroundColor:
+                                        selectionHeaderBackgroundColor,
+                                }}
+                            >
+                                {explorerSelectionHeader}
+                            </div>
+                            {/* GRAND EXPEDITION ROAD CARDS */}
+                            <div
+                                style={{
+                                    marginTop: "12px",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    gap: "8px",
+                                }}
+                            >
+                                {grandExpeditionRoadCards.map((card) => (
+                                    <button
+                                        key={card.id}
+                                        type="button"
+                                        disabled={true}
+                                        style={{
+                                            width: "105px",
+                                            height: "70px",
+                                            padding: "6px",
+                                            borderRadius: "10px",
+                                            border: "2px solid #FFF0B0",
+                                            background:
+                                                "linear-gradient(180deg, #D4AF55, #9F7B2F)",
+                                            color: "#FFF8DF",
+                                            cursor: "not-allowed",
+                                            fontWeight: "bold",
+                                            fontSize: "11px",
+                                            letterSpacing: "1px",
+                                            textTransform: "none",
+                                        }}
+                                    >
+                                        road
+                                    </button>
+                                ))}
+                            </div>
+                        </>
                     )}
                     {/* BUILDER SUB-MENU */}
                     {isBuilder && (
@@ -414,6 +464,7 @@ function SuperMenu({
                                                     ? "bold"
                                                     : "normal",
                                                 fontSize: "11px",
+                                                letterSpacing: "1px",
                                                 textTransform: "none",
                                                 opacity: option.available
                                                     ? 1
