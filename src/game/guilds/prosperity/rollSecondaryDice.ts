@@ -78,7 +78,7 @@ export function rollSecondaryDice(
     const event = {
         id: `secondary-dice-${Date.now()}`,
         type: "SECONDARY_DICE_ROLLED" as const,
-        message: `${currentPlayer.name} rolled ${roll} on the Prosperity dice.`,
+        message: `${currentPlayer.name} rolled ${roll} on the Prosperity Dice.`,
         timestamp: Date.now(),
     };
     /*

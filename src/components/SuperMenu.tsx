@@ -51,7 +51,9 @@ function SuperMenu({
     const explorerSelectionHeader =
         grandExpeditionRoadsToPlace === 0
             ? "No roads can be placed."
-            : "Place " + grandExpeditionRoadsToPlace + " free roads.";
+            : grandExpeditionRoadsToPlace === 1
+                ? "Place " + grandExpeditionRoadsToPlace + " free road."
+                : "Place " + grandExpeditionRoadsToPlace + " free roads.";
     const isBuilder =
         currentPlayer?.guild === "builder";
     const masterBuilderWhatToBuild =

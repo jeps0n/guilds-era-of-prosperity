@@ -94,16 +94,19 @@ export function resolveMarketInsight(
             };
         }
     );
+    const superUsedEvent = [
+        createEvent(
+            "SUPER_ACTIVATED",
+            `${player.name} used guild super ability: MARKET INSIGHT.`
+        )
+    ];
     return {
         ...game,
         players: updatedPlayers,
         developmentDeck: updatedDevelopmentDeck,
         eventLog: [
             ...game.eventLog,
-            createEvent(
-                "SUPER_ACTIVATED",
-                `${player.name} used Market Insight and received ${selectedCards.length} development card${selectedCards.length === 1 ? "" : "s"}.`
-            ),
+            ...superUsedEvent,
         ],
     };
 }

@@ -420,6 +420,20 @@ export class SuperOrchestrator {
                         >
                     >
                 );
+            const superUsedEvent = [
+                ...Array.from(
+                    { length: this.selectedMarketInsightCards.size },
+                    () =>
+                        createEvent(
+                            "DEVELOPMENT_CARD_GAINED",
+                            `${player.name} received a development card using Market Insight.`
+                        )
+                ),
+            ];
+            const currentGuild = GUILDS.find(
+                (guildData) =>
+                    guildData.type === player.guild
+            );
             const resourceSummary =
                 (
                     Object.entries(
@@ -439,9 +453,12 @@ export class SuperOrchestrator {
                 eventLog: [
                     ...resourceGame.eventLog,
                     createEvent(
-                        "SUPER_ACTIVATED",
-                        `${player.name} received ${resourceSummary} from Guild Super.`
+                        "RESOURCES_COLLECTED",
+                        `${player.name} received ${resourceSummary} from ${currentGuild?.superName ?? " Guild Super"}.`
                     ),
+                    ...(player.guild === "merchant"
+                        ? superUsedEvent
+                        : []),
                 ],
             };
         }

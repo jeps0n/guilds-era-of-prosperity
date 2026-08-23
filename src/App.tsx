@@ -194,7 +194,8 @@ function App() {
             return;
         }
         // Grand Expedition uses free roads and skips normal guild logic.
-        if (game.grandExpeditionPending) {
+        if (game.grandExpeditionPending || game.roadBuildingPending) {
+            console.log("GE: ",game.grandExpeditionPending, " RB: ",game.roadBuildingPending)
             // Let the engine handle the free road placement.
             const nextGame = buildRoad(
                 game,
@@ -452,6 +453,33 @@ function App() {
         setBuilderCityNodeId(undefined);
         setBuilderCityResource(undefined);
         setSecondaryMenu(undefined);
+    }
+    // BUILDER SUPER
+    function handleMasterBuilderClickNode(nodeId: string) {
+        if (!game.masterBuilderPending) {
+            return;
+        }
+        const selection = game.masterBuilderSelection;
+        if (!selection) {
+            return;
+        }
+        console.log("handleMasterBuilderBuilderClickNode: ", selection);
+        const nextGame =
+            selection === "city"
+                ? buildCity(
+                    game,
+                    game.currentPlayerId,
+                    nodeId
+                )
+                : buildSettlement(
+                    game,
+                    game.currentPlayerId,
+                    nodeId
+                );
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
     }
     function getDevelopmentCardName(
         type: DevelopmentCardType
@@ -2041,6 +2069,9 @@ function App() {
                             playerColor={currentPlayerColor}
                             roadBuildingPending={
                                 game.roadBuildingPending ||
+                                game.grandExpeditionPending
+                            }
+                            grandExpeditionPending={
                                 game.grandExpeditionPending
                             }
                         />

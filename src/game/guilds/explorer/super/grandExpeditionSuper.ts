@@ -1,5 +1,6 @@
 import type { GameState } from "../../../engine/GameState";
 import { getMaxLegalRoadPlacements } from "../../../systems/building/buildRoad";
+import { createEvent } from "../../../engine/createEvent";
 const MAX_GRAND_EXPEDITION_ROADS = 3;
 export interface GrandExpeditionModel {
     roadsToPlace: number;
@@ -51,6 +52,12 @@ export function resolveGrandExpedition(
      * Therefore this resolver only establishes the
      * pending road-placement state.
      */
+    const superUsedEvent = [
+        createEvent(
+            "SUPER_ACTIVATED",
+            `${player.name} used guild super ability: GRAND EXPEDITION.`
+        ),
+    ];
     return {
         ...game,
         grandExpeditionPending:
@@ -58,5 +65,9 @@ export function resolveGrandExpedition(
         grandExpeditionRoadsPlaced: 0,
         grandExpeditionRoadsToPlace:
             roadsToPlace,
+        eventLog: [
+            ...game.eventLog,
+            ...superUsedEvent,
+        ],
     };
 }

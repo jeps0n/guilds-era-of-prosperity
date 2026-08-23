@@ -1,6 +1,7 @@
 interface RobberActionBarProps {
     playerColor?: string;
     roadBuildingPending?: boolean;
+    grandExpeditionPending?: boolean;
 }
 function hexToRgba(
     hex: string,
@@ -18,11 +19,22 @@ function hexToRgba(
 export default function RobberActionBar({
     playerColor = "#f97316",
     roadBuildingPending = false,
+    grandExpeditionPending = false,
 }: RobberActionBarProps) {
     const actionBarBackground = hexToRgba(
         playerColor,
         0.50
     );
+    const headerText = roadBuildingPending
+        ? grandExpeditionPending
+            ? "GRAND EXPEDITION"
+            : "ROAD BUILDING"
+        : "MOVE THE ROBBER";
+    const bodyText = roadBuildingPending
+        ? grandExpeditionPending
+            ? "Place your super roads"
+            : "Place your free roads"
+        : "Click a different tile to move the robber";
     return (
         <div
             style={{
@@ -71,9 +83,7 @@ export default function RobberActionBar({
                             fontWeight: "bold",
                         }}
                     >
-                        {roadBuildingPending
-                            ? "ROAD BUILDING"
-                            : "MOVE THE ROBBER"}
+                        {headerText}
                     </span>
                     <span
                         style={{
@@ -81,9 +91,7 @@ export default function RobberActionBar({
                             whiteSpace: "nowrap",
                         }}
                     >
-                        {roadBuildingPending
-                            ? "Place your free roads "
-                            : "Click a different tile to move the robber"}
+                        {bodyText}
                     </span>
                 </div>
             </div>

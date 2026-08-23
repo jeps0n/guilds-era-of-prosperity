@@ -40,8 +40,8 @@ export default function BoardEdgeView({
                         nodeB.x,
                         nodeB.y
                     )}
-                    fill="#CD7F32"
-                    stroke="#CD7F32"
+                    fill="#A28744"
+                    stroke="#A28744"
                     strokeWidth="10"
                     strokeLinecap="round"
                     pointerEvents="none"

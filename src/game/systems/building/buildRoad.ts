@@ -170,8 +170,10 @@ export function buildRoad(
     // Record the road placement in the event log.
     const roadPlacedEvent = createEvent(
         "ROAD_PLACED",
-        isRoadBuilding
-            ? `${player.name} placed a road using Road Building.`
+        isFreeRoadPlacement
+            ? isRoadBuilding
+                ? `${player.name} built a road using Road Building.`
+                : `${player.name} built a road using Grand Expedition.`
             : `${player.name} built a road.`
     );
     // Build the new game state with the updated player, bank, and log.
