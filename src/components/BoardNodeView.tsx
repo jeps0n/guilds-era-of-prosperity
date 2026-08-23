@@ -27,12 +27,12 @@ export default function BoardNodeView({
         <>
           <polygon
             points={`
-              ${node.x},${node.y - 27}
-              ${node.x + 24},${node.y - 9}
-              ${node.x + 16.5},${node.y + 24}
-              ${node.x - 16.5},${node.y + 24}
-              ${node.x - 24},${node.y - 9}
-                    `}
+              ${node.x},${node.y - 24}
+              ${node.x + 21},${node.y - 8}
+              ${node.x + 15},${node.y + 21}
+              ${node.x - 15},${node.y + 21}
+              ${node.x - 21},${node.y - 8}
+            `}
             fill={
               hovered
                 ? "#ef4444"
@@ -111,7 +111,6 @@ export default function BoardNodeView({
             hovered
               ? "#ef4444"
               : isPortNode
-              // #CD7F32
                 ? "#CD7F32"
                 : "#78350f"
           }
