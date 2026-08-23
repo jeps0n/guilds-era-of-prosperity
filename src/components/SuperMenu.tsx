@@ -54,7 +54,7 @@ function SuperMenu({
             : "Place " + grandExpeditionRoadsToPlace + " free roads.";
     const isBuilder =
         currentPlayer?.guild === "builder";
-    const masterBuilderVariable =
+    const masterBuilderWhatToBuild =
         superOrchestrator.getMasterBuilder(game);
     const builderSelectionHeader =
         "Choose your building: ";
@@ -337,13 +337,13 @@ function SuperMenu({
                                             id: "settlement",
                                             label: "SETTLEMENT",
                                             available:
-                                                masterBuilderVariable.canBuildSettlement,
+                                                masterBuilderWhatToBuild.canBuildSettlement,
                                         },
                                         {
                                             id: "city",
                                             label: "CITY",
                                             available:
-                                                masterBuilderVariable.canBuildCity,
+                                                masterBuilderWhatToBuild.canBuildCity,
                                         },
                                     ] as const
                                 ).map((option) => {

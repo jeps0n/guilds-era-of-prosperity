@@ -187,6 +187,29 @@ function App() {
         }
     }
     function handleBuildRoad(edgeId: string) {
+        // Get the current player before checking player-specific rules.
+        const player = getCurrentPlayer();
+        // Stop if there is no current player.
+        if (!player) {
+            return;
+        }
+        // Grand Expedition uses free roads and skips normal guild logic.
+        if (game.grandExpeditionPending) {
+            // Let the engine handle the free road placement.
+            const nextGame = buildRoad(
+                game,
+                game.currentPlayerId,
+                edgeId
+            );
+            // Stop if the engine rejected the placement.
+            if (nextGame === game) {
+                return;
+            }
+            // Save the successful road placement.
+            setGame(nextGame);
+            return;
+        }
+        // Normal roads must first pass the guild target check.
         if (
             !canOpenGuildDiscountMenu(
                 game,
@@ -196,50 +219,43 @@ function App() {
         ) {
             return;
         }
-        const player = getCurrentPlayer();
-        if (!player) {
-            return;
-        }
+        // Check whether this player is an Explorer
+        // who still has their passive available this turn.
         const isExplorer =
             player.guild === "explorer";
         const explorerPassiveAvailable =
             isExplorer &&
             !player.guildPassiveUsedThisTurn;
+        // Check whether the player has both resources needed for a normal road.
         const hasBrick =
             player.resources.brick >= 1;
         const hasLumber =
             player.resources.lumber >= 1;
-        /*
-         * Explorer with an unused passive and both
-         * road resources must choose which resource
-         * to keep before the road is resolved.
-         */
+        // An available Explorer with both resources must choose
+        // which resource to keep before building the discounted road.
         if (
             explorerPassiveAvailable &&
             hasBrick &&
             hasLumber
         ) {
+            // Save the selected edge and open the Explorer resource choice.
             setExplorerRoadEdgeId(edgeId);
             setExplorerKeepResource(undefined);
             setSecondaryMenu("explorerRoad");
             return;
         }
-        /*
-         * Every other case follows the normal buildRoad
-         * resolution path.
-         *
-         * Explorer with only one resource will have
-         * the effective cost resolved by the engine.
-         * Non-Explorer and used-passive Explorer pay normal price.
-         */
+        // Let the engine resolve the normal road placement.
+        // This handles both the Explorer discount and normal road cost.
         const nextGame = buildRoad(
             game,
             game.currentPlayerId,
             edgeId
         );
+        // Stop if the engine rejected the placement.
         if (nextGame === game) {
             return;
         }
+        // Save the successful road placement.
         setGame(nextGame);
     }
     function handleBuildSettlement(
@@ -1015,7 +1031,7 @@ function App() {
         // Close any open secondary/super menus.
         handleCloseTrade();
         superOrchestrator.resetSelections();
-        setShowSuperMenu(false);
+        handleCancelSuper();
         /*
          * Clear any Prosperity animation/announcement UI
          * that may have been active when Turn Back was clicked.
@@ -1342,6 +1358,7 @@ function App() {
                                 : game.phase === "playing" && !game.robberPending &&
                                     (
                                         game.roadBuildingPending ||
+                                        game.grandExpeditionPending ||
                                         actionAvailability.canRoad
                                     )
                                     ? handleBuildRoad
@@ -2025,10 +2042,15 @@ function App() {
             }
             bottom={
                 <>
-                    {game.robberPending || game.roadBuildingPending ? (
+                    {game.robberPending ||
+                        game.roadBuildingPending ||
+                        game.grandExpeditionPending ? (
                         <RobberActionBar
                             playerColor={currentPlayerColor}
-                            roadBuildingPending={game.roadBuildingPending}
+                            roadBuildingPending={
+                                game.roadBuildingPending ||
+                                game.grandExpeditionPending
+                            }
                         />
                     ) : (
                         renderActionBar({

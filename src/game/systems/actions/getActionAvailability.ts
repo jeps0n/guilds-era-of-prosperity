@@ -1,9 +1,11 @@
 import type { GameState } from "../../engine/GameState";
 import { hasPlayableKnight } from "../developmentCards/hasPlayableKnight";
 export interface ActionAvailability {
+    // Actions the current player can currently take.
     canRollDice: boolean;
     canTrade: boolean;
     canRoad: boolean;
+    grandExpeditionCanRoad: boolean;
     canSettlement: boolean;
     canCity: boolean;
     canBuyDevelopmentCard: boolean;
@@ -14,15 +16,18 @@ export interface ActionAvailability {
 export function getActionAvailability(
     game: GameState
 ): ActionAvailability {
+    // Find the player whose turn it is.
     const currentPlayer = game.players.find(
         (player) =>
             player.id === game.currentPlayerId
     );
+    // No current player means no actions are available.
     if (!currentPlayer) {
         return {
             canRollDice: false,
             canTrade: false,
             canRoad: false,
+            grandExpeditionCanRoad: false,
             canSettlement: false,
             canCity: false,
             canBuyDevelopmentCard: false,
@@ -31,31 +36,16 @@ export function getActionAvailability(
             canEndTurn: false,
         };
     }
+    // Resources are checked throughout the availability rules.
     const resources = currentPlayer.resources;
-    /*
-     * Explorer passive availability:
-     *
-     * Explorer receives one discounted road per turn.
-     * The passive is available until it is consumed.
-     */
+    // Explorer can use one discounted road per turn.
     const isExplorer =
         currentPlayer.guild === "explorer";
     const explorerPassiveAvailable =
         isExplorer &&
         !currentPlayer.guildPassiveUsedThisTurn;
-    /*
-     * Explorer with an unused passive:
-     *
-     * Requires at least one of the two normal road
-     * resources (brick or lumber).
-     *
-     * If the Explorer has only one resource, the road
-     * can be built automatically using that resource.
-     *
-     * If the Explorer has both resources, the UI will
-     * open the Explorer discount menu and let the player
-     * choose which resource to keep.
-     */
+    // Count how many road resources the player has.
+    // Explorer needs at least one when the passive is available.
     const roadResourcesAvailable =
         ["brick", "lumber"].filter(
             (resource) =>
@@ -63,49 +53,34 @@ export function getActionAvailability(
                 resource as "brick" | "lumber"
                 ] >= 1
         ).length;
+    // Grand Expedition allows a free road(s) before & after the normal roll.
+    const grandExpeditionCanRoad =
+        game.grandExpeditionPending;
+    // Determine whether the player can build a road.
     const canRoad =
+        grandExpeditionCanRoad ||
         (
-            explorerPassiveAvailable &&
-            roadResourcesAvailable >= 1
-        ) ||
-        (
-            /*
-             * Normal player, or Explorer whose passive
-             * has already been used:
-             *
-             * Requires the normal road cost of
-             * 1 brick + 1 lumber.
-             */
-            !explorerPassiveAvailable &&
-            resources.brick >= 1 &&
-            resources.lumber >= 1
+            (
+                // Explorer can use the discounted road if
+                // at least one road resource is available.
+                explorerPassiveAvailable &&
+                roadResourcesAvailable >= 1
+            ) ||
+            (
+                // Everyone else needs the normal road cost.
+                !explorerPassiveAvailable &&
+                resources.brick >= 1 &&
+                resources.lumber >= 1
+            )
         );
-    /*
-     * Builder passive availability:
-     *
-     * Builder receives one discounted settlement OR
-     * city per turn.
-     *
-     * The passive is available until the first
-     * discounted construction is successfully completed.
-     */
+    // Builder can use one discounted settlement or city per turn.
     const isBuilder =
         currentPlayer.guild === "builder";
     const builderPassiveAvailable =
         isBuilder &&
         !currentPlayer.guildPassiveUsedThisTurn;
-    /*
-     * Builder settlement:
-     *
-     * Normal settlement cost:
-     * 1 brick + 1 lumber + 1 wheat + 1 sheep.
-     *
-     * Builder may omit one required resource when the
-     * passive is available.
-     *
-     * Therefore at least 3 of the 4 required resources
-     * must be available.
-     */
+    // Count how many settlement resources are available.
+    // Builder needs at least three when using the passive.
     const settlementResourcesAvailable =
         (
             [
@@ -118,160 +93,145 @@ export function getActionAvailability(
             (resource) =>
                 resources[resource] >= 1
         ).length;
+    // Determine whether the player can build a settlement.
     const canSettlement =
         (
+            // Builder can omit one settlement resource.
             builderPassiveAvailable &&
             settlementResourcesAvailable >= 3
         ) ||
         (
-            /*
-             * Normal player, or Builder whose passive
-             * has already been used:
-             *
-             * Requires the complete settlement cost.
-             */
+            // Everyone else needs the full settlement cost.
             !builderPassiveAvailable &&
             resources.brick >= 1 &&
             resources.lumber >= 1 &&
             resources.wheat >= 1 &&
             resources.sheep >= 1
         );
-    /*
-     * Builder city:
-     *
-     * Normal city cost:
-     * 3 ore + 2 wheat.
-     *
-     * With the Builder passive, one required resource
-     * may be omitted:
-     *
-     *   2 ore + 2 wheat
-     * OR
-     *   3 ore + 1 wheat
-     */
+    // Builder can omit one resource from the normal city cost.
     const builderCanAffordDiscountedCity =
         (
+            // Omit one ore.
             resources.ore >= 2 &&
             resources.wheat >= 2
         ) ||
         (
+            // Omit one wheat.
             resources.ore >= 3 &&
             resources.wheat >= 1
         );
+    // Determine whether the player can build a city.
     const canCity =
         (
+            // Builder can use the discounted city cost.
             builderPassiveAvailable &&
             builderCanAffordDiscountedCity
         ) ||
         (
-            /*
-             * Normal player, or Builder whose passive
-             * has already been used:
-             *
-             * Requires the complete city cost.
-             */
+            // Everyone else needs the full city cost.
             !builderPassiveAvailable &&
             resources.ore >= 3 &&
             resources.wheat >= 2
         );
-    /*
-     * Merchant passive availability:
-     *
-     * Merchant receives one discounted development card
-     * purchase per turn.
-     */
+    // Merchant can use one discounted development-card
+    // purchase per turn.
     const isMerchant =
         currentPlayer.guild === "merchant";
     const merchantPassiveAvailable =
         isMerchant &&
         !currentPlayer.guildPassiveUsedThisTurn;
+    // Resources normally required to buy a development card.
     const requiredDevelopmentResources = [
         "ore",
         "wheat",
         "sheep",
     ] as const;
+    // Count how many development-card resources are available.
     const developmentResourcesAvailable =
         requiredDevelopmentResources.filter(
             (resource) =>
                 resources[resource] >= 1
         ).length;
+    // Determine whether the player can buy a development card.
     const canBuyDevelopmentCard =
         game.developmentDeck.length > 0 &&
         (
-            /*
-             * Normal player, or Merchant whose passive
-             * has already been used:
-             *
-             * Requires all three resources.
-             */
             (
+                // Normal purchase requires all three resources.
                 !merchantPassiveAvailable &&
                 requiredDevelopmentResources.every(
                     (resource) =>
                         resources[resource] >= 1
                 )
             ) ||
-            /*
-             * Merchant with an unused passive:
-             *
-             * Requires at least two of the three
-             * development-card resources.
-             *
-             * If all three are available, the UI opens
-             * the Merchant discount menu so the player
-             * can choose which resource to keep.
-             */
             (
+                // Merchant can buy with any two resources
+                // while the passive is still available.
                 merchantPassiveAvailable &&
                 developmentResourcesAvailable >= 2
             )
         );
+    // The player has rolled if a dice result exists.
     const hasRolled =
         game.lastDiceRoll !== undefined;
+    // Trading is available after the dice have been rolled.
     const canTrade =
         game.phase === "playing" &&
         hasRolled;
+    // Check whether the player owns any development cards.
     const hasDevelopmentCard =
         currentPlayer.developmentCards.length > 0;
+    // Development cards normally require a dice roll first.
     const canPlayDevelopmentCard =
         game.phase === "playing" &&
         hasRolled &&
         hasDevelopmentCard;
-    /*
-     * A Knight is special because it can be played
-     * before the player rolls the dice.
-     */
+    // Knights are the exception: they can be played before rolling.
     const playerHasPlayableKnight =
         game.phase === "playing" &&
         hasPlayableKnight(
             game,
             currentPlayer.id
         );
+    // Return the final action availability for the current player.
     return {
+        // Dice can be rolled once per turn, unless the robber is pending.
         canRollDice:
             game.phase === "playing" &&
             !hasRolled &&
             !game.robberPending,
-        canTrade,
+        // Trading requires a completed dice roll.
+        canTrade:
+            canTrade,
+        // Normal roads require a roll.
+        // Grand Expedition roads are the exception.
         canRoad:
             game.phase === "playing" &&
-            hasRolled &&
+            (hasRolled || grandExpeditionCanRoad) &&
             canRoad,
+        // Used separately by the UI for Grand Expedition road placement.
+        grandExpeditionCanRoad:
+            grandExpeditionCanRoad,
+        // Settlements require a dice roll.
         canSettlement:
             game.phase === "playing" &&
             hasRolled &&
             canSettlement,
+        // Cities require a dice roll.
         canCity:
             game.phase === "playing" &&
             hasRolled &&
             canCity,
+        // Development-card purchases require a dice roll.
         canBuyDevelopmentCard:
             game.phase === "playing" &&
             hasRolled &&
             canBuyDevelopmentCard,
-        canPlayDevelopmentCard,
+        canPlayDevelopmentCard:
+            canPlayDevelopmentCard,
         hasPlayableKnight:
             playerHasPlayableKnight,
+        // The turn can end after the dice have been rolled.
         canEndTurn:
             game.phase === "playing" &&
             hasRolled,
