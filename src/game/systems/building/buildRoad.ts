@@ -32,8 +32,11 @@ export function buildRoad(
     ) {
         return game;
     }
-    // No road can be built while the robber is waiting for a resolution.
-    if (game.robberPending) {
+    // No road can be built while the robber of Master Builder is waiting for a resolution.
+    if (
+        game.robberPending ||
+        game.masterBuilderPending
+    ) {
         return game;
     }
     // Find the player attempting to build the road.

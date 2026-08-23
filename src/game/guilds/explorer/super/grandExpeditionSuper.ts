@@ -52,12 +52,6 @@ export function resolveGrandExpedition(
      * Therefore this resolver only establishes the
      * pending road-placement state.
      */
-    const superUsedEvent = [
-        createEvent(
-            "SUPER_ACTIVATED",
-            `${player.name} used guild super ability: GRAND EXPEDITION.`
-        ),
-    ];
     return {
         ...game,
         grandExpeditionPending:
@@ -67,7 +61,10 @@ export function resolveGrandExpedition(
             roadsToPlace,
         eventLog: [
             ...game.eventLog,
-            ...superUsedEvent,
+            createEvent(
+                "SUPER_ACTIVATED",
+                `${player.name} used guild super ability: GRAND EXPEDITION.`
+            ),
         ],
     };
 }

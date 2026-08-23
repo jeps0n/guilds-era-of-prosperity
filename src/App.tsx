@@ -108,7 +108,7 @@ function App() {
     useEffect(() => {
         console.log("=================== / GAME / ===================");
         console.log(game);
-        console.log("===== " + currentPlayer?.id + " : " + currentPlayer?.name + " ===== [Turn: " + game.turnNumber + "] =====");
+        console.log("~~~~~ " + currentPlayer?.id + " : " + currentPlayer?.name + " ~~~~~ [Turn: " + game.turnNumber + "] ~~~~~");
         console.log(currentPlayer);
         console.log("----------------------------------------");
         function handleKeyDown(event: KeyboardEvent) {
@@ -195,7 +195,7 @@ function App() {
         }
         // Grand Expedition uses free roads and skips normal guild logic.
         if (game.grandExpeditionPending || game.roadBuildingPending) {
-            console.log("GE: ",game.grandExpeditionPending, " RB: ",game.roadBuildingPending)
+            console.log("GE: ", game.grandExpeditionPending, " RB: ", game.roadBuildingPending)
             // Let the engine handle the free road placement.
             const nextGame = buildRoad(
                 game,
@@ -262,6 +262,25 @@ function App() {
     function handleBuildSettlement(
         nodeId: string
     ) {
+        // Master Builder uses a free settlement and skips normal guild logic.
+        if (
+            game.masterBuilderPending &&
+            game.masterBuilderSelection === "settlement"
+        ) {
+            // Let the engine resolve the free Super placement.
+            const nextGame = buildSettlement(
+                game,
+                game.currentPlayerId,
+                nodeId
+            );
+            // Stop if the engine rejected the placement.
+            if (nextGame === game) {
+                return;
+            }
+            // Save the successful settlement placement.
+            setGame(nextGame);
+            return;
+        }
         // The target must be valid before opening the guild flow.
         if (
             !canOpenGuildDiscountMenu(
@@ -332,7 +351,32 @@ function App() {
         setGame(nextGame);
     }
     function handleBuildCity(nodeId: string) {
-        // The target must be valid before opening the guild flow.
+        // Get the current player before checking player-specific rules.
+        const player = getCurrentPlayer();
+        // Stop if there is no current player.
+        if (!player) {
+            return;
+        }
+        // Master Builder uses a free city and skips normal guild logic.
+        if (
+            game.masterBuilderPending &&
+            game.masterBuilderSelection === "city"
+        ) {
+            // Let the engine resolve the free Super placement.
+            const nextGame = buildCity(
+                game,
+                game.currentPlayerId,
+                nodeId
+            );
+            // Stop if the engine rejected the placement.
+            if (nextGame === game) {
+                return;
+            }
+            // Save the successful city placement.
+            setGame(nextGame);
+            return;
+        }
+        // Normal cities must first pass the guild target check.
         if (
             !canOpenGuildDiscountMenu(
                 game,
@@ -342,12 +386,7 @@ function App() {
         ) {
             return;
         }
-        // Get the current player.
-        const player = getCurrentPlayer();
-        if (!player) {
-            return;
-        }
-        // Check whether the Builder discount is still available.
+        // Check whether Builder still has its passive available.
         const isBuilder =
             player.guild === "builder";
         const builderPassiveAvailable =
@@ -394,7 +433,7 @@ function App() {
                 setGame(nextGame);
                 return;
             }
-            // All resources are available, so let the player choose.
+            // All resources are available, so let Builder choose.
             if (hasFullCityCost) {
                 setBuilderCityNodeId(nodeId);
                 setBuilderCityResource(undefined);
@@ -402,15 +441,17 @@ function App() {
                 return;
             }
         }
-        // Use the normal city cost.
+        // Let the engine resolve the normal city placement.
         const nextGame = buildCity(
             game,
             game.currentPlayerId,
             nodeId
         );
+        // Stop if the engine rejected the placement.
         if (nextGame === game) {
             return;
         }
+        // Save the successful city placement.
         setGame(nextGame);
     }
     // BUILDER DISCOUNT
@@ -453,33 +494,6 @@ function App() {
         setBuilderCityNodeId(undefined);
         setBuilderCityResource(undefined);
         setSecondaryMenu(undefined);
-    }
-    // BUILDER SUPER
-    function handleMasterBuilderClickNode(nodeId: string) {
-        if (!game.masterBuilderPending) {
-            return;
-        }
-        const selection = game.masterBuilderSelection;
-        if (!selection) {
-            return;
-        }
-        console.log("handleMasterBuilderBuilderClickNode: ", selection);
-        const nextGame =
-            selection === "city"
-                ? buildCity(
-                    game,
-                    game.currentPlayerId,
-                    nodeId
-                )
-                : buildSettlement(
-                    game,
-                    game.currentPlayerId,
-                    nodeId
-                );
-        if (nextGame === game) {
-            return;
-        }
-        setGame(nextGame);
     }
     function getDevelopmentCardName(
         type: DevelopmentCardType
@@ -719,6 +733,8 @@ function App() {
         setSelectedGiveResource(undefined);
     }
     function handleRollDice() {
+        closeAllMenus();
+        superOrchestrator.resetSelections();
         const nextGame = rollDice(game);
         if (nextGame === game) {
             return;
@@ -2064,7 +2080,8 @@ function App() {
                 <>
                     {game.robberPending ||
                         game.roadBuildingPending ||
-                        game.grandExpeditionPending ? (
+                        game.grandExpeditionPending ||
+                        game.masterBuilderPending ? (
                         <RobberActionBar
                             playerColor={currentPlayerColor}
                             roadBuildingPending={
@@ -2073,6 +2090,21 @@ function App() {
                             }
                             grandExpeditionPending={
                                 game.grandExpeditionPending
+                            }
+                            masterBuilderPending={
+                                game.masterBuilderPending
+                            }
+                            masterBuilderSelection={
+                                game.masterBuilderSelection
+                            }
+                            grandExpeditionRoadsToPlace={
+                                game.grandExpeditionRoadsToPlace
+                            }
+                            grandExpeditionRoadsPlaced={
+                                game.grandExpeditionRoadsPlaced
+                            }
+                            roadBuildingRoadsPlaced={
+                                game.roadBuildingRoadsPlaced
                             }
                         />
                     ) : (

@@ -110,7 +110,7 @@ export function rollSecondaryDice(
             ? {
                 id: `super-unlocked-${Date.now()}`,
                 type: "SUPER_UNLOCKED" as const,
-                message: `${currentPlayer.name} unlocked Guild Super Ability!`,
+                message: `${currentPlayer.name} unlocked Guild Super Ability.`,
                 timestamp: Date.now(),
             }
             : undefined;

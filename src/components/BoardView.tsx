@@ -399,6 +399,10 @@ function BoardView({
                 color: "#D8BD72",
                 marginBottom: "8px",
                 fontWeight: "bold",
+                background: "rgba(0, 0, 0, 0.12)",
+                borderRadius: "99px",
+                padding: "6px 12px",
+                display: "inline-block",
               }}
             >
               Era of Prosperity
@@ -422,7 +426,7 @@ function BoardView({
                 fontWeight: "bold",
               }}
             >
-              Roll All to Unlock Guild Super Ability!
+              Roll All to Unlock Guild Super Ability
             </div>
             {/* COLLECTED NUMBERS */}
             <div
@@ -591,6 +595,10 @@ function BoardView({
                 color: "#D8BD72",
                 marginBottom: "14px",
                 fontWeight: "bold",
+                background: "rgba(0, 0, 0, 0.12)",
+                borderRadius: "99px",
+                padding: "6px 12px",
+                display: "inline-block",
               }}
             >
               Era of Prosperity

@@ -2,6 +2,11 @@ interface RobberActionBarProps {
     playerColor?: string;
     roadBuildingPending?: boolean;
     grandExpeditionPending?: boolean;
+    masterBuilderPending?: boolean;
+    masterBuilderSelection?: "city" | "settlement";
+    grandExpeditionRoadsPlaced: number;
+    grandExpeditionRoadsToPlace: number;
+    roadBuildingRoadsPlaced: number;
 }
 function hexToRgba(
     hex: string,
@@ -20,21 +25,40 @@ export default function RobberActionBar({
     playerColor = "#f97316",
     roadBuildingPending = false,
     grandExpeditionPending = false,
+    masterBuilderPending = false,
+    masterBuilderSelection,
+    grandExpeditionRoadsToPlace = 0,
+    grandExpeditionRoadsPlaced = 0,
+    roadBuildingRoadsPlaced = 0,
 }: RobberActionBarProps) {
     const actionBarBackground = hexToRgba(
         playerColor,
         0.50
     );
-    const headerText = roadBuildingPending
-        ? grandExpeditionPending
-            ? "GRAND EXPEDITION"
-            : "ROAD BUILDING"
-        : "MOVE THE ROBBER";
-    const bodyText = roadBuildingPending
-        ? grandExpeditionPending
-            ? "Place your super roads"
-            : "Place your free roads"
-        : "Click a different tile to move the robber";
+    const headerText = masterBuilderPending
+        ? "MASTER BUILDER"
+        : roadBuildingPending
+            ? grandExpeditionPending
+                ? "GRAND EXPEDITION"
+                : "ROAD BUILDING"
+            : "MOVE THE ROBBER";
+    const bodyText = masterBuilderPending
+        ? masterBuilderSelection === "city"
+            ? "Build your free city."
+            : "Build your free settlement."
+        : roadBuildingPending || grandExpeditionPending
+            ? "Place your free roads."
+            : "Click a different tile to move the robber.";
+    // Show the remaining pieces for the active pending action.
+    const pendingPlacementLabel = masterBuilderPending
+        ? masterBuilderSelection === "city"
+            ? "City: 1"
+            : "Settlement: 1"
+        : grandExpeditionPending
+            ? `Road: ${grandExpeditionRoadsToPlace - grandExpeditionRoadsPlaced}`
+            : roadBuildingPending
+                ? `Road: ${2 - roadBuildingRoadsPlaced}`
+                : undefined;
     return (
         <div
             style={{
@@ -71,28 +95,51 @@ export default function RobberActionBar({
                         background: "#000000",
                         color: "white",
                         display: "flex",
-                        flexDirection: "column",
                         alignItems: "center",
-                        justifyContent: "center",
-                        gap: "4px",
+                        justifyContent: "space-between",
+                        gap: "16px",
                     }}
                 >
-                    <span
+                    <div
                         style={{
-                            fontSize: "20px",
-                            fontWeight: "bold",
+                            flex: 1,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "4px",
                         }}
                     >
-                        {headerText}
-                    </span>
-                    <span
-                        style={{
-                            fontSize: "14px",
-                            whiteSpace: "nowrap",
-                        }}
-                    >
-                        {bodyText}
-                    </span>
+                        <span
+                            style={{
+                                fontSize: "20px",
+                                fontWeight: "bold",
+                            }}
+                        >
+                            {headerText}
+                        </span>
+                        <span
+                            style={{
+                                fontSize: "14px",
+                                whiteSpace: "nowrap",
+                            }}
+                        >
+                            {bodyText}
+                        </span>
+                    </div>
+                    {pendingPlacementLabel && (
+                        <span
+                            style={{
+                                color: "rgba(255, 255, 255, 0.60)",
+                                fontSize: "13px",
+                                fontWeight: 600,
+                                whiteSpace: "nowrap",
+                                paddingRight: "6px",
+                            }}
+                        >
+                            {pendingPlacementLabel}
+                        </span>
+                    )}
                 </div>
             </div>
         </div>

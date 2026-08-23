@@ -18,80 +18,110 @@ export function buildSettlement(
     nodeId: string,
     discountedResource?: Resource
 ): GameState {
+    // Game must be active.
     if (game.phase !== "playing") {
         return game;
     }
+    // Only the current player can build.
     if (game.currentPlayerId !== playerId) {
         return game;
     }
-    if (game.robberPending) {
+    // Block other building during unrelated pending actions.
+    if (
+        game.robberPending ||
+        game.grandExpeditionPending ||
+        game.roadBuildingPending ||
+        (
+            game.masterBuilderPending &&
+            game.masterBuilderSelection === "city"
+        )
+    ) {
         return game;
     }
-    if (game.lastDiceRoll === undefined) {
+    // Master Builder settlement is allowed before the dice roll.
+    const isMasterBuilderSettlement =
+        game.masterBuilderPending &&
+        game.masterBuilderSelection === "settlement";
+    // Normal settlement building requires a dice roll.
+    if (
+        game.lastDiceRoll === undefined &&
+        !isMasterBuilderSettlement
+    ) {
         return game;
     }
+    // Find the player.
     const player = game.players.find(
         (candidate) => candidate.id === playerId
     );
     if (!player) {
         return game;
     }
+    // Enforce the five-settlement limit.
     if (player.settlements.length >= 5) {
         return game;
     }
+    // Check Builder passive availability.
     const isBuilder =
         player.guild === "builder";
     const builderPassiveAvailable =
         isBuilder &&
         !player.guildPassiveUsedThisTurn;
-    /*
-     * If Builder is attempting to use the passive,
-     * the discounted resource must be one of the
-     * four resources normally required by a settlement.
-     */
-    if (
-        builderPassiveAvailable &&
-        discountedResource !== undefined &&
-        !SETTLEMENT_RESOURCES.includes(
-            discountedResource
-        )
-    ) {
-        return game;
-    }
-    /*
-     * A Builder with an unused passive must explicitly
-     * provide the resource being discounted.
-     *
-     * Normal players, and Builders whose passive has
-     * already been used, use the normal settlement cost.
-     */
-    if (
-        builderPassiveAvailable &&
-        discountedResource === undefined
-    ) {
-        return game;
-    }
+    // Master Builder settlement is free.
     const settlementCost =
-        getEffectiveSettlementCost(
-            player,
-            discountedResource
-        );
-    /*
-     * Final affordability check against the effective
-     * cost. The engine remains authoritative regardless
-     * of what the UI says is affordable.
-     */
-    if (
-        player.resources.brick <
-        settlementCost.brick ||
-        player.resources.lumber <
-        settlementCost.lumber ||
-        player.resources.wheat <
-        settlementCost.wheat ||
-        player.resources.sheep <
-        settlementCost.sheep
-    ) {
-        return game;
+        isMasterBuilderSettlement
+            ? {
+                brick: 0,
+                lumber: 0,
+                wheat: 0,
+                sheep: 0,
+            }
+            : getEffectiveSettlementCost(
+                player,
+                discountedResource
+            );
+    // Builder discount validation only applies
+    // to a normal settlement build.
+    if (!isMasterBuilderSettlement) {
+        /*
+         * If Builder is attempting to use the passive,
+         * the discounted resource must be one of the
+         * four resources normally required by a settlement.
+         */
+        if (
+            builderPassiveAvailable &&
+            discountedResource !== undefined &&
+            !SETTLEMENT_RESOURCES.includes(
+                discountedResource
+            )
+        ) {
+            return game;
+        }
+        /*
+         * A Builder with an unused passive must explicitly
+         * provide the resource being discounted.
+         */
+        if (
+            builderPassiveAvailable &&
+            discountedResource === undefined
+        ) {
+            return game;
+        }
+        /*
+         * Final affordability check against the effective
+         * settlement cost.
+         */
+        if (
+            player.resources.brick <
+                settlementCost.brick ||
+            player.resources.lumber <
+                settlementCost.lumber ||
+            player.resources.wheat <
+                settlementCost.wheat ||
+            player.resources.sheep <
+                settlementCost.sheep
+        ) {
+            return game;
+        }
     }
     const node = game.board.nodes.find(
         (candidate) =>
@@ -115,8 +145,11 @@ export function buildSettlement(
     /*
      * The passive is consumed only after all validation
      * succeeds and the settlement is actually built.
+     *
+     * Master Builder does not consume the Builder passive.
      */
     const usesBuilderPassive =
+        !isMasterBuilderSettlement &&
         builderPassiveAvailable &&
         discountedResource !== undefined;
     const updatedPlayers =
@@ -144,8 +177,7 @@ export function buildSettlement(
                 settlements: [
                     ...candidate.settlements,
                     {
-                        id: `settlement-${candidate.settlements.length + 1
-                            }`,
+                        id: `settlement-${candidate.settlements.length + 1}`,
                         playerId,
                         nodeId,
                     },
@@ -185,15 +217,25 @@ export function buildSettlement(
             ...game.eventLog,
             createEvent(
                 "SETTLEMENT_BUILT",
-                `${player.name} built a settlement.`
+                isMasterBuilderSettlement
+                    ? `${player.name} built a settlement using Master Builder.`
+                    : `${player.name} built a settlement.`
             ),
         ],
     };
     const longestRoadUpdatedGame =
         updateLongestRoad(updatedGame);
-    return evaluateMilestones(
-        longestRoadUpdatedGame
-    );
+    return evaluateMilestones({
+        ...longestRoadUpdatedGame,
+        masterBuilderPending:
+            isMasterBuilderSettlement
+                ? false
+                : longestRoadUpdatedGame.masterBuilderPending,
+        masterBuilderSelection:
+            isMasterBuilderSettlement
+                ? undefined
+                : longestRoadUpdatedGame.masterBuilderSelection,
+    });
 }
 function connectsToPlayerRoad(
     game: GameState,
@@ -230,9 +272,6 @@ export function hasLegalSettlementPlacement(
     if (game.robberPending) {
         return false;
     }
-    // if (game.lastDiceRoll === undefined) {
-    //     return false;
-    // }
     const player = game.players.find(
         (candidate) => candidate.id === playerId
     );

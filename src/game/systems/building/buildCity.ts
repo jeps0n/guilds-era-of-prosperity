@@ -20,10 +20,26 @@ export function buildCity(
     if (game.currentPlayerId !== playerId) {
         return game;
     }
-    if (game.robberPending) {
+    if (
+        game.robberPending ||
+        game.grandExpeditionPending ||
+        game.roadBuildingPending ||
+        (
+            game.masterBuilderPending &&
+            game.masterBuilderSelection === "settlement"
+        )
+    ) {
         return game;
     }
-    if (game.lastDiceRoll === undefined) {
+    // Master Builder is allowed to place before the dice roll.
+    const isMasterBuilderCity =
+        game.masterBuilderPending &&
+        game.masterBuilderSelection === "city";
+    // Normal city building still requires the dice roll.
+    if (
+        game.lastDiceRoll === undefined &&
+        !isMasterBuilderCity
+    ) {
         return game;
     }
     const player = game.players.find(
@@ -47,47 +63,57 @@ export function buildCity(
         isBuilder &&
         !player.guildPassiveUsedThisTurn;
     /*
-     * If Builder is attempting to use the passive,
-     * the discounted resource must be one of the
-     * resources normally required by a city.
+     * Master Builder bypasses the normal Builder pricing flow.
+     * Normal city pricing below remains unchanged.
      */
-    if (
-        builderPassiveAvailable &&
-        discountedResource !== undefined &&
-        !CITY_RESOURCES.includes(
-            discountedResource
-        )
-    ) {
-        return game;
-    }
-    /*
-     * A Builder with an unused passive must explicitly
-     * provide the resource being discounted.
-     *
-     * Normal players, and Builders whose passive has
-     * already been used, use the normal city cost.
-     */
-    if (
-        builderPassiveAvailable &&
-        discountedResource === undefined
-    ) {
-        return game;
-    }
     const cityCost =
-        getEffectiveCityCost(
-            player,
-            discountedResource
-        );
+        isMasterBuilderCity
+            ? {
+                ore: 0,
+                wheat: 0,
+            }
+            : getEffectiveCityCost(
+                player,
+                discountedResource
+            );
     /*
-     * Final affordability check against the effective
-     * cost. The engine remains authoritative regardless
-     * of what the UI says is affordable.
+     * Builder discount validation only applies
+     * to a normal city build.
      */
-    if (
-        player.resources.ore < cityCost.ore ||
-        player.resources.wheat < cityCost.wheat
-    ) {
-        return game;
+    if (!isMasterBuilderCity) {
+        /*
+         * If Builder is attempting to use the passive,
+         * the discounted resource must be a city resource.
+         */
+        if (
+            builderPassiveAvailable &&
+            discountedResource !== undefined &&
+            !CITY_RESOURCES.includes(
+                discountedResource
+            )
+        ) {
+            return game;
+        }
+        /*
+         * An unused Builder passive requires
+         * an explicit discounted resource.
+         */
+        if (
+            builderPassiveAvailable &&
+            discountedResource === undefined
+        ) {
+            return game;
+        }
+        /*
+         * Final affordability check against the
+         * normal/effective city cost.
+         */
+        if (
+            player.resources.ore < cityCost.ore ||
+            player.resources.wheat < cityCost.wheat
+        ) {
+            return game;
+        }
     }
     const updatedSettlements =
         player.settlements.filter(
@@ -99,10 +125,10 @@ export function buildCity(
         nodeId,
     ];
     /*
-     * The passive is consumed only after all validation
-     * succeeds and the city is actually built.
+     * Master Builder does not consume the Builder passive.
      */
     const usesBuilderPassive =
+        !isMasterBuilderCity &&
         builderPassiveAvailable &&
         discountedResource !== undefined;
     const updatedPlayers =
@@ -146,11 +172,25 @@ export function buildCity(
         players: updatedPlayers,
         resourceBank:
             updatedResourceBank,
+        /*
+         * A successful Master Builder placement
+         * resolves the Super interaction.
+         */
+        masterBuilderPending:
+            isMasterBuilderCity
+                ? false
+                : game.masterBuilderPending,
+        masterBuilderSelection:
+            isMasterBuilderCity
+                ? undefined
+                : game.masterBuilderSelection,
         eventLog: [
             ...game.eventLog,
             createEvent(
                 "CITY_BUILT",
-                `${player.name} upgraded a settlement to a city.`
+                isMasterBuilderCity
+                    ? `${player.name} upgraded a settlement to a city using Master Builder.`
+                    : `${player.name} upgraded a settlement to a city.`
             ),
         ],
     });
@@ -168,9 +208,8 @@ export function hasLegalCityPlacement(
     if (game.robberPending) {
         return false;
     }
-    // if (game.lastDiceRoll === undefined) {
-    //     return false;
-    // }
+    // Dice roll is intentionally not checked here because
+    // Master Builder may be selected before the roll.
     const player = game.players.find(
         (candidate) => candidate.id === playerId
     );

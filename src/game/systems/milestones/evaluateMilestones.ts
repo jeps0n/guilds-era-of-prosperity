@@ -16,7 +16,7 @@ export function evaluateMilestones(
                 ...game.eventLog,
                 createEvent(
                     "PLAYER_REACHED_15VP",
-                    `${winner.name} reached 15 VP and won the game.`
+                    `${winner.name} reached 15 VP.`
                 ),
                 createEvent(
                     "GAME_ENDED",
