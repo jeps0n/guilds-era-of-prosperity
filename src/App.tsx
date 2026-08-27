@@ -1,53 +1,67 @@
-import { useState, useEffect, useRef } from "react";
+// React
+import { useEffect, useRef, useState } from "react";
+// Components
 import ActionBar from "./components/ActionBar";
 import BoardView from "./components/BoardView";
-import GameStatus from "./components/GameStatus";
-import GuildSelection from "./components/GuildSelection";
 import GameLayout from "./components/layout/GameLayout";
 import GameLog from "./components/GameLog";
+import GameStatus from "./components/GameStatus";
+import GuildInformationPanel from "./components/GuildInformationPanel";
+import GuildSelection from "./components/GuildSelection";
 import PlayerPanel from "./components/PlayerPanel";
 import RobberActionBar from "./components/RobberActionBar";
-import GuildInformationPanel from "./components/GuildInformationPanel";
+import { SecondaryMenu, SecondaryMenuButton } from "./components/SecondaryMenu";
 import SuperMenu from "./components/SuperMenu";
-import { SecondaryMenu, SecondaryMenuButton, } from "./components/SecondaryMenu";
-import type { GuildType, Resources } from "./game/engine/types";
+// Types
 import type { DevelopmentCardType } from "./game/domain/DevelopmentCard";
+import type { GuildType, Resources } from "./game/engine/types";
+// Game Initialization
 import { createInitialState } from "./game/engine/initialState";
 import { validateBoard } from "./game/engine/boardValidation/validateBoard";
+// Game Systems — Guild & Initial Setup
 import { selectGuild } from "./game/systems/guildSelection";
 import { placeSettlement } from "./game/systems/initialPlacement/placeSettlement";
 import { placeRoad } from "./game/systems/initialPlacement/placeRoad";
+// Game Systems — Turn
 import { endTurn } from "./game/systems/turn/endTurn";
 import { rollDice } from "./game/systems/turn/rollDice";
+// Game Systems — Actions
+import { canOpenGuildDiscountMenu } from "./game/systems/actions/canOpenGuildDiscountMenu";
 import { getActionAvailability } from "./game/systems/actions/getActionAvailability";
+// Game Systems — Building
 import { buildRoad } from "./game/systems/building/buildRoad";
 import { buildSettlement } from "./game/systems/building/buildSettlement";
 import { buildCity } from "./game/systems/building/buildCity";
-import { tradeWithBank } from "./game/systems/trading/tradeWithBank";
+// Game Systems — Trading
 import { getTradeRatio } from "./game/systems/trading/getTradeRatio";
-import { getEffectiveTradeRatio } from "./game/guilds/merchant/passive/getEffectiveTradeRatio";
+import { tradeWithBank } from "./game/systems/trading/tradeWithBank";
+// Game Systems — Development Cards
 import { buyDevelopmentCard } from "./game/systems/developmentCards/buyDevelopmentCard";
 import { playDevelopmentCard } from "./game/systems/developmentCards/playDevelopmentCard";
 import { resolveYearOfPlenty } from "./game/systems/developmentCards/resolveYearOfPlenty";
 import { resolveMonopoly } from "./game/systems/developmentCards/resolveMonopoly";
+// Game Systems — Achievements
 import { calculateLongestRoad } from "./game/systems/achievements/calculateLongestRoad";
-import { rollSecondaryDice, } from "./game/guilds/prosperity/rollSecondaryDice";
+// Guild Systems
+import { getEffectiveTradeRatio } from "./game/guilds/merchant/passive/getEffectiveTradeRatio";
+import { rollSecondaryDice } from "./game/guilds/prosperity/rollSecondaryDice";
+// Super
 import { SuperOrchestrator } from "./game/guilds/SuperOrchestrator";
 import { superOrchestrator } from "./components/SuperMenu";
+// Store
 import {
-    savePhaseCheckpoint,
-    restorePhaseCheckpoint,
     canRestorePhaseCheckpoint,
+    restorePhaseCheckpoint,
+    savePhaseCheckpoint,
 } from "./store/gameStore";
-import {
-    canOpenGuildDiscountMenu,
-} from "./game/systems/actions/canOpenGuildDiscountMenu";
 const initialGame = createInitialState();
 if (import.meta.env.DEV) {
     validateBoard(initialGame.board);
 }
 function App() {
+    // GAME STATE
     const [game, setGame] = useState(initialGame);
+    // SECONDARY MENU STATE
     type SecondaryMenuMode =
         | "trade"
         | "development"
@@ -58,16 +72,21 @@ function App() {
         | undefined;
     const [secondaryMenu, setSecondaryMenu] =
         useState<SecondaryMenuMode>(undefined);
+    // GENERAL UI / DOM REFS
     const developmentCardListRef =
         useRef<HTMLDivElement>(null);
+    // TRADE STATE
     const [selectedGiveResource, setSelectedGiveResource] =
         useState<keyof Resources | undefined>(undefined);
+    // MERCHANT STATE
     const [merchantKeepResource, setMerchantKeepResource] =
         useState<keyof Resources | undefined>(undefined);
+    // EXPLORER STATE
     const [explorerRoadEdgeId, setExplorerRoadEdgeId] =
         useState<string | undefined>(undefined);
     const [explorerKeepResource, setExplorerKeepResource] =
         useState<"brick" | "lumber" | undefined>(undefined);
+    // BUILDER STATE
     const [builderSettlementNodeId, setBuilderSettlementNodeId] =
         useState<string | undefined>(undefined);
     const [builderSettlementResource, setBuilderSettlementResource] =
@@ -76,10 +95,14 @@ function App() {
         useState<string | undefined>(undefined);
     const [builderCityResource, setBuilderCityResource] =
         useState<"ore" | "wheat" | undefined>(undefined);
+    // PROSPERITY STATE
     const [prosperityRollSequenceActive, setProsperityRollSequenceActive] =
         useState(false);
     const [secondaryRollRevealing, setSecondaryRollRevealing] =
         useState(false);
+    const prosperityRollTimeoutRef =
+        useRef<number | null>(null);
+    // SUPER STATE
     const [superUnlockRevealing, setSuperUnlockRevealing] =
         useState(false);
     const [superUnlockPlayerName, setSuperUnlockPlayerName] =
@@ -88,23 +111,13 @@ function App() {
         useState(false);
     const [superPending, setSuperPending] =
         useState<GuildType | undefined>(undefined);
-    const prosperityRollTimeoutRef =
-        useRef<number | null>(null);
-    /*
-     * Year of Plenty selection tracks BOTH:
-     * - the resource selected
-     * - the unique slot/button that was clicked
-     *
-     * This is important because the 2 x 5 grid contains duplicate
-     * resources. Tracking only the resource would cause both duplicate
-     * buttons to highlight.
-     */
+    // YEAR OF PLENTY STATE
+    // Track resource and unique button slot because resources can be duplicated.
     const [yearOfPlentySelection, setYearOfPlentySelection] =
         useState<{
             resource: keyof Resources;
             slot: number;
         } | undefined>(undefined);
-    // FOR DEBUGGING - DELETE useEffect EVENTUALLY
     useEffect(() => {
         console.log("=================== / GAME / ===================");
         console.log(game);
@@ -134,17 +147,15 @@ function App() {
             );
         };
     }, [game]);
-    useEffect(() => {
-        console.log("----------------------------------------");
-        console.log("superPending UPDATED:", superPending);
-        console.log("----------------------------------------");
-    }, [superPending]);
     function getCurrentPlayer() {
         return game.players.find(
             (player) =>
                 player.id === game.currentPlayerId
         );
     }
+    // ─────────────────────────────────────────────
+    // GUILD SELECTION
+    // ─────────────────────────────────────────────
     function handleGuildSelection(guild: GuildType) {
         const nextGame = selectGuild(
             game,
@@ -160,6 +171,9 @@ function App() {
             savePhaseCheckpoint(nextGame);
         }
     }
+    // ─────────────────────────────────────────────
+    // INITIAL PLACEMENT
+    // ─────────────────────────────────────────────
     function handlePlaceSettlement(nodeId: string) {
         const nextGame = placeSettlement(
             game,
@@ -186,31 +200,29 @@ function App() {
             savePhaseCheckpoint(nextGame);
         }
     }
+    // ─────────────────────────────────────────────
+    // BUILDING
+    // ─────────────────────────────────────────────
+    // --Road
     function handleBuildRoad(edgeId: string) {
-        // Get the current player before checking player-specific rules.
         const player = getCurrentPlayer();
-        // Stop if there is no current player.
         if (!player) {
             return;
         }
-        // Grand Expedition uses free roads and skips normal guild logic.
+        // Free-road effects bypass the normal guild discount flow.
         if (game.grandExpeditionPending || game.roadBuildingPending) {
-            console.log("GE: ", game.grandExpeditionPending, " RB: ", game.roadBuildingPending)
-            // Let the engine handle the free road placement.
             const nextGame = buildRoad(
                 game,
                 game.currentPlayerId,
                 edgeId
             );
-            // Stop if the engine rejected the placement.
             if (nextGame === game) {
                 return;
             }
-            // Save the successful road placement.
             setGame(nextGame);
             return;
         }
-        // Normal roads must first pass the guild target check.
+        // Normal roads must pass the guild target check first.
         if (
             !canOpenGuildDiscountMenu(
                 game,
@@ -220,68 +232,77 @@ function App() {
         ) {
             return;
         }
-        // Check whether this player is an Explorer
-        // who still has their passive available this turn.
         const isExplorer =
             player.guild === "explorer";
         const explorerPassiveAvailable =
             isExplorer &&
             !player.guildPassiveUsedThisTurn;
-        // Check whether the player has both resources needed for a normal road.
         const hasBrick =
             player.resources.brick >= 1;
         const hasLumber =
             player.resources.lumber >= 1;
-        // An available Explorer with both resources must choose
-        // which resource to keep before building the discounted road.
+        // Explorer must choose which resource to keep when both are available.
         if (
             explorerPassiveAvailable &&
             hasBrick &&
             hasLumber
         ) {
-            // Save the selected edge and open the Explorer resource choice.
             setExplorerRoadEdgeId(edgeId);
             setExplorerKeepResource(undefined);
             setSecondaryMenu("explorerRoad");
             return;
         }
-        // Let the engine resolve the normal road placement.
-        // This handles both the Explorer discount and normal road cost.
         const nextGame = buildRoad(
             game,
             game.currentPlayerId,
             edgeId
         );
-        // Stop if the engine rejected the placement.
         if (nextGame === game) {
             return;
         }
-        // Save the successful road placement.
         setGame(nextGame);
     }
+    function handleExplorerRoadBuild(
+        keepResource: "brick" | "lumber"
+    ) {
+        if (!explorerRoadEdgeId) {
+            return;
+        }
+        const nextGame = buildRoad(
+            game,
+            game.currentPlayerId,
+            explorerRoadEdgeId,
+            keepResource
+        );
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
+        setExplorerRoadEdgeId(undefined);
+        setExplorerKeepResource(undefined);
+        setSecondaryMenu(undefined);
+    }
+    // --Settlement
     function handleBuildSettlement(
         nodeId: string
     ) {
-        // Master Builder uses a free settlement and skips normal guild logic.
+        // Master Builder's free placement bypasses the normal guild flow.
         if (
             game.masterBuilderPending &&
             game.masterBuilderSelection === "settlement"
         ) {
-            // Let the engine resolve the free Super placement.
             const nextGame = buildSettlement(
                 game,
                 game.currentPlayerId,
                 nodeId
             );
-            // Stop if the engine rejected the placement.
             if (nextGame === game) {
                 return;
             }
-            // Save the successful settlement placement.
             setGame(nextGame);
             return;
         }
-        // The target must be valid before opening the guild flow.
+        // Normal settlements must pass the guild target check first.
         if (
             !canOpenGuildDiscountMenu(
                 game,
@@ -291,25 +312,22 @@ function App() {
         ) {
             return;
         }
-        // Get the current player.
         const player = getCurrentPlayer();
         if (!player) {
             return;
         }
-        // Check whether the Builder discount is still available.
         const isBuilder =
             player.guild === "builder";
         const builderPassiveAvailable =
             isBuilder &&
             !player.guildPassiveUsedThisTurn;
-        // Resources required for a normal settlement.
         const settlementResources = [
             "brick",
             "lumber",
             "wheat",
             "sheep",
         ] as const;
-        // Builder can remove one missing resource from the cost.
+        // Builder can remove one missing resource from the settlement cost.
         if (builderPassiveAvailable) {
             const missingResources = settlementResources.filter(
                 (resource) => player.resources[resource] < 1
@@ -328,18 +346,16 @@ function App() {
                 setGame(nextGame);
                 return;
             }
-            // All resources are available, so let the player choose.
+            // With all resources available, Builder chooses the discount.
             if (missingResources.length === 0) {
                 setBuilderSettlementNodeId(nodeId);
                 setBuilderSettlementResource(undefined);
                 setSecondaryMenu("builderSettlement");
                 return;
             }
-            // Two or more resources are missing, so the settlement
-            // cannot be built with the one-resource discount.
+            // Builder's one-resource discount cannot cover two or more missing resources.
             return;
         }
-        // Use the normal settlement cost.
         const nextGame = buildSettlement(
             game,
             game.currentPlayerId,
@@ -350,33 +366,49 @@ function App() {
         }
         setGame(nextGame);
     }
+    function handleBuilderSettlement(
+        discountedResource: keyof Resources
+    ) {
+        if (!builderSettlementNodeId) {
+            return;
+        }
+        const nextGame = buildSettlement(
+            game,
+            game.currentPlayerId,
+            builderSettlementNodeId,
+            discountedResource
+        );
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
+        setBuilderSettlementNodeId(undefined);
+        setBuilderSettlementResource(undefined);
+        setSecondaryMenu(undefined);
+    }
+    // --City
     function handleBuildCity(nodeId: string) {
-        // Get the current player before checking player-specific rules.
         const player = getCurrentPlayer();
-        // Stop if there is no current player.
         if (!player) {
             return;
         }
-        // Master Builder uses a free city and skips normal guild logic.
+        // Master Builder's free placement bypasses the normal guild flow.
         if (
             game.masterBuilderPending &&
             game.masterBuilderSelection === "city"
         ) {
-            // Let the engine resolve the free Super placement.
             const nextGame = buildCity(
                 game,
                 game.currentPlayerId,
                 nodeId
             );
-            // Stop if the engine rejected the placement.
             if (nextGame === game) {
                 return;
             }
-            // Save the successful city placement.
             setGame(nextGame);
             return;
         }
-        // Normal cities must first pass the guild target check.
+        // Normal cities must pass the guild target check first.
         if (
             !canOpenGuildDiscountMenu(
                 game,
@@ -386,13 +418,11 @@ function App() {
         ) {
             return;
         }
-        // Check whether Builder still has its passive available.
         const isBuilder =
             player.guild === "builder";
         const builderPassiveAvailable =
             isBuilder &&
             !player.guildPassiveUsedThisTurn;
-        // Check which discounted city costs the Builder can afford.
         if (builderPassiveAvailable) {
             const hasOreDiscountOnly =
                 player.resources.ore >= 2 &&
@@ -433,7 +463,7 @@ function App() {
                 setGame(nextGame);
                 return;
             }
-            // All resources are available, so let Builder choose.
+            // With all resources available, Builder chooses the discount.
             if (hasFullCityCost) {
                 setBuilderCityNodeId(nodeId);
                 setBuilderCityResource(undefined);
@@ -441,39 +471,15 @@ function App() {
                 return;
             }
         }
-        // Let the engine resolve the normal city placement.
         const nextGame = buildCity(
             game,
             game.currentPlayerId,
             nodeId
         );
-        // Stop if the engine rejected the placement.
-        if (nextGame === game) {
-            return;
-        }
-        // Save the successful city placement.
-        setGame(nextGame);
-    }
-    // BUILDER DISCOUNT
-    function handleBuilderSettlement(
-        discountedResource: keyof Resources
-    ) {
-        if (!builderSettlementNodeId) {
-            return;
-        }
-        const nextGame = buildSettlement(
-            game,
-            game.currentPlayerId,
-            builderSettlementNodeId,
-            discountedResource
-        );
         if (nextGame === game) {
             return;
         }
         setGame(nextGame);
-        setBuilderSettlementNodeId(undefined);
-        setBuilderSettlementResource(undefined);
-        setSecondaryMenu(undefined);
     }
     function handleBuilderCity(
         discountedResource: "ore" | "wheat"
@@ -495,6 +501,9 @@ function App() {
         setBuilderCityResource(undefined);
         setSecondaryMenu(undefined);
     }
+    // ─────────────────────────────────────────────
+    // DEVELOPMENT CARDS
+    // ─────────────────────────────────────────────
     function getDevelopmentCardName(
         type: DevelopmentCardType
     ) {
@@ -521,7 +530,8 @@ function App() {
         const isMerchant =
             player.guild === "merchant";
         const merchantPassiveAvailable =
-            isMerchant && !player.guildPassiveUsedThisTurn;
+            isMerchant &&
+            !player.guildPassiveUsedThisTurn;
         const requiredResources: (keyof Resources)[] = [
             "ore",
             "wheat",
@@ -532,11 +542,7 @@ function App() {
                 (resource) =>
                     player.resources[resource] >= 1
             );
-        /*
-         * Merchant with all three resources:
-         * open the discount menu and let the player
-         * choose which resource to keep.
-         */
+        // Merchant chooses which resource to keep when all three are available.
         if (
             merchantPassiveAvailable &&
             availableRequiredResources.length === 3
@@ -545,10 +551,6 @@ function App() {
             setSecondaryMenu("merchantDevelopment");
             return;
         }
-        /*
-         * Merchant with exactly two resources:
-         * purchase immediately at the discounted cost.
-         */
         const nextGame = buyDevelopmentCard(
             game,
             game.currentPlayerId
@@ -573,27 +575,6 @@ function App() {
         setMerchantKeepResource(undefined);
         setSecondaryMenu(undefined);
     }
-    function handleExplorerRoadBuild(
-        keepResource: "brick" | "lumber"
-    ) {
-        if (!explorerRoadEdgeId) {
-            return;
-        }
-        const nextGame = buildRoad(
-            game,
-            game.currentPlayerId,
-            explorerRoadEdgeId,
-            keepResource
-        );
-        if (nextGame === game) {
-            return;
-        }
-        setGame(nextGame);
-        setExplorerRoadEdgeId(undefined);
-        setExplorerKeepResource(undefined);
-        setSecondaryMenu(undefined);
-    }
-    // ABC - OPEN DEV CARD MENU
     function handlePlayDevelopmentCard() {
         setSecondaryMenu("development");
     }
@@ -609,7 +590,75 @@ function App() {
         setGame(nextGame);
         setSecondaryMenu(undefined);
     }
-    // ABC - OPEN TRADE MENU
+    function handleSelectYearOfPlentyResource(
+        resource: keyof Resources,
+        slot: number
+    ) {
+        if (yearOfPlentySelection === undefined) {
+            setYearOfPlentySelection({
+                resource,
+                slot,
+            });
+            return;
+        }
+        executeYearOfPlenty(
+            yearOfPlentySelection.resource,
+            resource
+        );
+    }
+    function executeYearOfPlenty(
+        firstResource: keyof Resources,
+        secondResource: keyof Resources
+    ) {
+        const nextGame = resolveYearOfPlenty(
+            game,
+            game.currentPlayerId,
+            firstResource,
+            secondResource
+        );
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
+        setYearOfPlentySelection(undefined);
+        setSecondaryMenu(undefined);
+    }
+    function handleCloseYearOfPlenty() {
+        setYearOfPlentySelection(undefined);
+        setSecondaryMenu(undefined);
+        setGame((currentGame) => ({
+            ...currentGame,
+            yearOfPlentyPending: false,
+            yearOfPlentyCardId: undefined,
+            yearOfPlentyFirstResource: undefined,
+        }));
+    }
+    function executeMonopoly(
+        resource: keyof Resources
+    ) {
+        const nextGame = resolveMonopoly(
+            game,
+            game.currentPlayerId,
+            resource
+        );
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
+        setSecondaryMenu(undefined);
+    }
+    function handleCloseMonopoly() {
+        setSecondaryMenu(undefined);
+        setGame((currentGame) => ({
+            ...currentGame,
+            monopolyPending: false,
+            monopolyCardId: undefined,
+            monopolyResource: undefined,
+        }));
+    }
+    // ─────────────────────────────────────────────
+    // TRADING
+    // ─────────────────────────────────────────────
     function handleTrade() {
         const player = getCurrentPlayer();
         if (!player) {
@@ -650,97 +699,13 @@ function App() {
         }
         setGame(nextGame);
     }
-    /*
-     * YEAR OF PLENTY
-     *
-     * Each button has a unique slot.
-     * The first click stores both the resource and slot.
-     */
-    function handleSelectYearOfPlentyResource(
-        resource: keyof Resources,
-        slot: number
-    ) {
-        if (yearOfPlentySelection === undefined) {
-            setYearOfPlentySelection({
-                resource,
-                slot,
-            });
-            return;
-        }
-        executeYearOfPlenty(
-            yearOfPlentySelection.resource,
-            resource
-        );
-    }
-    /*
-     * Close Year of Plenty without completing it.
-     *
-     * Clear the local selection and close the menu so the player
-     * can start the selection process over.
-     */
-    function handleCloseYearOfPlenty() {
-        setYearOfPlentySelection(undefined);
-        setSecondaryMenu(undefined);
-        setGame((currentGame) => ({
-            ...currentGame,
-            yearOfPlentyPending: false,
-            yearOfPlentyCardId: undefined,
-            yearOfPlentyFirstResource: undefined,
-        }));
-    }
-    function handleCloseMonopoly() {
-        setSecondaryMenu(undefined);
-        setGame((currentGame) => ({
-            ...currentGame,
-            monopolyPending: false,
-            monopolyCardId: undefined,
-            monopolyResource: undefined,
-        }));
-    }
-    function executeYearOfPlenty(
-        firstResource: keyof Resources,
-        secondResource: keyof Resources
-    ) {
-        const nextGame = resolveYearOfPlenty(
-            game,
-            game.currentPlayerId,
-            firstResource,
-            secondResource
-        );
-        if (nextGame === game) {
-            return;
-        }
-        setGame(nextGame);
-        setYearOfPlentySelection(undefined);
-        setSecondaryMenu(undefined);
-    }
-    function executeMonopoly(
-        resource: keyof Resources
-    ) {
-        const nextGame = resolveMonopoly(
-            game,
-            game.currentPlayerId,
-            resource
-        );
-        if (nextGame === game) {
-            return;
-        }
-        setGame(nextGame);
-        setSecondaryMenu(undefined);
-    }
     function handleCloseTrade() {
         setSecondaryMenu(undefined);
         setSelectedGiveResource(undefined);
     }
-    function handleRollDice() {
-        closeAllMenus();
-        superOrchestrator.resetSelections();
-        const nextGame = rollDice(game);
-        if (nextGame === game) {
-            return;
-        }
-        setGame(nextGame);
-    }
+    // ─────────────────────────────────────────────
+    // ROBBER
+    // ─────────────────────────────────────────────
     function handleSelectRobberTile(tileId: string) {
         const tile = game.board.tiles.find(
             (candidate) => candidate.id === tileId
@@ -872,7 +837,7 @@ function App() {
         const robberMovedEvent = {
             id: `robber-moved-${Date.now()}`,
             type: "ROBBER_MOVED" as const,
-            message: `${currentPlayer.name} moved the robber to (${tile.numberToken ?? "?"}) [${tile.resource}]`,
+            message: `${currentPlayer.name} moved the Robber to (${tile.numberToken ?? "?"}) [${tile.resource}]`,
             timestamp: Date.now(),
         };
         const stealEvent =
@@ -899,11 +864,17 @@ function App() {
         };
         setGame(nextGame);
     }
-    function closeAllMenus() {
-        setSecondaryMenu(undefined);
-        handleCloseTrade();
-        handleCloseYearOfPlenty();
-        handleCloseMonopoly();
+    // ─────────────────────────────────────────────
+    // TURN / DICE
+    // ─────────────────────────────────────────────
+    function handleRollDice() {
+        closeAllMenus();
+        superOrchestrator.resetSelections();
+        const nextGame = rollDice(game);
+        if (nextGame === game) {
+            return;
+        }
+        setGame(nextGame);
     }
     function handleEndTurn() {
         /*
@@ -948,6 +919,9 @@ function App() {
         setGame(nextGame);
         savePhaseCheckpoint(nextGame);
     }
+    // ─────────────────────────────────────────────
+    // PROSPERITY SECONDARY ROLL
+    // ─────────────────────────────────────────────
     function handleRollSecondaryDice() {
         const rolledGame = rollSecondaryDice(game);
         if (rolledGame === game) {
@@ -982,12 +956,10 @@ function App() {
                 if (justUnlocked) {
                     setSecondaryRollRevealing(false);
                     setSuperUnlockRevealing(true);
-                    console.log("setSuperUnlockRevealing(true);");
                     prosperityRollTimeoutRef.current =
                         window.setTimeout(() => {
                             prosperityRollTimeoutRef.current = null;
                             setSuperUnlockRevealing(false);
-                            console.log("setSuperUnlockRevealing(false);");
                             setGame((currentGame) => {
                                 const readyToEnd = {
                                     ...currentGame,
@@ -1028,6 +1000,9 @@ function App() {
                 setSecondaryRollRevealing(false);
             }, 1800);
     }
+    // ─────────────────────────────────────────────
+    // SUPER
+    // ─────────────────────────────────────────────
     function handleUseSuper() {
         const currentPlayer = getCurrentPlayer();
         if (!currentPlayer) {
@@ -1047,6 +1022,9 @@ function App() {
         setShowSuperMenu(false);
         setSuperPending(undefined);
     }
+    // ─────────────────────────────────────────────
+    // CHECKPOINT / RESTORE
+    // ─────────────────────────────────────────────
     function handleRestoreCheckpoint() {
         /*
         * Cancel any pending Prosperity Roll timer.
@@ -1074,7 +1052,6 @@ function App() {
          */
         setSecondaryRollRevealing(false);
         setSuperUnlockRevealing(false);
-        console.log("setSuperUnlockRevealing(false);");
         setSuperUnlockPlayerName(undefined);
         setProsperityRollSequenceActive(
             restoredGame.era === "prosperity" &&
@@ -1155,6 +1132,18 @@ function App() {
         sheep: "#65a30d",
         ore: "#6b7280",
     };
+    // ─────────────────────────────────────────────
+    // MENU / UI STATE
+    // ─────────────────────────────────────────────
+    function closeAllMenus() {
+        setSecondaryMenu(undefined);
+        handleCloseTrade();
+        handleCloseYearOfPlenty();
+        handleCloseMonopoly();
+    }
+    // ─────────────────────────────────────────────
+    // RENDER HELPERS
+    // ─────────────────────────────────────────────
     function renderResourceBadge(
         resource: keyof Resources,
         amount: number
@@ -1184,6 +1173,7 @@ function App() {
         currentPlayer
             ? tradeResources.filter(
                 (resource) => {
+                    // Merchant uses its effective trade ratio instead of the normal bank (4:1) ratio.
                     const ratio =
                         currentPlayer.guild === "merchant"
                             ? getEffectiveTradeRatio(
@@ -1261,6 +1251,9 @@ function App() {
                 }
                 hasPlayableKnight={
                     actionAvailability.hasPlayableKnight
+                }
+                superMenuIsOpen={
+                    showSuperMenu
                 }
                 {...options}
             />
@@ -1402,6 +1395,17 @@ function App() {
                         }
                         playerColor={
                             currentPlayerColor
+                        }
+                        winnerName={
+                            game.winnerId
+                                ? game.players.find(
+                                    (player) => player.id === game.winnerId
+                                )?.name
+                                : undefined
+                        }
+                        guildName={currentPlayer?.guild}
+                        winnerRevealing={
+                            game.phase === "game_over"
                         }
                     />
                     <SuperMenu
@@ -2118,6 +2122,7 @@ function App() {
                             prosperityRollSequenceActive={prosperityRollSequenceActive}
                             roadBuildingPending={game.roadBuildingPending}
                             robberPending={game.robberPending}
+                            superMenuIsOpen={showSuperMenu}
                             onUseSuper={handleUseSuper}
                         />
                     )}

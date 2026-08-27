@@ -5,8 +5,8 @@ import { updateLongestRoad } from "../achievements/updateLongestRoad";
 import { evaluateMilestones } from "../milestones/evaluateMilestones";
 import { getEffectiveRoadCost } from "../../guilds/explorer/passive/getEffectiveRoadCost";
 type Resource = keyof Resources;
-// Normal road cost: 1 brick + 1 lumber.
-const ROAD_COST: Resource[] = [
+// Standard cost of Road
+const ROAD_RESOURCES: Resource[] = [
     "brick",
     "lumber",
 ];
@@ -16,16 +16,16 @@ export function buildRoad(
     edgeId: string,
     keepResource?: Resource
 ): GameState {
-    // Roads can only be built while the game is being played.
+    // Roads can only be built during play.
     if (game.phase !== "playing") {
         return game;
     }
-    // Only the current player can build a road.
+    // Only the current player can build.
     if (game.currentPlayerId !== playerId) {
         return game;
     }
-    // Normal road building requires a dice roll.
-    // Grand Expedition an exception because it is a SUPER and can happen before the roll.
+    // Grand Expedition super can place roads before the roll.
+    // All other roads built/placed must be after the roll.
     if (
         game.lastDiceRoll === undefined &&
         !game.grandExpeditionPending
@@ -39,74 +39,70 @@ export function buildRoad(
     ) {
         return game;
     }
-    // Find the player attempting to build the road.
+    // Find the player.
     const player = game.players.find(
         (candidate) => candidate.id === playerId
     );
-    // Stop if the player does not exist.
+    // Invalid player.
     if (!player) {
         return game;
     }
-    // A player cannot have more than 15 roads.
+    // Enforce the 15-road limit.
     if (player.roads.length >= 15) {
         return game;
     }
-    // Road Building gives free roads.
+    // Road Building (dev card) provides free roads.
     const isRoadBuilding =
         game.roadBuildingPending;
-    // Grand Expedition also gives free roads.
+    // Grand Expedition (super) provides free roads.
     const isGrandExpedition =
         game.grandExpeditionPending;
-    // Either of these effects makes the current road free.
+    // Either effect makes the road free.
     const isFreeRoadPlacement =
         isRoadBuilding ||
         isGrandExpedition;
-    // Resources that will actually be paid for this road.
+    // Resources paid for this road.
     let paymentResources: Resource[] = [];
-    // Free roads skip all normal payment logic.
+    // Skip payment for free roads.
     if (!isFreeRoadPlacement) {
-        // Explorer gets a special discounted road cost once per turn.
+        // Explorer gets a discounted road cost once per turn.
         if (
             player.guild === "explorer" &&
             !player.guildPassiveUsedThisTurn
         ) {
-            // Calculate which resource(s) the Explorer must pay.
-            // keepResource is used when the Explorer had both resources
-            // and had to choose which one to keep.
+            // Calculate the Explorer road cost.
             const effectiveRoadCost =
                 getEffectiveRoadCost(
                     player,
                     keepResource
                 );
-            // No cost means the Explorer cannot complete the payment
-            // yet, usually because a required resource choice is missing.
+            // Stop if the required resource choice is missing.
             if (!effectiveRoadCost) {
                 return game;
             }
-            // Use the Explorer's discounted cost.
             paymentResources =
                 effectiveRoadCost;
         } else {
             // Everyone else pays the normal road cost.
-            // This also applies to an Explorer whose passive was already used.
-            paymentResources = ROAD_COST;
+            // This includes an Explorer whose passive was already used.
+            paymentResources = ROAD_RESOURCES;
         }
-        // Make sure the player can afford every required resource.
+        // Check that the player can afford the road.
         for (const resource of paymentResources) {
             if (player.resources[resource] < 1) {
                 return game;
             }
         }
     }
-    // Find the board edge the player wants to build on.
+    // Find the target edge.
     const edge = game.board.edges.find(
         (candidate) => candidate.id === edgeId
     );
-    // Stop if the edge does not exist.
+    // Invalid edge.
     if (!edge) {
         return game;
     }
-    // A road cannot be placed on an already occupied edge.
+    // Prevent building on an occupied edge.
     const edgeAlreadyOccupied =
         game.players.some(
             (candidate) =>
@@ -115,7 +111,7 @@ export function buildRoad(
     if (edgeAlreadyOccupied) {
         return game;
     }
-    // The road must connect to the player's existing network.
+    // The road must connect to the player's network.
     if (
         !connectsToPlayerNetwork(
             game,
@@ -125,44 +121,43 @@ export function buildRoad(
     ) {
         return game;
     }
-    // The Explorer passive is used only by a normal discounted road.
-    // Free roads do not consume the passive.
+    // Free roads do not consume the Explorer passive.
     const usesExplorerPassive =
         !isFreeRoadPlacement &&
         player.guild === "explorer" &&
         !player.guildPassiveUsedThisTurn;
-    // Update the player who built the road.
+    // Update the player.
     const updatedPlayers =
         game.players.map((candidate) => {
-            // Leave every other player unchanged.
+            // Leave other players unchanged.
             if (candidate.id !== playerId) {
                 return candidate;
             }
-            // Copy the player's resources before changing them.
+            // Copy resources before payment.
             const updatedResources = {
                 ...candidate.resources,
             };
-            // Pay each resource required for the road.
+            // Pay the road cost.
             for (const resource of paymentResources) {
                 updatedResources[resource] -= 1;
             }
             return {
                 ...candidate,
-                // Remove the resources that were paid.
+                // Save the updated resources.
                 resources: updatedResources,
-                // Add the new road to the player's roads.
+                // Add the new road.
                 roads: [
                     ...candidate.roads,
                     edgeId,
                 ],
-                // Consume the Explorer passive only when appropriate.
+                // Consume the Explorer passive when used.
                 guildPassiveUsedThisTurn:
                     usesExplorerPassive
                         ? true
                         : candidate.guildPassiveUsedThisTurn,
             };
         });
-    // Copy the resource bank before changing it.
+    // Copy the resource bank.
     const updatedResourceBank = {
         ...game.resourceBank,
     };
@@ -170,88 +165,90 @@ export function buildRoad(
     for (const resource of paymentResources) {
         updatedResourceBank[resource] += 1;
     }
-    // Record the road placement in the event log.
+    // Record the road placement.
     const roadPlacedEvent = createEvent(
         "ROAD_PLACED",
         isFreeRoadPlacement
             ? isRoadBuilding
-                ? `${player.name} built a road using Road Building.`
-                : `${player.name} built a road using Grand Expedition.`
-            : `${player.name} built a road.`
+                ? `${player.name} built a Road using Road Building.`
+                : `${player.name} built a Road using Grand Expedition.`
+            : usesExplorerPassive
+                ? `${player.name} built a Road using the Explorer Passive.`
+                : `${player.name} built a Road.`
     );
-    // Build the new game state with the updated player, bank, and log.
+    // Build the updated game state.
     const updatedGame: GameState = {
         ...game,
         // Save the updated players.
         players: updatedPlayers,
         // Save the updated resource bank.
         resourceBank: updatedResourceBank,
-        // Count roads placed by Road Building.
+        // Track Road Building placements.
         roadBuildingRoadsPlaced:
             isRoadBuilding
                 ? game.roadBuildingRoadsPlaced + 1
                 : game.roadBuildingRoadsPlaced,
-        // Add the road placement to the event history.
+        // Add the event to the log.
         eventLog: [
             ...game.eventLog,
             roadPlacedEvent,
         ],
     };
-    // Recalculate Longest Road after the new road is placed.
+    // Recalculate Longest Road.
     const longestRoadUpdatedGame =
         updateLongestRoad(updatedGame);
-    // Grand Expedition may allow multiple free roads in one activation.
+    // Grand Expedition can place multiple roads.
     if (isGrandExpedition) {
-        // Count this road toward the Grand Expedition total.
+        // Count the road toward the Super.
         const roadsPlaced =
             game.grandExpeditionRoadsPlaced + 1;
-        // End Grand Expedition when all required roads are placed.
+        // End the Super when all roads are placed.
         if (
             roadsPlaced >=
             game.grandExpeditionRoadsToPlace
         ) {
             return evaluateMilestones({
                 ...longestRoadUpdatedGame,
-                // Clear the Grand Expedition state.
+                // Clear Grand Expedition state.
                 grandExpeditionPending: false,
                 grandExpeditionRoadsPlaced: 0,
                 grandExpeditionRoadsToPlace: 0,
             });
         }
-        // Check whether another legal road can still be placed.
+        // Check for another legal road.
         const hasAnotherLegalRoad =
             hasLegalRoadPlacement(
                 longestRoadUpdatedGame,
                 playerId
             );
-        // Keep Grand Expedition active only if another legal road exists.
+        // Continue only if another road is available.
         return evaluateMilestones({
             ...longestRoadUpdatedGame,
-            // Save the number of Grand Expedition roads placed.
+            // Save the number of roads placed.
             grandExpeditionRoadsPlaced:
                 roadsPlaced,
-            // Continue only when another legal road is available.
+            // Keep the Super active when possible.
             grandExpeditionPending:
                 hasAnotherLegalRoad,
         });
     }
-    // A normal road is finished immediately after placement.
+    // Normal roads finish immediately.
     if (!isRoadBuilding) {
         return evaluateMilestones(
             longestRoadUpdatedGame
         );
     }
-    // Find the player after the Road Building update.
+    // Find the updated player.
     const updatedPlayer =
         longestRoadUpdatedGame.players.find(
             (candidate) =>
                 candidate.id === playerId
         );
-    // Stop if the updated player cannot be found.
+    // Invalid updated player.
     if (!updatedPlayer) {
         return game;
     }
-    // Stop Road Building if the player has reached the 15-road limit.
+    // Stop Road Building at the road limit.
     if (updatedPlayer.roads.length >= 15) {
         return evaluateMilestones({
             ...longestRoadUpdatedGame,
@@ -260,56 +257,56 @@ export function buildRoad(
             roadBuildingRoadsPlaced: 0,
         });
     }
-    // Road Building allows a maximum of two roads.
+    // Road Building allows two roads.
     if (
         longestRoadUpdatedGame.roadBuildingRoadsPlaced >= 2
     ) {
         return evaluateMilestones({
             ...longestRoadUpdatedGame,
-            // End Road Building after the second road.
+            // End Road Building.
             roadBuildingPending: false,
             roadBuildingRoadsPlaced: 0,
         });
     }
-    // Check whether the player has another legal road.
+    // Check for another legal road.
     const hasSecondLegalRoad =
         hasLegalRoadPlacement(
             longestRoadUpdatedGame,
             playerId
         );
-    // Continue Road Building only if another legal road exists.
+    // Continue only if another road is available.
     return evaluateMilestones({
         ...longestRoadUpdatedGame,
         roadBuildingPending: hasSecondLegalRoad,
     });
 }
-// Returns true when the player has at least one legal road placement.
+// Check whether at least one legal road exists.
 export function hasLegalRoadPlacement(
     game: GameState,
     playerId: string
 ): boolean {
-    // Find the player checking for a legal road.
+    // Find the player.
     const player = game.players.find(
         (candidate) =>
             candidate.id === playerId
     );
-    // A missing player has no legal placement.
+    // Invalid player.
     if (!player) {
         return false;
     }
-    // A player at the road limit cannot place another road.
+    // Enforce the road limit.
     if (player.roads.length >= 15) {
         return false;
     }
-    // Look for at least one unoccupied edge connected to the player.
+    // Find an unoccupied connected edge.
     return game.board.edges.some((edge) => {
-        // Check whether another player already owns this edge.
+        // Check whether the edge is occupied.
         const occupied =
             game.players.some(
                 (candidate) =>
                     candidate.roads.includes(edge.id)
             );
-        // Occupied edges cannot be used.
+        // Occupied edges are unavailable.
         if (occupied) {
             return false;
         }
@@ -321,31 +318,31 @@ export function hasLegalRoadPlacement(
         );
     });
 }
-// Checks whether a specific edge legally connects to the player's network.
+// Check whether an edge connects to the player's network.
 function connectsToPlayerNetwork(
     game: GameState,
     playerId: string,
     edgeId: string
 ): boolean {
-    // Find the player whose network is being checked.
+    // Find the player.
     const player = game.players.find(
         (candidate) =>
             candidate.id === playerId
     );
-    // A missing player has no network.
+    // Invalid player.
     if (!player) {
         return false;
     }
-    // Find the edge being checked.
+    // Find the candidate edge.
     const candidateEdge =
         game.board.edges.find(
             (edge) => edge.id === edgeId
         );
-    // An invalid edge cannot connect to the network.
+    // Invalid edge.
     if (!candidateEdge) {
         return false;
     }
-    // Collect all nodes containing the player's settlements or cities.
+    // Collect the player's structures.
     const playerStructureNodes = new Set([
         ...player.settlements.map(
             (settlement) =>
@@ -353,7 +350,7 @@ function connectsToPlayerNetwork(
         ),
         ...player.cities,
     ]);
-    // Collect all nodes containing opponents' settlements or cities.
+    // Collect opponent structures.
     const opponentStructureNodes = new Set(
         game.players
             .filter(
@@ -368,37 +365,35 @@ function connectsToPlayerNetwork(
                 ...candidate.cities,
             ])
     );
-    // A road can connect through either end of the edge.
+    // Check both ends of the candidate edge.
     const candidateNodes = [
         candidateEdge.nodeA,
         candidateEdge.nodeB,
     ];
-    // Check both ends of the candidate edge.
     for (const nodeId of candidateNodes) {
-        // A player's own structure directly connects the road.
+        // The player's structure connects directly.
         if (
             playerStructureNodes.has(nodeId)
         ) {
             return true;
         }
-        // An opponent's structure blocks the player's road network
-        // from continuing through this node.
+        // An opponent structure blocks the network.
         if (
             opponentStructureNodes.has(nodeId)
         ) {
             continue;
         }
-        // Look for one of the player's existing roads connected to this node.
+        // Look for the player's connected road.
         const connectedToPlayerRoad =
             game.board.edges.some((edge) => {
-                // Do not compare the candidate edge to itself.
+                // Skip the candidate edge.
                 if (
                     edge.id ===
                     candidateEdge.id
                 ) {
                     return false;
                 }
-                // Only the player's roads can connect their network.
+                // Only the player's roads count.
                 if (
                     !player.roads.includes(
                         edge.id
@@ -406,51 +401,51 @@ function connectsToPlayerNetwork(
                 ) {
                     return false;
                 }
-                // The existing road must touch this node.
+                // The road must touch this node.
                 return (
                     edge.nodeA === nodeId ||
                     edge.nodeB === nodeId
                 );
             });
-        // The candidate edge connects to the player's existing road.
+        // The candidate edge connects to the network.
         if (connectedToPlayerRoad) {
             return true;
         }
     }
-    // Neither end of the edge connects to the player's network.
+    // Neither end connects to the network.
     return false;
 }
-// Calculates the maximum number of legal roads the player could place.
+// Calculate the maximum legal road placements.
 export function getMaxLegalRoadPlacements(
     game: GameState,
     playerId: string
 ): number {
-    // Find the player being checked.
+    // Find the player.
     const player = game.players.find(
-        (candidate) => candidate.id === playerId
+        (candidate) =>
+            candidate.id === playerId
     );
-    // A missing player cannot place roads.
+    // Invalid player.
     if (!player) {
         return 0;
     }
-    // Calculate how many road pieces the player has left.
+    // Calculate remaining road pieces.
     const remainingRoads =
         15 - player.roads.length;
-    // No pieces remaining means no possible placements.
+    // No remaining pieces.
     if (remainingRoads <= 0) {
         return 0;
     }
-    // Use a temporary game state to simulate road placements.
+    // Simulate placements on a temporary game state.
     let simulatedGame = game;
-    // Count how many legal placements were found.
+    // Count simulated placements.
     let roadsPlaced = 0;
-    // Keep looking until the player runs out of roads
-    // or no legal placement remains.
+    // Continue until no placement is possible.
     while (roadsPlaced < remainingRoads) {
         // Find the next legal edge.
         const legalEdge = simulatedGame.board.edges.find(
             (edge) => {
-                // Check whether the edge is already occupied.
+                // Check whether the edge is occupied.
                 const occupied =
                     simulatedGame.players.some(
                         (candidate) =>
@@ -460,7 +455,7 @@ export function getMaxLegalRoadPlacements(
                 if (occupied) {
                     return false;
                 }
-                // The edge must connect to the simulated network.
+                // Check network connection.
                 return connectsToPlayerNetwork(
                     simulatedGame,
                     playerId,
@@ -472,7 +467,7 @@ export function getMaxLegalRoadPlacements(
         if (!legalEdge) {
             break;
         }
-        // Add the simulated road without changing the real game.
+        // Add the simulated road.
         simulatedGame = {
             ...simulatedGame,
             players: simulatedGame.players.map(
@@ -480,7 +475,7 @@ export function getMaxLegalRoadPlacements(
                     candidate.id === playerId
                         ? {
                             ...candidate,
-                            // Add the simulated road to the player's network.
+                            // Add the simulated road.
                             roads: [
                                 ...candidate.roads,
                                 legalEdge.id,
@@ -492,6 +487,6 @@ export function getMaxLegalRoadPlacements(
         // Count the simulated placement.
         roadsPlaced += 1;
     }
-    // Return the maximum number of legal placements found.
+    // Return the maximum legal placements.
     return roadsPlaced;
 }

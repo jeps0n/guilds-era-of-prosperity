@@ -206,12 +206,12 @@ function transferLongestRoad(
     if (!newHolder) {
         return game;
     }
-    const event = createEvent(
-        "LONGEST_ROAD_CLAIMED",
-        previousHolderId
-            ? `${newHolder.name} took Longest Road from the previous holder.`
-            : `${newHolder.name} claimed Longest Road.`
-    );
+    const previousHolder = previousHolderId
+        ? game.players.find(
+            (player) =>
+                player.id === previousHolderId
+        )
+        : undefined;
     return {
         ...game,
         players: newPlayers,
@@ -219,7 +219,23 @@ function transferLongestRoad(
             newHolderId,
         eventLog: [
             ...game.eventLog,
-            event,
+            ...(previousHolder
+                ? [
+                    createEvent(
+                        "LONGEST_ROAD_CLAIMED",
+                        `${previousHolder.name} lost Longest Road. (-2VP)`
+                    ),
+                    createEvent(
+                        "LONGEST_ROAD_CLAIMED",
+                        `${newHolder.name} took Longest Road from ${previousHolder.name}. (+2VP)`
+                    ),
+                ]
+                : [
+                    createEvent(
+                        "LONGEST_ROAD_CLAIMED",
+                        `${newHolder.name} claimed Longest Road. (+2VP)`
+                    ),
+                ]),
         ],
     };
 }
@@ -260,7 +276,7 @@ function removeLongestRoadHolder(
     const event = createEvent(
         "LONGEST_ROAD_CLAIMED",
         previousHolder
-            ? `${previousHolder.name} lost Longest Road.`
+            ? `${previousHolder.name} lost Longest Road. (-2VP)`
             : "Longest Road ownership was removed."
     );
     return {

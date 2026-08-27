@@ -23,6 +23,7 @@ interface ActionBarProps {
     playerColor?: string;
     roadBuildingPending?: boolean;
     hasPlayableKnight?: boolean;
+    superMenuIsOpen: boolean;
 }
 interface ActionButtonProps {
     label: string;
@@ -51,8 +52,8 @@ function ActionButton({
                 padding: "10px 12px",
                 borderRadius: "10px",
                 border: active
-                    ? `2px solid ${ACTIVE_BUTTON_BORDER}`
-                    : `1px solid ${DEFAULT_BUTTON_BORDER}`,
+                    ? `3px solid ${ACTIVE_BUTTON_BORDER}`
+                    : `3px solid ${DEFAULT_BUTTON_BORDER}`,
                 background: active
                     ? ACTIVE_BUTTON_BACKGROUND
                     : disabled
@@ -75,8 +76,9 @@ function ActionButton({
         >
             <span
                 style={{
-                    fontSize: "20px",
+                    fontSize: "23px",
                     lineHeight: 1,
+                    transform: "translateY(-2px)",
                 }}
             >
                 {icon}
@@ -84,6 +86,7 @@ function ActionButton({
             <span
                 style={{
                     fontSize: "12px",
+                    lineHeight: 1,
                     whiteSpace: "nowrap",
                 }}
             >
@@ -130,6 +133,7 @@ function ActionBar({
     playerColor = "DEFAULT_BUTTON_BACKGROUND",
     roadBuildingPending = false,
     hasPlayableKnight = false,
+    superMenuIsOpen = false,
 }: ActionBarProps) {
     const isInitialPlacement =
         phase === "initial_placement";
@@ -171,7 +175,7 @@ function ActionBar({
     const actionBarBackground =
         hexToRgba(playerColor, 0.50);
     const actionBarLocked =
-        prosperityRollSequenceActive;
+        prosperityRollSequenceActive || superMenuIsOpen;
     if (diceOnly) {
         return (
             <ActionButton

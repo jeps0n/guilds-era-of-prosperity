@@ -7,6 +7,7 @@ interface GuildInformationPanelProps {
     prosperityRollSequenceActive: boolean;
     roadBuildingPending: boolean;
     robberPending: boolean;
+    superMenuIsOpen: boolean;
     onUseSuper: () => void;
 }
 function GuildInformationPanel({
@@ -14,15 +15,19 @@ function GuildInformationPanel({
     prosperityRollSequenceActive,
     roadBuildingPending,
     robberPending,
+    superMenuIsOpen,
     onUseSuper,
 }: GuildInformationPanelProps) {
     const secondaryRolls = player.secondaryRolls;
     const showSuperButton =
         player.superUnlocked && !prosperityRollSequenceActive;
     const boardPending = roadBuildingPending || robberPending;
-    const superDisabled = player.superUsed || boardPending;
+    const superDisabled = player.superUsed || boardPending || superMenuIsOpen;
     return (
-        <div style={{ marginTop: "12px" }}>
+        <div style={{
+            marginTop: "12px",
+            userSelect: "none"
+        }}>
             <Panel>
                 {/* SUPER PROGRESS / SUPER BUTTON */}
                 {!showSuperButton ? (
@@ -77,6 +82,7 @@ function GuildInformationPanel({
                                                 0 1px 1px rgba(255, 255, 255, 0.03)
                                             `,
                                         opacity: claimed ? 1 : 0.45,
+                                        cursor: "default"
                                     }}
                                 >
                                     {diceFaces[number - 1]}
@@ -110,31 +116,31 @@ function GuildInformationPanel({
                                     : "bold",
                                 border: player.superUsed
                                     ? "1px solid #374151"
-                                    : boardPending
+                                    : superDisabled
                                         ? "2px solid #75643d"
                                         : "2px solid #D4AF55",
                                 background: player.superUsed
                                     ? "#252b33"
-                                    : boardPending
+                                    : superDisabled
                                         ? "linear-gradient(180deg, #5a4a2a, #3a321f)"
                                         : "linear-gradient(180deg, #D4AF55, #9F7B2F)",
                                 color: player.superUsed
                                     ? "#6b7280"
-                                    : boardPending
+                                    : superDisabled
                                         ? "#a89b7a"
                                         : "#FFF8DF",
                                 boxShadow: player.superUsed
                                     ? "inset 0 1px 3px rgba(0,0,0,0.3)"
-                                    : boardPending
+                                    : superDisabled
                                         ? "none"
                                         : "0 0 10px rgba(212, 175, 85, 0.35)",
-                                textShadow: player.superUsed ||
-                                    boardPending
-                                    ? "none"
-                                    : "0 1px 2px rgba(0,0,0,0.5)",
+                                textShadow:
+                                    player.superUsed || superDisabled
+                                        ? "none"
+                                        : "0 1px 2px rgba(0,0,0,0.5)",
                                 cursor: player.superUsed
                                     ? "default"
-                                    : boardPending
+                                    : superDisabled
                                         ? "not-allowed"
                                         : "pointer",
                             }}
@@ -216,6 +222,7 @@ function GuildColumn({
                     : "none",
                 transition: "transform 0.15s ease",
                 zIndex: isActive ? 2 : 1,
+                cursor: "default"
             }}
         >
             <div style={{

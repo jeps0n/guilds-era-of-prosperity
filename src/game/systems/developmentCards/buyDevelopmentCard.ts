@@ -118,7 +118,7 @@ export function buyDevelopmentCard(
       ...game.eventLog,
       createEvent(
         "DEVELOPMENT_CARD_PURCHASED",
-        `${player.name} purchased a development card.`
+        `${player.name} purchased a Development Card.`
       ),
     ],
   });

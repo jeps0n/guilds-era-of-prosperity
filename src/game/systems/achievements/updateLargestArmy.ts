@@ -132,12 +132,12 @@ function transferLargestArmy(
     if (!newHolder) {
         return game;
     }
-    const event = createEvent(
-        "LARGEST_ARMY_CLAIMED",
-        previousHolderId
-            ? `${newHolder.name} took Largest Army from the previous holder.`
-            : `${newHolder.name} claimed Largest Army.`
-    );
+    const previousHolder = previousHolderId
+        ? game.players.find(
+            (player) =>
+                player.id === previousHolderId
+        )
+        : undefined;
     return {
         ...game,
         players: updatedPlayers,
@@ -145,7 +145,23 @@ function transferLargestArmy(
             newHolderId,
         eventLog: [
             ...game.eventLog,
-            event,
+            ...(previousHolder
+                ? [
+                    createEvent(
+                        "LARGEST_ARMY_CLAIMED",
+                        `${previousHolder.name} lost Largest Army. (-2VP)`
+                    ),
+                    createEvent(
+                        "LARGEST_ARMY_CLAIMED",
+                        `${newHolder.name} took Largest Army from ${previousHolder.name}. (+2VP)`
+                    ),
+                ]
+                : [
+                    createEvent(
+                        "LARGEST_ARMY_CLAIMED",
+                        `${newHolder.name} claimed Largest Army. (+2VP)`
+                    ),
+                ]),
         ],
     };
 }

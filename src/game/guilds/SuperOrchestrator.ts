@@ -18,6 +18,9 @@ import {
     type MasterBuilderSelection,
 } from "./builder/super/masterBuilderSuper";
 import { createEvent } from "../engine/createEvent";
+/* =========================================================
+ * SUPER BUTTON MODEL
+ * ========================================================= */
 export interface SuperButtonModel {
     id: string;
     resource: keyof Resources;
@@ -25,18 +28,26 @@ export interface SuperButtonModel {
     disabled: boolean;
     active: boolean;
 }
+/* =========================================================
+ * SUPER ORCHESTRATOR
+ * ========================================================= */
 export class SuperOrchestrator {
     private selectedButtons: Set<string> = new Set();
     private selectedMarketInsightCards: Set<string> =
         new Set();
     private selectedMasterBuilderBuilding:
         MasterBuilderSelection | undefined;
+    // Return the Super name for the player's guild.
     static getSuperTitle(guild: GuildType): string {
         const guildData = GUILDS.find(
             (guildData) => guildData.type === guild
         );
         return guildData?.superName ?? "SUPER MENU";
     }
+    /* =====================================================
+     * SUPER MENU
+     * ===================================================== */
+    // Build the resource selection buttons.
     getSuperButtons(
         game: GameState
     ): SuperButtonModel[] {
@@ -61,19 +72,29 @@ export class SuperOrchestrator {
             }));
         });
     }
+    /* =====================================================
+     * RESOURCE SELECTION
+     * ===================================================== */
+    // Toggle a resource selection.
     toggleButton(buttonId: string): void {
         if (this.selectedButtons.has(buttonId)) {
             this.selectedButtons.delete(buttonId);
             return;
         }
+        // Limit resource selections to three.
         if (this.selectedButtons.size >= 3) {
             return;
         }
         this.selectedButtons.add(buttonId);
     }
+    // Return the selected resource buttons.
     getSelectedButtons(): string[] {
         return Array.from(this.selectedButtons);
     }
+    /* =====================================================
+     * GUILD SELECTION
+     * ===================================================== */
+    // Return Market Insight cards and their selection state.
     getMarketInsightCards(
         game: GameState
     ): MarketInsightCardModel[] {
@@ -88,16 +109,39 @@ export class SuperOrchestrator {
             })
         );
     }
+    // Return the current Grand Expedition state.
     getGrandExpedition(
         game: GameState
     ): GrandExpeditionModel {
         return getGrandExpedition(game);
     }
+    // Return the current Master Builder state.
     getMasterBuilder(
         game: GameState
     ): MasterBuilderModel {
         return getMasterBuilder(game);
     }
+    // Return the automatically assumed Master Builder selection
+    // when exactly one building type is legal.
+    getAssumedMasterBuilderSelection(
+        game: GameState
+    ): MasterBuilderSelection | undefined {
+        const masterBuilder = getMasterBuilder(game);
+        if (
+            masterBuilder.canBuildCity &&
+            !masterBuilder.canBuildSettlement
+        ) {
+            return "city";
+        }
+        if (
+            !masterBuilder.canBuildCity &&
+            masterBuilder.canBuildSettlement
+        ) {
+            return "settlement";
+        }
+        return undefined;
+    }
+    // Toggle a Market Insight card selection.
     toggleMarketInsightCard(
         cardId: string
     ): void {
@@ -111,6 +155,7 @@ export class SuperOrchestrator {
             );
             return;
         }
+        // Limit Market Insight selections to two.
         if (
             this.selectedMarketInsightCards.size >= 2
         ) {
@@ -120,6 +165,7 @@ export class SuperOrchestrator {
             cardId
         );
     }
+    // Toggle the Master Builder building selection.
     toggleMasterBuilderSelection(
         selection: MasterBuilderSelection
     ): void {
@@ -134,21 +180,28 @@ export class SuperOrchestrator {
         this.selectedMasterBuilderBuilding =
             selection;
     }
+    // Return the selected Market Insight cards.
     getSelectedMarketInsightCards(): string[] {
         return Array.from(
             this.selectedMarketInsightCards
         );
     }
+    // Return the selected Master Builder option.
     getSelectedMasterBuilder():
         MasterBuilderSelection | undefined {
         return this.selectedMasterBuilderBuilding;
     }
+    // Clear all current Super selections.
     resetSelections(): void {
         this.selectedButtons.clear();
         this.selectedMarketInsightCards.clear();
         this.selectedMasterBuilderBuilding =
             undefined;
     }
+    /* =====================================================
+     * SUPER CONFIRMATION >
+     * ===================================================== */
+    // Check whether the current Super selection is valid.
     canConfirmSuper(game: GameState): boolean {
         const player = game.players.find(
             (candidate) =>
@@ -159,107 +212,77 @@ export class SuperOrchestrator {
         }
         const selectedResources =
             this.selectedButtons.size;
-        /*
-         * -----------------------------------------
-         * MERCHANT
-         * -----------------------------------------
-         *
-         * 3+ cards:
-         *   exactly 2 must be selected.
-         *
-         * 1–2 cards:
-         *   cards are automatically taken.
-         *
-         * 0 cards:
-         *   resources are mandatory.
-         */
+        /* =================================================
+         * > MERCHANT CONFIRM
+         * ================================================= */
         if (player.guild === "merchant") {
             const availableCards =
                 getMarketInsightCards(game);
+            // Three or more cards require exactly two selections.
             if (availableCards.length >= 3) {
                 return (
                     this.selectedMarketInsightCards
                         .size === 2
                 );
             }
+            // One or two cards are taken automatically.
             if (availableCards.length > 0) {
                 return true;
             }
+            // With no cards, resources are required.
             return selectedResources > 0;
         }
-        /*
-         * -----------------------------------------
-         * EXPLORER
-         * -----------------------------------------
-         *
-         * Legal roads:
-         *   Grand Expedition is mandatory.
-         *   Resources are optional.
-         *
-         * No legal roads:
-         *   resources are mandatory.
-         */
+        /* =================================================
+         * > EXPLORER CONFIRM
+         * ================================================= */
         if (player.guild === "explorer") {
             const grandExpedition =
                 getGrandExpedition(game);
+            // A legal road makes Grand Expedition mandatory.
             if (
                 grandExpedition.roadsToPlace > 0
             ) {
                 return true;
             }
+            // With no legal roads, resources are required.
             return selectedResources > 0;
         }
-        /*
-         * -----------------------------------------
-         * BUILDER
-         * -----------------------------------------
-         *
-         * Legal city/settlement:
-         *   one legal building must be selected.
-         *   Resources are optional.
-         *
-         * No legal building:
-         *   resources are mandatory.
-         */
+        /* =================================================
+         * > BUILDER CONFIRM
+         * ================================================= */
         if (player.guild === "builder") {
             const masterBuilder =
                 getMasterBuilder(game);
-            if (
-                this.selectedMasterBuilderBuilding ===
-                "city"
-            ) {
+            const assumedSelection =
+                this.getAssumedMasterBuilderSelection(game);
+            const selectedBuilding =
+                this.selectedMasterBuilderBuilding ??
+                assumedSelection;
+            // Confirm the selected city if it is legal.
+            if (selectedBuilding === "city") {
                 return masterBuilder.canBuildCity;
             }
-            if (
-                this.selectedMasterBuilderBuilding ===
-                "settlement"
-            ) {
+            // Confirm the selected settlement if it is legal.
+            if (selectedBuilding === "settlement") {
                 return masterBuilder.canBuildSettlement;
             }
-            /*
-             * No building is selected.
-             *
-             * If either building is legally available,
-             * the player must choose one.
-             */
+            // Both buildings are legal, so the player must choose.
             if (
-                masterBuilder.canBuildCity ||
+                masterBuilder.canBuildCity &&
                 masterBuilder.canBuildSettlement
             ) {
                 return false;
             }
-            /*
-             * No legal building exists.
-             * Resources become the required
-             * consolation transaction.
-             */
+            // With no legal building, resources are required.
             return selectedResources > 0;
         }
-        /*
-         * No recognized guild.
-         */
+        // Reject an unknown guild.
         return false;
     }
+    /* =====================================================
+     * SUPER RESOLUTION >
+     * ===================================================== */
+    // Resolve the selected Super actions.
     confirmSuper(game: GameState): GameState {
         const player = game.players.find(
             (candidate) =>
@@ -268,11 +291,7 @@ export class SuperOrchestrator {
         if (!player) {
             return game;
         }
-        /*
-         * -----------------------------------------
-         * RESOURCE SELECTION
-         * -----------------------------------------
-         */
+        // Convert selected button IDs into resource types.
         const selectedResources =
             Array.from(
                 this.selectedButtons
@@ -281,35 +300,21 @@ export class SuperOrchestrator {
                     buttonId.split("-");
                 return resource as keyof Resources;
             });
-        /*
-         * -----------------------------------------
-         * CONFIRMATION GUARD
-         * -----------------------------------------
-         *
-         * Keep the final confirmation rule in one
-         * place. Nothing proceeds unless the Super
-         * has a meaningful legal outcome.
-         */
+        // Stop if the current selection is not valid.
         if (!this.canConfirmSuper(game)) {
             return game;
         }
         let nextGame = game;
-        /*
-         * -----------------------------------------
-         * MERCHANT TRANSACTION
-         * -----------------------------------------
-         *
-         * Merchant's card action is the mandatory
-         * finisher when cards exist.
-         *
-         * If fewer than 3 cards exist, the resolver
-         * automatically takes all available cards.
-         */
+        let marketInsightCardCount = 0;
+        /* =================================================
+         * > MERCHANT RESOLVE SUPER
+         * ================================================= */
         if (player.guild === "merchant") {
             const availableCards =
                 getMarketInsightCards(nextGame);
             let selectedCardIds =
                 this.getSelectedMarketInsightCards();
+            // Fewer than three cards means all available cards are taken.
             if (availableCards.length < 3) {
                 selectedCardIds = [];
             }
@@ -320,26 +325,31 @@ export class SuperOrchestrator {
                         game.currentPlayerId,
                         selectedCardIds
                     );
+                // Stop if Market Insight failed.
                 if (marketGame === nextGame) {
                     return game;
                 }
+                const updatedPlayer = marketGame.players.find(
+                    (candidate) =>
+                        candidate.id === game.currentPlayerId
+                );
+                if (!updatedPlayer) {
+                    return game;
+                }
+                // Track how many development cards were gained.
+                marketInsightCardCount =
+                    updatedPlayer.developmentCards.length -
+                    player.developmentCards.length;
                 nextGame = marketGame;
             }
         }
-        /*
-         * -----------------------------------------
-         * EXPLORER TRANSACTION
-         * -----------------------------------------
-         *
-         * If a legal road exists, Grand Expedition
-         * MUST establish the pending road-placement
-         * interaction.
-         *
-         * Resources remain optional.
-         */
+        /* =================================================
+         * > EXPLORER RESOLVE SUPER
+         * ================================================= */
         if (player.guild === "explorer") {
             const grandExpedition =
                 getGrandExpedition(nextGame);
+            // A legal road starts the Grand Expedition placement.
             if (
                 grandExpedition.roadsToPlace > 0
             ) {
@@ -348,6 +358,7 @@ export class SuperOrchestrator {
                         nextGame,
                         game.currentPlayerId
                     );
+                // Stop if Grand Expedition failed.
                 if (
                     expeditionGame === nextGame
                 ) {
@@ -356,56 +367,44 @@ export class SuperOrchestrator {
                 nextGame = expeditionGame;
             }
         }
-        /*
-         * -----------------------------------------
-         * BUILDER TRANSACTION
-         * -----------------------------------------
-         *
-         * If a legal building exists, the selected
-         * city/settlement MUST establish the pending
-         * board interaction.
-         *
-         * Resources remain optional.
-         */
-        if (
-            player.guild === "builder" &&
-            this.selectedMasterBuilderBuilding !==
-            undefined
-        ) {
-            const builderGame =
-                resolveMasterBuilder(
-                    nextGame,
-                    game.currentPlayerId,
-                    this.selectedMasterBuilderBuilding
+        /* =================================================
+         * > BUILDER RESOLVE SUPER
+         * ================================================= */
+        if (player.guild === "builder") {
+            const selectedBuilding =
+                this.selectedMasterBuilderBuilding ??
+                this.getAssumedMasterBuilderSelection(
+                    nextGame
                 );
-            if (builderGame === nextGame) {
-                return game;
+            if (selectedBuilding !== undefined) {
+                // Start the selected Master Builder placement.
+                const builderGame =
+                    resolveMasterBuilder(
+                        nextGame,
+                        game.currentPlayerId,
+                        selectedBuilding
+                    );
+                // Stop if Master Builder failed.
+                if (builderGame === nextGame) {
+                    return game;
+                }
+                nextGame = builderGame;
             }
-            nextGame = builderGame;
         }
-        /*
-         * -----------------------------------------
+        /* =================================================
          * RESOURCE TRANSACTION
-         * -----------------------------------------
-         *
-         * Resources are resolved AFTER the guild
-         * finisher.
-         *
-         * This is intentional:
-         *
-         *   FINISHER = mandatory when available
-         *   RESOURCES = optional when finisher exists
-         *   RESOURCES = mandatory when no finisher exists
-         */
+         * ================================================= */
         if (selectedResources.length > 0) {
             const resourceGame = resolveSuper(
                 nextGame,
                 game.currentPlayerId,
                 selectedResources
             );
+            // Stop if the resource transaction failed.
             if (resourceGame === nextGame) {
                 return game;
             }
+            // Count each selected resource.
             const resourceCounts =
                 selectedResources.reduce(
                     (counts, resource) => {
@@ -420,20 +419,11 @@ export class SuperOrchestrator {
                         >
                     >
                 );
-            const superUsedEvent = [
-                ...Array.from(
-                    { length: this.selectedMarketInsightCards.size },
-                    () =>
-                        createEvent(
-                            "DEVELOPMENT_CARD_GAINED",
-                            `${player.name} received a development card using Market Insight.`
-                        )
-                ),
-            ];
             const currentGuild = GUILDS.find(
                 (guildData) =>
                     guildData.type === player.guild
             );
+            // Build the resource event summary.
             const resourceSummary =
                 (
                     Object.entries(
@@ -456,36 +446,44 @@ export class SuperOrchestrator {
                         "RESOURCES_COLLECTED",
                         `${player.name} received ${resourceSummary} from ${currentGuild?.superName ?? " Guild Super"}.`
                     ),
-                    ...(player.guild === "merchant"
-                        ? superUsedEvent
-                        : []),
                 ],
             };
         }
-        /*
-         * -----------------------------------------
-         * MEANINGFUL TRANSACTION
-         * -----------------------------------------
-         *
-         * At this point either:
-         *
-         *   1. a guild finisher was established, or
-         *   2. resources were transferred.
-         *
-         * If neither happened, do not consume the
-         * Super.
-         */
+        /* =================================================
+         * MERCHANT EVENTS
+         * ================================================= */
+        if (
+            player.guild === "merchant" &&
+            marketInsightCardCount > 0
+        ) {
+            // Create one event for each development card gained.
+            const marketInsightEvents = Array.from(
+                { length: marketInsightCardCount },
+                () =>
+                    createEvent(
+                        "DEVELOPMENT_CARD_GAINED",
+                        `${player.name} received a Development Card using Market Insight.`
+                    )
+            );
+            nextGame = {
+                ...nextGame,
+                eventLog: [
+                    ...nextGame.eventLog,
+                    ...marketInsightEvents,
+                ],
+            };
+        }
+        /* =================================================
+         * SUPER COMPLETION
+         * ================================================= */
+        // Do not consume the Super if nothing was resolved.
         if (nextGame === game) {
             return game;
         }
-        /*
-         * -----------------------------------------
+        /* =================================================
          * SUPER CONSUMPTION
-         * -----------------------------------------
-         *
-         * The orchestrator owns consumption because
-         * it coordinates the entire Super transaction.
-         */
+         * ================================================= */
+        // Mark the player's Super as used.
         nextGame = {
             ...nextGame,
             players: nextGame.players.map(
@@ -499,10 +497,7 @@ export class SuperOrchestrator {
                         : candidate
             ),
         };
-        /*
-         * Clear all UI selections after a successful
-         * Super transaction.
-         */
+        // Clear all selections after a successful Super.
         this.selectedButtons.clear();
         this.selectedMarketInsightCards.clear();
         this.selectedMasterBuilderBuilding =
@@ -510,6 +505,9 @@ export class SuperOrchestrator {
         return nextGame;
     }
 }
+/* =========================================================
+ * MARKET INSIGHT MODEL
+ * ========================================================= */
 export interface MarketInsightCardModel {
     id: string;
     type: string;

@@ -34,6 +34,30 @@ function GuildSelection({
           textAlign: "center",
         }}
       >
+        <div
+          style={{
+            padding: "14px 28px",
+            borderRadius: "12px",
+            background: "linear-gradient(180deg, #3a321f, #252018)",
+            border: "2px solid #64748B",
+            boxShadow: "0 0 14px rgba(212, 175, 85, 0.25)",
+            color: "#FFF8DF",
+            textAlign: "center",
+            margin: "0px 0px 24px"
+          }}
+        >
+          <h1
+            style={{
+              margin: "0px",
+              fontSize: "28px",
+              fontWeight: "bold",
+              letterSpacing: "0.5px",
+              textShadow: "0 1px 2px rgba(0,0,0,0.5)",
+            }}
+          >
+            Guilds: Era of Prosperity
+          </h1>
+        </div>
         <h2
           style={{
             margin: "0 0 12px",
@@ -49,6 +73,11 @@ function GuildSelection({
             background: "#374151",
             color: "#f9fafb",
             fontWeight: "bold",
+            border: `4px solid ${playerName === "Zeke"
+              ? "#f97316"
+              : "#9333ea"
+              }`,
+            opacity: 0.9,
           }}
         >
           {playerName}'s Turn
@@ -65,9 +94,9 @@ function GuildSelection({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "220px 220px 220px",
-          gridTemplateRows: "220px",
-          gap: "24px",
+          gridTemplateColumns: "240px 240px 240px",
+          gridTemplateRows: "200px",
+          gap: "18px",
           justifyContent: "center",
           alignItems: "start",
         }}

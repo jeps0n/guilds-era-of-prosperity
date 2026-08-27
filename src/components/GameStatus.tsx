@@ -18,6 +18,8 @@ function GameStatus({
         padding: "12px 20px",
         minWidth: "280px",
         textAlign: "center",
+        cursor:"default",
+        userSelect: "none"
       }}
     >
       <div

@@ -53,7 +53,7 @@ export function placeSettlement(
       ...game.eventLog,
       createEvent(
         "INITIAL_SETTLEMENT_PLACED",
-        `${player.name} placed a settlement.`
+        `${player.name} placed a Settlement.`
       ),
     ],
   };

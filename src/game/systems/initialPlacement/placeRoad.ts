@@ -50,7 +50,7 @@ export function placeRoad(
       ...game.eventLog,
       createEvent(
         "INITIAL_ROAD_PLACED",
-        `${player.name} placed a road.`
+        `${player.name} placed a Road.`
       ),
     ],
   };

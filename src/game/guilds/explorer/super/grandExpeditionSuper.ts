@@ -63,7 +63,7 @@ export function resolveGrandExpedition(
             ...game.eventLog,
             createEvent(
                 "SUPER_ACTIVATED",
-                `${player.name} used guild super ability: GRAND EXPEDITION.`
+                `${player.name} used Guild Super Ability: GRAND EXPEDITION.`
             ),
         ],
     };

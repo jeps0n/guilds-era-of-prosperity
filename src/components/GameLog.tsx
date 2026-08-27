@@ -176,6 +176,8 @@ function GameLog({
             style={{
                 marginTop: "12px",
                 marginBottom: "0px",
+                cursor: "default",
+                userSelect: "none",
             }}
         >
             <Panel>
@@ -214,6 +216,8 @@ function GameLog({
                                         borderBottom:
                                             "1px solid #1f2937",
                                         color: "#d1d5db",
+                                        cursor: "text",
+                                        userSelect: "text"
                                     }}
                                 >
                                     {renderEventMessage(

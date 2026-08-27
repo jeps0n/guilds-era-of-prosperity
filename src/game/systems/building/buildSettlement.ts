@@ -6,6 +6,7 @@ import { canPlaceSettlement } from "../validation/canPlaceSettlement";
 import { updateLongestRoad } from "../achievements/updateLongestRoad";
 import { evaluateMilestones } from "../milestones/evaluateMilestones";
 type Resource = keyof Resources;
+// Standard cost of Settlement
 const SETTLEMENT_RESOURCES: Resource[] = [
     "brick",
     "lumber",
@@ -18,7 +19,7 @@ export function buildSettlement(
     nodeId: string,
     discountedResource?: Resource
 ): GameState {
-    // Game must be active.
+    // Settlements can only be built during play.
     if (game.phase !== "playing") {
         return game;
     }
@@ -26,7 +27,7 @@ export function buildSettlement(
     if (game.currentPlayerId !== playerId) {
         return game;
     }
-    // Block other building during unrelated pending actions.
+    // Block building during pending actions.
     if (
         game.robberPending ||
         game.grandExpeditionPending ||
@@ -38,11 +39,11 @@ export function buildSettlement(
     ) {
         return game;
     }
-    // Master Builder settlement is allowed before the dice roll.
+    // Master Builder super can build settlement before the dice roll.
     const isMasterBuilderSettlement =
         game.masterBuilderPending &&
         game.masterBuilderSelection === "settlement";
-    // Normal settlement building requires a dice roll.
+    // All other settlement built/placed requires a dice roll.
     if (
         game.lastDiceRoll === undefined &&
         !isMasterBuilderSettlement
@@ -53,6 +54,7 @@ export function buildSettlement(
     const player = game.players.find(
         (candidate) => candidate.id === playerId
     );
+    // Invalid player.
     if (!player) {
         return game;
     }
@@ -60,13 +62,13 @@ export function buildSettlement(
     if (player.settlements.length >= 5) {
         return game;
     }
-    // Check Builder passive availability.
+    // Check Builder Passive availability.
     const isBuilder =
         player.guild === "builder";
     const builderPassiveAvailable =
         isBuilder &&
         !player.guildPassiveUsedThisTurn;
-    // Master Builder settlement is free.
+    // Master Builder makes the settlement for free.
     const settlementCost =
         isMasterBuilderSettlement
             ? {
@@ -79,14 +81,9 @@ export function buildSettlement(
                 player,
                 discountedResource
             );
-    // Builder discount validation only applies
-    // to a normal settlement build.
+    // Validate the Builder discount for a normal settlement build.
     if (!isMasterBuilderSettlement) {
-        /*
-         * If Builder is attempting to use the passive,
-         * the discounted resource must be one of the
-         * four resources normally required by a settlement.
-         */
+        // The discount must use a settlement resource.
         if (
             builderPassiveAvailable &&
             discountedResource !== undefined &&
@@ -96,43 +93,41 @@ export function buildSettlement(
         ) {
             return game;
         }
-        /*
-         * A Builder with an unused passive must explicitly
-         * provide the resource being discounted.
-         */
+        // Builder must choose the discounted resource.
         if (
             builderPassiveAvailable &&
             discountedResource === undefined
         ) {
             return game;
         }
-        /*
-         * Final affordability check against the effective
-         * settlement cost.
-         */
+        // Check the effective settlement cost.
         if (
             player.resources.brick <
-                settlementCost.brick ||
+            settlementCost.brick ||
             player.resources.lumber <
-                settlementCost.lumber ||
+            settlementCost.lumber ||
             player.resources.wheat <
-                settlementCost.wheat ||
+            settlementCost.wheat ||
             player.resources.sheep <
-                settlementCost.sheep
+            settlementCost.sheep
         ) {
             return game;
         }
     }
+    // Find the target node.
     const node = game.board.nodes.find(
         (candidate) =>
             candidate.id === nodeId
     );
+    // Invalid node.
     if (!node) {
         return game;
     }
+    // Check settlement placement rules.
     if (!canPlaceSettlement(game, nodeId)) {
         return game;
     }
+    // Settlement must connect to the player's road.
     if (
         !connectsToPlayerRoad(
             game,
@@ -142,23 +137,21 @@ export function buildSettlement(
     ) {
         return game;
     }
-    /*
-     * The passive is consumed only after all validation
-     * succeeds and the settlement is actually built.
-     *
-     * Master Builder does not consume the Builder passive.
-     */
+    // Consume the Builder Passive only on a normal discounted build.
     const usesBuilderPassive =
         !isMasterBuilderSettlement &&
         builderPassiveAvailable &&
         discountedResource !== undefined;
+    // Update the player.
     const updatedPlayers =
         game.players.map((candidate) => {
+            // Leave other players unchanged.
             if (candidate.id !== playerId) {
                 return candidate;
             }
             return {
                 ...candidate,
+                // Pay the settlement cost.
                 resources: {
                     ...candidate.resources,
                     brick:
@@ -174,6 +167,7 @@ export function buildSettlement(
                         candidate.resources.sheep -
                         settlementCost.sheep,
                 },
+                // Add the settlement.
                 settlements: [
                     ...candidate.settlements,
                     {
@@ -182,13 +176,16 @@ export function buildSettlement(
                         nodeId,
                     },
                 ],
+                // Consume the Builder Passive when used.
                 guildPassiveUsedThisTurn:
                     usesBuilderPassive
                         ? true
                         : candidate.guildPassiveUsedThisTurn,
+                // Award one VP.
                 vp: candidate.vp + 1,
             };
         });
+    // Return paid resources to the bank.
     const updatedResourceBank = {
         ...game.resourceBank,
         brick:
@@ -206,27 +203,37 @@ export function buildSettlement(
         ore:
             game.resourceBank.ore,
     };
+    // Build the updated game state.
     const updatedGame: GameState = {
         ...game,
+        // Save the updated players.
         players: updatedPlayers,
+        // Save the updated resource bank.
         resourceBank:
             updatedResourceBank,
+        // Track the last settlement placement.
         lastPlacedSettlementNodeId:
             nodeId,
+        // Record the build event.
         eventLog: [
             ...game.eventLog,
             createEvent(
                 "SETTLEMENT_BUILT",
                 isMasterBuilderSettlement
-                    ? `${player.name} built a settlement using Master Builder.`
-                    : `${player.name} built a settlement.`
+                    ? `${player.name} built a Settlement using Master Builder. (+1VP)`
+                    : usesBuilderPassive
+                        ? `${player.name} built a Settlement using the Builder Passive. (+1VP)`
+                        : `${player.name} built a Settlement. (+1VP)`
             ),
         ],
     };
+    // Recalculate Longest Road.
     const longestRoadUpdatedGame =
         updateLongestRoad(updatedGame);
+    // Resolve the settlement build.
     return evaluateMilestones({
         ...longestRoadUpdatedGame,
+        // Clear Master Builder after use.
         masterBuilderPending:
             isMasterBuilderSettlement
                 ? false
@@ -237,18 +244,22 @@ export function buildSettlement(
                 : longestRoadUpdatedGame.masterBuilderSelection,
     });
 }
+// Check whether a node connects to the player's road.
 function connectsToPlayerRoad(
     game: GameState,
     playerId: string,
     nodeId: string
 ): boolean {
+    // Find the player.
     const player = game.players.find(
         (candidate) =>
             candidate.id === playerId
     );
+    // Invalid player.
     if (!player) {
         return false;
     }
+    // Find a player's road touching the node.
     return game.board.edges.some((edge) => {
         if (
             edge.nodeA !== nodeId &&
@@ -263,28 +274,37 @@ export function hasLegalSettlementPlacement(
     game: GameState,
     playerId: string
 ): boolean {
+    // Settlements can only be checked during play.
     if (game.phase !== "playing") {
         return false;
     }
+    // Only the current player can build.
     if (game.currentPlayerId !== playerId) {
         return false;
     }
+    // Pending robber actions block placement.
     if (game.robberPending) {
         return false;
     }
+    // Find the player.
     const player = game.players.find(
         (candidate) => candidate.id === playerId
     );
+    // Invalid player.
     if (!player) {
         return false;
     }
+    // Enforce the five-settlement limit.
     if (player.settlements.length >= 5) {
         return false;
     }
+    // Find a legal connected node.
     return game.board.nodes.some((node) => {
+        // Check settlement placement rules.
         if (!canPlaceSettlement(game, node.id)) {
             return false;
         }
+        // Check road connection.
         return connectsToPlayerRoad(
             game,
             playerId,

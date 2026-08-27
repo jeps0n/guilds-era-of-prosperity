@@ -106,7 +106,7 @@ export function resolveMasterBuilder(
             ...game.eventLog,
             createEvent(
                 "SUPER_ACTIVATED",
-                `${player.name} used guild super ability: MASTER BUILDER.`
+                `${player.name} used Guild Super Ability: MASTER BUILDER.`
             ),
         ],
     };

@@ -27,6 +27,9 @@ export function canOpenGuildDiscountMenu(
     if (!player) {
         return false;
     }
+    if (game.masterBuilderPending) {
+        return false;
+    }
     if (
         game.phase === "playing" &&
         game.lastDiceRoll === undefined
@@ -134,9 +137,9 @@ function canPlaceRoadForGuildMenu(
                     }
                     return (
                         candidateEdge.nodeA ===
-                            nodeId ||
+                        nodeId ||
                         candidateEdge.nodeB ===
-                            nodeId
+                        nodeId
                     );
                 }
             );

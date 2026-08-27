@@ -20,7 +20,7 @@ export function evaluateMilestones(
                 ),
                 createEvent(
                     "GAME_ENDED",
-                    `${winner.name} won the game.`
+                    `${winner.name} won the game!`
                 ),
             ],
         };

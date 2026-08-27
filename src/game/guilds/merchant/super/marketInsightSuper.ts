@@ -102,7 +102,7 @@ export function resolveMarketInsight(
             ...game.eventLog,
             createEvent(
                 "SUPER_ACTIVATED",
-                `${player.name} used guild super ability: MARKET INSIGHT.`
+                `${player.name} used Guild Super Ability: MARKET INSIGHT.`
             )
         ],
     };

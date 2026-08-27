@@ -9,12 +9,13 @@ function GuildCard({
 }: GuildCardProps) {
   return (
     <div
+      onClick={onSelect}
       style={{
         border: `3px solid ${guild.color}`,
         borderRadius: "12px",
-        padding: "20px",
-        width: "220px",
-        minHeight: "220px",
+        padding: "12px",
+        width: "240px",
+        minHeight: "200px",
         boxSizing: "border-box",
         background: "#1f2937",
         color: "white",
@@ -26,35 +27,68 @@ function GuildCard({
       onMouseEnter={(event) => {
         event.currentTarget.style.transform =
           "translateY(-6px)";
+        event.currentTarget.style.boxShadow =
+          `0 0 24px ${guild.color}AA`;
+        event.currentTarget.style.borderWidth = "4px";
       }}
       onMouseLeave={(event) => {
         event.currentTarget.style.transform =
           "translateY(0)";
+        event.currentTarget.style.boxShadow =
+          `0 0 18px ${guild.color}55`;
+        event.currentTarget.style.borderWidth = "4px";
       }}
     >
-      <h2>
-        {guild.icon} {guild.name}
-      </h2>
-      <div>
-        {guild.description}
-      </div>
-      <button
-        type="button"
-        onClick={onSelect}
+      {/* GUILD NAME */}
+      <div
         style={{
-          marginTop: "16px",
-          padding: "10px 18px",
-          borderRadius: "8px",
-          border: "none",
-          background: guild.color,
-          color: "#111827",
-          fontWeight: "bold",
-          cursor: "pointer",
-          width: "100%",
+          marginBottom: "14px",
         }}
       >
-        Choose {guild.name}
-      </button>
+        <h2
+          style={{
+            margin: "0px",
+            color: guild.color,
+          }}
+        >
+          {guild.icon} {guild.name}
+        </h2>
+      </div>
+      {/* DESCRIPTION */}
+      <div
+        style={{
+          marginBottom: "14px",
+          color: "#d1d5db",
+          // lineHeight: 1.4,
+        }}
+      >
+        {guild.description}
+      </div>
+      {/* FOCUS */}
+      <div
+        style={{
+          paddingTop: "10px",
+          borderTop: "1px solid #374151",
+        }}
+      >
+        <div style={{
+          marginBottom: "4px",
+          fontWeight: "bold",
+        }}>
+          Focus
+        </div>
+        <ul
+          style={{
+            margin: 0,
+            paddingLeft: "18px",
+          }}
+        >
+          <li>{guild.focus1}</li>
+          {guild.focus2
+            ? <li>{guild.focus2}</li>
+            : null}
+        </ul>
+      </div>
     </div>
   );
 }

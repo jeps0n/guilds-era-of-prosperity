@@ -200,7 +200,8 @@ export function getActionAvailability(
             game.phase === "playing" &&
             !hasRolled &&
             !game.robberPending &&
-            !game.grandExpeditionPending,
+            !game.grandExpeditionPending &&
+            !game.masterBuilderPending,
         // Trading requires a completed dice roll.
         canTrade:
             canTrade,
