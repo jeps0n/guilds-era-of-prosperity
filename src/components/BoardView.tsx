@@ -104,7 +104,9 @@ function BoardView({
         position: "relative",
         width: "800px",
         height: "600px",
+        userSelect: "none",
       }}
+      onDragStart={(event) => event.preventDefault()}
     >
       <style>
         {`
@@ -147,7 +149,7 @@ function BoardView({
           display: "block",
           width: "800px",
           height: "600px",
-          background: robberPending
+          background: robberPending || winnerRevealing
             ? "linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), #3b82f6"
             : "#3b82f6",
           borderRadius: "18px",
@@ -678,25 +680,30 @@ function BoardView({
             /* ===================================================== */
             /* VICTORY ANIMATIONS                                    */
             /* ===================================================== */
-            @keyframes victoryConfetti {
-              0% {
-                transform: translate(0, -30px) rotate(0deg);
-                opacity: 0;
+              @keyframes victoryConfetti {
+                0% {
+                  transform:
+                    translate(0, -30px)
+                    rotateX(0deg)
+                    rotateY(0deg)
+                    rotateZ(0deg);
+                  opacity: 0;
+                }
+                10% {
+                  opacity: 1;
+                }
+                50% {
+                  opacity: 1;
+                }
+                100% {
+                  transform:
+                    translate(var(--drift-x), 650px)
+                    rotateX(var(--spin-x))
+                    rotateY(var(--spin-y))
+                    rotateZ(var(--rotate));
+                  opacity: 0;
+                }
               }
-              10% {
-                opacity: 1;
-              }
-              50% {
-                opacity: 1;
-              }
-              100% {
-                transform: translate(
-                  var(--drift-x),
-                  650px
-                ) rotate(var(--rotate));
-                opacity: 0;
-              }
-            }
             /* ===================================================== */
             /* GOLD DUST SPARK                                      */
             /* ===================================================== */
@@ -815,7 +822,7 @@ function BoardView({
                 victoryConfetti
                 var(--duration)
                 var(--delay)
-                linear
+                ease-in-out
                 infinite;
             }
             /* ===================================================== */
@@ -845,35 +852,51 @@ function BoardView({
             {/* CONFETTI                                                */}
             {/* ======================================================= */}
             {[
-              [4, 6, 15, "#D4AF55", "3.8s", "0s"],
-              [9, 4, 11, "#FFF4D0", "4.6s", "-2s"],
-              [14, 7, 17, "#F1D77A", "3.4s", "-1s"],
-              [20, 5, 13, "#FFF8DF", "5.1s", "-3s"],
+              [4, 6, 15, "#D4AF55", "3.2s", "0s"],
+              [9, 4, 11, "#FFF4D0", "5.4s", "-2s"],
+              [14, 7, 17, "#F1D77A", "2.9s", "-1s"],
+              [20, 5, 13, "#FFF8DF", "5.8s", "-3s"],
               [27, 6, 16, "#D4AF55", "4.2s", "-1.8s"],
-              [34, 4, 12, "#F5E6B3", "3.7s", "-2.5s"],
-              [42, 7, 18, "#D4AF55", "4.9s", "-4s"],
-              [49, 5, 13, "#FFF0B0", "3.5s", "-1.2s"],
-              [57, 6, 16, "#F1D77A", "4.4s", "-3.4s"],
+              [34, 4, 12, "#F5E6B3", "3.6s", "-2.5s"],
+              [42, 7, 18, "#D4AF55", "6.1s", "-4s"],
+              [49, 5, 13, "#FFF0B0", "3.4s", "-1.2s"],
+              [57, 6, 16, "#F1D77A", "4.8s", "-3.4s"],
               [65, 4, 12, "#FFF8DF", "5.2s", "-2.1s"],
-              [73, 7, 17, "#D4AF55", "3.9s", "-4.5s"],
-              [81, 5, 14, "#F5E6B3", "4.7s", "-1.6s"],
-              [89, 6, 16, "#F1D77A", "3.6s", "-3s"],
-              [96, 4, 11, "#FFF4D0", "5s", "-2.8s"],
-              [3, 5, 13, "#F1D77A", "4.5s", "-2.3s"],
-              [11, 7, 16, "#D4AF55", "3.9s", "-1.1s"],
-              [18, 4, 12, "#FFF8DF", "5.2s", "-4s"],
-              [26, 6, 15, "#F5E6B3", "4.1s", "-2.7s"],
-              [35, 5, 13, "#D4AF55", "3.7s", "-1.9s"],
-              [44, 7, 17, "#F1D77A", "4.8s", "-3.5s"],
-              [53, 4, 12, "#FFF4D0", "3.5s", "-1.4s"],
-              [61, 6, 15, "#D4AF55", "4.4s", "-2.6s"],
-              [70, 5, 14, "#FFF8DF", "5s", "-4.2s"],
-              [78, 7, 17, "#F5E6B3", "3.8s", "-2s"],
-              [87, 4, 12, "#F1D77A", "4.6s", "-3.1s"],
-              [95, 6, 16, "#D4AF55", "4s", "-1.7s"],
+              [73, 7, 17, "#D4AF55", "3.0s", "-4.5s"],
+              [81, 5, 14, "#F5E6B3", "5.6s", "-1.6s"],
+              [89, 6, 16, "#F1D77A", "4.0s", "-3s"],
+              [96, 4, 11, "#FFF4D0", "6.2s", "-2.8s"],
+              [3, 5, 13, "#F1D77A", "3.7s", "-2.3s"],
+              [11, 7, 16, "#D4AF55", "5.0s", "-1.1s"],
+              [18, 4, 12, "#FFF8DF", "2.8s", "-4s"],
+              [26, 6, 15, "#F5E6B3", "4.5s", "-2.7s"],
+              [35, 5, 13, "#D4AF55", "5.7s", "-1.9s"],
+              [44, 7, 17, "#F1D77A", "3.3s", "-3.5s"],
+              [53, 4, 12, "#FFF4D0", "4.4s", "-1.4s"],
+              [61, 6, 15, "#D4AF55", "6.0s", "-2.6s"],
+              [70, 5, 14, "#FFF8DF", "3.1s", "-4.2s"],
+              [78, 7, 17, "#F5E6B3", "5.3s", "-2s"],
+              [87, 4, 12, "#F1D77A", "3.8s", "-3.1s"],
+              [95, 6, 16, "#D4AF55", "5.9s", "-1.7s"],
+              [7, 5, 14, "#FFF4D0", "4.1s", "-1.4s"],
+              [16, 6, 18, "#D4AF55", "5.5s", "-3.2s"],
+              [23, 4, 12, "#F1D77A", "3.0s", "-0.8s"],
+              [30, 7, 16, "#FFF8DF", "4.9s", "-2.2s"],
+              [39, 5, 13, "#D4AF55", "6.1s", "-4.1s"],
+              [47, 6, 17, "#F5E6B3", "3.2s", "-1.7s"],
+              [55, 4, 11, "#FFF0B0", "4.7s", "-3.7s"],
+              [63, 7, 18, "#D4AF55", "5.1s", "-2.9s"],
+              [69, 5, 14, "#F1D77A", "2.9s", "-0.6s"],
+              [76, 6, 16, "#FFF8DF", "4.3s", "-3.8s"],
+              [83, 4, 12, "#F5E6B3", "5.8s", "-2.4s"],
+              [90, 7, 17, "#D4AF55", "3.5s", "-1.3s"],
+              [98, 5, 13, "#FFF4D0", "6.2s", "-4.4s"],
+              [52, 6, 15, "#F1D77A", "5.3s", "-0.9s"],
             ].map(
               ([x, size, height, color, duration, delay], index) => {
-                const randomDrift = Math.random() * 160 - 80;
+                const randomDrift = Math.random() * 220 - 110;
+                const randomSpinX = Math.random() * 1440 - 720;
+                const randomSpinY = Math.random() * 1440 - 720;
                 const randomRotation = Math.random() * 720 - 360;
                 return (
                   <div
@@ -888,6 +911,8 @@ function BoardView({
                         "--duration": duration,
                         "--delay": delay,
                         "--drift-x": `${randomDrift}px`,
+                        "--spin-x": `${randomSpinX}deg`,
+                        "--spin-y": `${randomSpinY}deg`,
                         "--rotate": `${randomRotation}deg`,
                       } as React.CSSProperties
                     }
@@ -899,7 +924,15 @@ function BoardView({
                       );
                       element.style.setProperty(
                         "--drift-x",
-                        `${Math.random() * 160 - 80}px`
+                        `${Math.random() * 220 - 110}px`
+                      );
+                      element.style.setProperty(
+                        "--spin-x",
+                        `${Math.random() * 1440 - 720}deg`
+                      );
+                      element.style.setProperty(
+                        "--spin-y",
+                        `${Math.random() * 1440 - 720}deg`
                       );
                       element.style.setProperty(
                         "--rotate",
@@ -1169,12 +1202,12 @@ function BoardView({
               border: "3px solid #D4AF55",
               borderRadius: "20px",
               boxShadow: `
-          0 0 20px rgba(212, 175, 85, 0.60),
-          0 0 45px rgba(212, 175, 85, 0.30),
-          0 0 80px rgba(212, 175, 85, 0.16),
-          inset 0 0 18px rgba(255, 220, 130, 0.16),
-          inset 0 0 0 1px rgba(255, 239, 190, 0.5)
-        `,
+                0 0 20px rgba(212, 175, 85, 0.60),
+                0 0 45px rgba(212, 175, 85, 0.30),
+                0 0 80px rgba(212, 175, 85, 0.16),
+                inset 0 0 18px rgba(255, 220, 130, 0.16),
+                inset 0 0 0 1px rgba(255, 239, 190, 0.5)
+              `,
               color: "#FFF8DF",
             }}
           >

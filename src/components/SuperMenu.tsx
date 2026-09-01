@@ -57,15 +57,16 @@ function SuperMenu({
         isMerchant &&
         marketInsightCards.length > 0 &&
         !merchantCardsRevealed;
+    const superResolutionLocked =
+        isMerchant && merchantCardsRevealed;
     const merchantSelectionHeader =
-        game.developmentDeck.length >= 3
-            ? "Pick 2 free dev cards, 1 goes back on top of development deck: "
-            : game.developmentDeck.length === 0
-                ? "There are no more dev cards left in the development deck."
-                : game.developmentDeck.length === 1
-                    ? "There is " + game.developmentDeck.length + " dev card left in the development deck. You will get: "
-                    // game.developmentDeck.length === 2
-                    : "There are " + game.developmentDeck.length + " dev cards left in the development deck. You will get: ";
+        marketInsightCards.length >= 3
+            ? "Pick 2 free dev cards, 1 goes back on top of development deck:"
+            : marketInsightCards.length === 2
+                ? "There are " + game.developmentDeck.length + " dev cards left in the development deck. You will get:"
+                : marketInsightCards.length === 1
+                    ? "There is " + game.developmentDeck.length + " dev card left in the development deck. You will get:"
+                    : "There are no more dev cards left in the development deck."
     // EXPLORER ***
     const isExplorer =
         currentPlayer?.guild === "explorer";
@@ -85,14 +86,14 @@ function SuperMenu({
             : [];
     const explorerSelectionHeader =
         grandExpeditionRoadsToPlace === 0
-            ? "No roads can be placed."
+            ? "No valid roads can be placed."
             : grandExpeditionRoadsToPlace === 1
                 ? "You will place " + grandExpeditionRoadsToPlace + " free road."
                 : "You will place " + grandExpeditionRoadsToPlace + " free roads.";
     // BUILDER ***
     const isBuilder =
         currentPlayer?.guild === "builder";
-    const masterBuilderWhatToBuild =
+    const masterBuilderOptions =
         superOrchestrator.getMasterBuilder(game);
     const selectedMasterBuilder =
         superOrchestrator.getSelectedMasterBuilder();
@@ -100,13 +101,16 @@ function SuperMenu({
         superOrchestrator.getAssumedMasterBuilderSelection(game);
     const builderSelectionHeader =
         assumedMasterBuilder !== undefined
-            ? "You will build: "
-            : "Choose 1 to build: ";
+            ? "You will build:"
+            : !masterBuilderOptions.canBuildCity &&
+                !masterBuilderOptions.canBuildSettlement
+                ? "No valid buildings can be built."
+                : "Choose 1 to build:";
     // RESOURCE SELECTION
     const resourceSelectionHeader =
         areSuperResourcesOptional(game)
-            ? "(Optional) Pick up to 3 free resources: "
-            : "Pick up to 3 free resources: ";
+            ? "(Optional) Pick up to 3 free resources:"
+            : "Pick up to 3 free resources:";
     return (
         // OVERLAY
         <div
@@ -147,22 +151,36 @@ function SuperMenu({
                 {/* CANCEL */}
                 <button
                     type="button"
+                    disabled={superResolutionLocked}
                     onClick={() => {
+                        if (superResolutionLocked) {
+                            return;
+                        }
                         superOrchestrator.resetSelections();
                         setMerchantCardsRevealed(false);
                         onCancel();
                     }}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.color =
-                            "#D4AF55";
-                        e.currentTarget.style.borderColor =
-                            "#D4AF55";
-                    }}
-                    onMouseLeave={(e) => {
+                        if (superResolutionLocked) {
+                            return;
+                        }
                         e.currentTarget.style.color =
                             "#ffffff";
                         e.currentTarget.style.borderColor =
-                            "rgba(156, 163, 175, 0.3)";
+                            "#FFF0B0";
+                        e.currentTarget.style.background =
+                            "linear-gradient(180deg, #D4AF55, #9F7B2F)";
+                    }}
+                    onMouseLeave={(e) => {
+                        if (superResolutionLocked) {
+                            return;
+                        }
+                        e.currentTarget.style.color =
+                            "#ffffff";
+                        e.currentTarget.style.borderColor =
+                            "rgba(232, 212, 154, 0.55)";
+                        e.currentTarget.style.background =
+                            "rgba(255, 255, 255, 0.03)";
                     }}
                     style={{
                         position: "absolute",
@@ -174,16 +192,24 @@ function SuperMenu({
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        background: "transparent",
-                        border:
-                            "1px solid rgba(156, 163, 175, 0.3)",
+                        background: superResolutionLocked
+                            ? "rgba(80, 75, 65, 0.18)"
+                            : "rgba(255, 255, 255, 0.03)",
+                        border: superResolutionLocked
+                            ? "1px solid rgba(156, 163, 175, 0.15)"
+                            : "1px solid rgba(232, 212, 154, 0.55)",
                         borderRadius: "6px",
-                        color: "#ffffff",
+                        color: superResolutionLocked
+                            ? "rgba(156, 163, 175, 0.45)"
+                            : "#ffffff",
                         fontSize: "18px",
                         fontWeight: "bold",
-                        cursor: "pointer",
+                        cursor: superResolutionLocked
+                            ? "not-allowed"
+                            : "pointer",
+                        opacity: superResolutionLocked ? 0.55 : 1,
                         transition:
-                            "color 0.15s ease, border-color 0.15s ease",
+                            "color 0.15s ease, border-color 0.15s ease, background 0.15s ease, opacity 0.15s ease",
                     }}
                 >
                     ×
@@ -281,8 +307,7 @@ function SuperMenu({
                                 }}
                             >
                                 {marketInsightCards.map((card) => {
-                                    const autoSelected =
-                                        marketInsightCards.length < 3;
+                                    const autoSelected = marketInsightCards.length < 3;
                                     return (
                                         <button
                                             key={card.id}
@@ -306,10 +331,34 @@ function SuperMenu({
                                                         version + 1
                                                 );
                                             }}
+                                            onMouseEnter={(event) => {
+                                                if (merchantCardsRevealed && !autoSelected) {
+                                                    event.currentTarget.style.background =
+                                                        "linear-gradient(180deg, #D4AF55, #9F7B2F)";
+                                                    event.currentTarget.style.borderColor =
+                                                        "#FFF0B0";
+                                                    event.currentTarget.style.boxShadow =
+                                                        "0 0 10px rgba(212, 175, 85, 0.35)";
+                                                }
+                                            }}
+                                            onMouseLeave={(event) => {
+                                                if (merchantCardsRevealed && !autoSelected) {
+                                                    event.currentTarget.style.background =
+                                                        card.active
+                                                            ? "linear-gradient(180deg, #D4AF55, #9F7B2F)"
+                                                            : "#3A2A12";
+                                                    event.currentTarget.style.borderColor =
+                                                        card.active
+                                                            ? "#FFF0B0"
+                                                            : "#D4AF55";
+                                                    event.currentTarget.style.boxShadow =
+                                                        "none";
+                                                }
+                                            }}
                                             style={{
-                                                width: "105px",
+                                                width: "110px",
                                                 height: "70px",
-                                                minWidth: "105px",
+                                                minWidth: "110px",
                                                 minHeight: "70px",
                                                 padding: "6px",
                                                 borderRadius: "10px",
@@ -406,7 +455,7 @@ function SuperMenu({
                                         type="button"
                                         disabled={true}
                                         style={{
-                                            width: "105px",
+                                            width: "110px",
                                             height: "70px",
                                             padding: "6px",
                                             borderRadius: "10px",
@@ -460,13 +509,13 @@ function SuperMenu({
                                             id: "settlement",
                                             label: "Settlement",
                                             available:
-                                                masterBuilderWhatToBuild.canBuildSettlement,
+                                                masterBuilderOptions.canBuildSettlement,
                                         },
                                         {
                                             id: "city",
                                             label: "City",
                                             available:
-                                                masterBuilderWhatToBuild.canBuildCity,
+                                                masterBuilderOptions.canBuildCity,
                                         },
                                     ] as const
                                 ).map((option) => {
@@ -523,7 +572,7 @@ function SuperMenu({
                                                 }
                                             }}
                                             style={{
-                                                width: "105px",
+                                                width: "110px",
                                                 height: "70px",
                                                 padding: "6px",
                                                 borderRadius: "10px",
@@ -624,7 +673,11 @@ function SuperMenu({
                         height: "42px",
                         padding: "0 28px",
                         borderRadius: "21px",
-                        border: "2px solid #D4AF55",
+                        border: showViewCards
+                            ? "2px solid #D4AF55"
+                            : superOrchestrator.canConfirmSuper(game)
+                                ? `3px solid ${currentPlayerColor}`
+                                : "2px solid #D4AF55",
                         background:
                             showViewCards
                                 ? `
@@ -736,18 +789,23 @@ function ResourceSelectButton({
                 height: "42px",
                 padding: "0px 8px",
                 borderRadius: "10px",
-                border: active
-                    ? "2px solid #FFF0B0"
-                    : "2px solid #D4AF55",
-                background: active
-                    ? "linear-gradient(180deg, #D4AF55, #9F7B2F)"
-                    : "#3A2A12",
+                border: disabled
+                    ? "2px solid rgba(212, 175, 85, 0.25)"
+                    : active
+                        ? "2px solid #FFF0B0"
+                        : "2px solid #D4AF55",
+                background: disabled
+                    ? "#211C14"
+                    : active
+                        ? "linear-gradient(180deg, #D4AF55, #9F7B2F)"
+                        : "#3A2A12",
                 color: disabled
-                    ? "#8a7a55"
+                    ? "#625B4D"
                     : "#FFF8DF",
                 cursor: disabled
                     ? "not-allowed"
                     : "pointer",
+                opacity: disabled ? 0.7 : 1,
                 fontWeight: active
                     ? "bold"
                     : "normal",
@@ -777,10 +835,10 @@ function ResourceSelectButton({
                         fontWeight: "bold",
                         flexShrink: 0,
                         backgroundColor: disabled
-                            ? "#3f3a30"
+                            ? "#302C25"
                             : resourceColors[resource],
                         color: disabled
-                            ? "#766f61"
+                            ? "#625B4D"
                             : "#000000",
                     }}
                 >

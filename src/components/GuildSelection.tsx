@@ -27,6 +27,8 @@ function GuildSelection({
         borderRadius: "16px",
         color: "white",
         boxSizing: "border-box",
+        cursor: "default",
+        userSelect: "none"
       }}
     >
       <div
@@ -88,7 +90,7 @@ function GuildSelection({
             color: "#d1d5db",
           }}
         >
-          Select the Guild that will shape your colony.
+        Choose your Guild. Shape your colony.
         </p>
       </div>
       <div

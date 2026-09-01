@@ -100,6 +100,8 @@ export interface GameState {
   // Game Progression
   phase: GamePhase;
   era: GameEra;
+  prosperitySourceTurn?: number;
+  prosperitySourceVP?: Record<string, number>;
   // Achievements
   longestRoadPlayerId?: string;
   largestArmyPlayerId?: string;

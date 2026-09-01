@@ -220,10 +220,10 @@ export function buildSettlement(
             createEvent(
                 "SETTLEMENT_BUILT",
                 isMasterBuilderSettlement
-                    ? `${player.name} built a Settlement using Master Builder. (+1VP)`
+                    ? `${player.name} built a Settlement using Master Builder. (+1 VP)`
                     : usesBuilderPassive
-                        ? `${player.name} built a Settlement using the Builder Passive. (+1VP)`
-                        : `${player.name} built a Settlement. (+1VP)`
+                        ? `${player.name} built a Settlement using the Builder Passive. (+1 VP)`
+                        : `${player.name} built a Settlement. (+1 VP)`
             ),
         ],
     };

@@ -223,17 +223,17 @@ function transferLongestRoad(
                 ? [
                     createEvent(
                         "LONGEST_ROAD_CLAIMED",
-                        `${previousHolder.name} lost Longest Road. (-2VP)`
+                        `${previousHolder.name} lost Longest Road. (-2 VP)`
                     ),
                     createEvent(
                         "LONGEST_ROAD_CLAIMED",
-                        `${newHolder.name} took Longest Road from ${previousHolder.name}. (+2VP)`
+                        `${newHolder.name} took Longest Road from ${previousHolder.name}. (+2 VP)`
                     ),
                 ]
                 : [
                     createEvent(
                         "LONGEST_ROAD_CLAIMED",
-                        `${newHolder.name} claimed Longest Road. (+2VP)`
+                        `${newHolder.name} claimed Longest Road. (+2 VP)`
                     ),
                 ]),
         ],

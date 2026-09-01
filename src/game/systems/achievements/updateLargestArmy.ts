@@ -149,17 +149,17 @@ function transferLargestArmy(
                 ? [
                     createEvent(
                         "LARGEST_ARMY_CLAIMED",
-                        `${previousHolder.name} lost Largest Army. (-2VP)`
+                        `${previousHolder.name} lost Largest Army. (-2 VP)`
                     ),
                     createEvent(
                         "LARGEST_ARMY_CLAIMED",
-                        `${newHolder.name} took Largest Army from ${previousHolder.name}. (+2VP)`
+                        `${newHolder.name} took Largest Army from ${previousHolder.name}. (+2 VP)`
                     ),
                 ]
                 : [
                     createEvent(
                         "LARGEST_ARMY_CLAIMED",
-                        `${newHolder.name} claimed Largest Army. (+2VP)`
+                        `${newHolder.name} claimed Largest Army. (+2 VP)`
                     ),
                 ]),
         ],

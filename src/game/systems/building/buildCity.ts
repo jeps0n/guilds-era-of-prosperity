@@ -192,10 +192,10 @@ export function buildCity(
             createEvent(
                 "CITY_BUILT",
                 isMasterBuilderCity
-                    ? `${player.name} built a City using Master Builder. (+1VP)`
+                    ? `${player.name} built a City using Master Builder. (+1 VP)`
                     : usesBuilderPassive
-                        ? `${player.name} built a City using the Builder Passive. (+1VP)`
-                        : `${player.name} built a City. (+1VP)`
+                        ? `${player.name} built a City using the Builder Passive. (+1 VP)`
+                        : `${player.name} built a City. (+1 VP)`
             ),
         ],
     });

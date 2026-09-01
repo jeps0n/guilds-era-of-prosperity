@@ -144,6 +144,8 @@ export function createInitialState(): GameState {
     // Game Progression
     phase: "guild_selection",
     era: "standard",
+    prosperitySourceTurn: undefined,
+    prosperitySourceVP: undefined,
     // Achievements
     // longestRoadPlayerId: undefined,
     // largestArmyPlayerId: undefined,

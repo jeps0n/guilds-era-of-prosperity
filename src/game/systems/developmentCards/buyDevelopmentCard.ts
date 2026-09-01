@@ -93,7 +93,7 @@ export function buyDevelopmentCard(
         ],
         guildPassiveUsedThisTurn:
           player.guild === "merchant" &&
-          !candidate.guildPassiveUsedThisTurn
+            !candidate.guildPassiveUsedThisTurn
             ? true
             : candidate.guildPassiveUsedThisTurn,
         vp:
@@ -109,6 +109,14 @@ export function buyDevelopmentCard(
   for (const resource of paymentResources) {
     updatedResourceBank[resource] += 1;
   }
+  const playerReached15ViaVictoryPoint =
+    purchasedCard.type === "victory_point" &&
+    player.vp < 15 &&
+    updatedPlayers.some(
+      (candidate) =>
+        candidate.id === playerId &&
+        candidate.vp >= 15
+    );
   return evaluateMilestones({
     ...game,
     players: updatedPlayers,
@@ -118,8 +126,13 @@ export function buyDevelopmentCard(
       ...game.eventLog,
       createEvent(
         "DEVELOPMENT_CARD_PURCHASED",
-        `${player.name} purchased a Development Card.`
-      ),
+        playerReached15ViaVictoryPoint
+          ? `${player.name} purchased a Dev Card. (+1 VP)`
+          : player.guild === "merchant" &&
+            !player.guildPassiveUsedThisTurn
+            ? `${player.name} purchased a Dev Card using the Merchant Passive.`
+            : `${player.name} purchased a Dev Card.`
+      )
     ],
   });
 }

@@ -462,7 +462,7 @@ export class SuperOrchestrator {
                 () =>
                     createEvent(
                         "DEVELOPMENT_CARD_GAINED",
-                        `${player.name} received a Development Card using Market Insight.`
+                        `${player.name} received a Dev Card using Market Insight.`
                     )
             );
             nextGame = {

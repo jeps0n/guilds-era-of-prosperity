@@ -45,7 +45,7 @@ export default function HexTileView({
             style={{
                 cursor:
                     robberPending && !isRobberTile
-                        ? "pointer"
+                        ? "default"
                         : "default",
             }}
         >

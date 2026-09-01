@@ -14,6 +14,7 @@ import { SecondaryMenu, SecondaryMenuButton } from "./components/SecondaryMenu";
 import SuperMenu from "./components/SuperMenu";
 // Types
 import type { DevelopmentCardType } from "./game/domain/DevelopmentCard";
+import type { GameState } from "./game/engine/GameState";
 import type { GuildType, Resources } from "./game/engine/types";
 // Game Initialization
 import { createInitialState } from "./game/engine/initialState";
@@ -42,6 +43,7 @@ import { resolveYearOfPlenty } from "./game/systems/developmentCards/resolveYear
 import { resolveMonopoly } from "./game/systems/developmentCards/resolveMonopoly";
 // Game Systems — Achievements
 import { calculateLongestRoad } from "./game/systems/achievements/calculateLongestRoad";
+import { evaluateMilestones } from "./game/systems/milestones/evaluateMilestones";
 // Guild Systems
 import { getEffectiveTradeRatio } from "./game/guilds/merchant/passive/getEffectiveTradeRatio";
 import { rollSecondaryDice } from "./game/guilds/prosperity/rollSecondaryDice";
@@ -118,35 +120,137 @@ function App() {
             resource: keyof Resources;
             slot: number;
         } | undefined>(undefined);
+    const demoModifier = useRef<"+" | "=" | "-" | null>(null);
     useEffect(() => {
         console.log("=================== / GAME / ===================");
         console.log(game);
-        console.log("~~~~~ " + currentPlayer?.id + " : " + currentPlayer?.name + " ~~~~~ [Turn: " + game.turnNumber + "] ~~~~~");
+        console.log("~~~~~~~ " + currentPlayer?.id + " : " + currentPlayer?.name + " ~~~~~ [Turn: " + game.turnNumber + "] ~~~~~~~");
         console.log(currentPlayer);
-        console.log("----------------------------------------");
+        console.log("------------------------------------------------");
         function handleKeyDown(event: KeyboardEvent) {
             const key = event.key.toLowerCase();
             if (key === "t") {
                 handleRestoreCheckpoint();
                 return;
             }
-            if (key === "r") {
-                handleRollDice();
+            if (key === "r" || key === "e") {
+                if (blockDueToBoardPending()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return;
+                }
+                if (key === "r") {
+                    handleRollDice();
+                    return;
+                }
+                if (key === "e") {
+                    handleEndTurn();
+                    return;
+                }
+            }
+            if (key === "+" || key === "=" || key === "-") {
+                demoModifier.current =
+                    key === "+" || key === "="
+                        ? "+"
+                        : "-";
                 return;
             }
-            if (key === "e") {
-                handleEndTurn();
+            if (
+                demoModifier.current &&
+                ["1", "2", "3", "4", "5"].includes(key)
+            ) {
+                setGame((currentGame) =>
+                    DemoControls.modifyResource(
+                        currentGame,
+                        currentGame.currentPlayerId,
+                        key as "1" | "2" | "3" | "4" | "5",
+                        demoModifier.current!
+                    )
+                );
+                return;
+            }
+            if (
+                demoModifier.current === "+" &&
+                key === "d"
+            ) {
+                setGame((currentGame) =>
+                    DemoControls.addDevelopmentCard(
+                        currentGame,
+                        currentGame.currentPlayerId
+                    )
+                );
+                return;
+            }
+            if (
+                demoModifier.current === "-" &&
+                key === "d"
+            ) {
+                setGame((currentGame) =>
+                    DemoControls.removeLastDevelopmentCard(
+                        currentGame,
+                        currentGame.currentPlayerId
+                    )
+                );
+                return;
+            }
+            if (
+                demoModifier.current &&
+                key === "s"
+            ) {
+                const secondaryRollMenuIsOpen =
+                    !superUnlockRevealing &&
+                    (game.secondaryRollPending ||
+                        game.secondaryRoll !== undefined);
+                setGame((currentGame) =>
+                    DemoControls.modifySecondaryRolls(
+                        currentGame,
+                        currentGame.currentPlayerId,
+                        demoModifier.current!,
+                        secondaryRollMenuIsOpen
+                    )
+                );
+                return;
+            }
+            if (
+                demoModifier.current &&
+                key === "v"
+            ) {
+                setGame((currentGame) =>
+                    DemoControls.modifyVictoryPoints(
+                        currentGame,
+                        currentGame.currentPlayerId,
+                        demoModifier.current!
+                    )
+                );
                 return;
             }
         }
+        function handleKeyUp(event: KeyboardEvent) {
+            const key = event.key.toLowerCase();
+            if (key === "+" || key === "=" || key === "-") {
+                demoModifier.current = null;
+            }
+        }
         window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("keyup", handleKeyUp);
         return () => {
-            window.removeEventListener(
-                "keydown",
-                handleKeyDown
-            );
+            window.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener("keyup", handleKeyUp);
         };
     }, [game]);
+    // ─────────────────────────────────────────────
+    // MAIN HELPERS
+    // ─────────────────────────────────────────────
+    function blockDueToBoardPending() {
+        return (
+            secondaryRollRevealing ||
+            game.robberPending ||
+            game.roadBuildingPending ||
+            game.grandExpeditionPending ||
+            game.masterBuilderPending ||
+            showSuperMenu
+        );
+    }
     function getCurrentPlayer() {
         return game.players.find(
             (player) =>
@@ -209,7 +313,7 @@ function App() {
         if (!player) {
             return;
         }
-        // Free-road effects bypass the normal guild discount flow.
+        // Free roads bypass the normal guild discount flow.
         if (game.grandExpeditionPending || game.roadBuildingPending) {
             const nextGame = buildRoad(
                 game,
@@ -220,6 +324,7 @@ function App() {
                 return;
             }
             setGame(nextGame);
+            setSecondaryMenu(undefined);
             return;
         }
         // Normal roads must pass the guild target check first.
@@ -261,6 +366,7 @@ function App() {
             return;
         }
         setGame(nextGame);
+        setSecondaryMenu(undefined);
     }
     function handleExplorerRoadBuild(
         keepResource: "brick" | "lumber"
@@ -300,6 +406,7 @@ function App() {
                 return;
             }
             setGame(nextGame);
+            setSecondaryMenu(undefined);
             return;
         }
         // Normal settlements must pass the guild target check first.
@@ -344,6 +451,7 @@ function App() {
                     return;
                 }
                 setGame(nextGame);
+                setSecondaryMenu(undefined);
                 return;
             }
             // With all resources available, Builder chooses the discount.
@@ -365,6 +473,7 @@ function App() {
             return;
         }
         setGame(nextGame);
+        setSecondaryMenu(undefined);
     }
     function handleBuilderSettlement(
         discountedResource: keyof Resources
@@ -406,6 +515,7 @@ function App() {
                 return;
             }
             setGame(nextGame);
+            setSecondaryMenu(undefined);
             return;
         }
         // Normal cities must pass the guild target check first.
@@ -447,6 +557,7 @@ function App() {
                     return;
                 }
                 setGame(nextGame);
+                setSecondaryMenu(undefined);
                 return;
             }
             // Missing one wheat, so the wheat discount is automatic.
@@ -461,6 +572,7 @@ function App() {
                     return;
                 }
                 setGame(nextGame);
+                setSecondaryMenu(undefined);
                 return;
             }
             // With all resources available, Builder chooses the discount.
@@ -480,6 +592,7 @@ function App() {
             return;
         }
         setGame(nextGame);
+        setSecondaryMenu(undefined);
     }
     function handleBuilderCity(
         discountedResource: "ore" | "wheat"
@@ -559,6 +672,9 @@ function App() {
             return;
         }
         setGame(nextGame);
+        if (secondaryMenu !== "development") {
+            setSecondaryMenu(undefined);
+        }
     }
     function handleMerchantDevelopmentPurchase(
         keepResource: keyof Resources
@@ -1612,7 +1728,7 @@ function App() {
                                                 1
                                             )}
                                             <span>
-                                                Keep {resource}
+                                                keep {resource}
                                             </span>
                                         </span>
                                     </SecondaryMenuButton>
@@ -1681,7 +1797,7 @@ function App() {
                                                 1
                                             )}
                                             <span>
-                                                Keep {resource}
+                                                keep {resource}
                                             </span>
                                         </span>
                                     </SecondaryMenuButton>
@@ -1745,7 +1861,7 @@ function App() {
                                                 1
                                             )}
                                             <span>
-                                                Keep {resource}
+                                                keep {resource}
                                             </span>
                                         </span>
                                     </SecondaryMenuButton>
@@ -1812,7 +1928,7 @@ function App() {
                                                 1
                                             )}
                                             <span>
-                                                Keep {resource}
+                                                keep {resource}
                                             </span>
                                         </span>
                                     </SecondaryMenuButton>
@@ -2065,8 +2181,15 @@ function App() {
                     )}
                 </div>
             }
+            // PLAYING
             rightSidebar={
                 <>
+                    {/* {
+                        "turn: " +
+                        game.prosperitySourceTurn +
+                        " | source VP: " +
+                        JSON.stringify(game.prosperitySourceVP)
+                    } */}
                     <GameStatus
                         game={game}
                         onRestoreCheckpoint={
@@ -2118,6 +2241,7 @@ function App() {
                     )}
                     {currentPlayer && (
                         <GuildInformationPanel
+                            era={game.era}
                             player={currentPlayer}
                             prosperityRollSequenceActive={prosperityRollSequenceActive}
                             roadBuildingPending={game.roadBuildingPending}
@@ -2130,5 +2254,252 @@ function App() {
             }
         />
     );
+}
+class DemoControls {
+    // ─────────────────────────────────────────────
+    // Demo Controls - Guards / Helpers
+    // ─────────────────────────────────────────────
+    private static isEditable(game: GameState): boolean {
+        return !(
+            game.phase === "game_over" ||
+            game.phase === "initial_placement"
+        );
+    }
+    private static getPlayer(
+        game: GameState,
+        playerId: string
+    ) {
+        return game.players.find((p) => p.id === playerId);
+    }
+    // ─────────────────────────────────────────────
+    // Demo Controls - Resources
+    // ─────────────────────────────────────────────
+    static readonly resourceMap: Record<
+        "1" | "2" | "3" | "4" | "5",
+        keyof Resources
+    > = {
+            "1": "brick",
+            "2": "lumber",
+            "3": "wheat",
+            "4": "sheep",
+            "5": "ore",
+        };
+    static modifyResource(
+        game: GameState,
+        playerId: string,
+        key: "1" | "2" | "3" | "4" | "5",
+        modifier: "+" | "=" | "-"
+    ): GameState {
+        if (!this.isEditable(game)) return game;
+        const player = this.getPlayer(game, playerId);
+        if (!player) return game;
+        const resource = this.resourceMap[key];
+        const amount =
+            modifier === "+" || modifier === "="
+                ? 1
+                : -1;
+        if (
+            amount > 0 &&
+            game.resourceBank[resource] <= 0
+        ) {
+            return game;
+        }
+        if (
+            amount < 0 &&
+            player.resources[resource] <= 0
+        ) {
+            return game;
+        }
+        return {
+            ...game,
+            resourceBank: {
+                ...game.resourceBank,
+                [resource]:
+                    game.resourceBank[resource] - amount,
+            },
+            players: game.players.map((p) =>
+                p.id === playerId
+                    ? {
+                        ...p,
+                        resources: {
+                            ...p.resources,
+                            [resource]:
+                                p.resources[resource] + amount,
+                        },
+                    }
+                    : p
+            ),
+        };
+    }
+    // ─────────────────────────────────────────────
+    // Demo Controls - Development Cards
+    // ─────────────────────────────────────────────
+    static addDevelopmentCard(
+        game: GameState,
+        playerId: string
+    ): GameState {
+        if (!this.isEditable(game)) return game;
+        const player = this.getPlayer(game, playerId);
+        if (!player) return game;
+        if (game.developmentDeck.length === 0) {
+            return game;
+        }
+        const [developmentCard, ...remainingDeck] =
+            game.developmentDeck;
+        const nextGame = {
+            ...game,
+            developmentDeck: remainingDeck,
+            players: game.players.map((p) =>
+                p.id === playerId
+                    ? {
+                        ...p,
+                        developmentCards: [
+                            ...p.developmentCards,
+                            developmentCard,
+                        ],
+                    }
+                    : p
+            ),
+        };
+        return developmentCard.type === "victory_point"
+            ? this.modifyVictoryPoints(
+                nextGame,
+                playerId,
+                "+"
+            )
+            : nextGame;
+    }
+    static removeLastDevelopmentCard(
+        game: GameState,
+        playerId: string
+    ): GameState {
+        if (!this.isEditable(game)) return game;
+        const player = this.getPlayer(game, playerId);
+        if (!player) return game;
+        if (player.developmentCards.length === 0) {
+            return game;
+        }
+        const developmentCards = [...player.developmentCards];
+        const removedCard = developmentCards.pop()!;
+        const nextGame = {
+            ...game,
+            developmentDeck: [
+                removedCard,
+                ...game.developmentDeck,
+            ],
+            players: game.players.map((p) =>
+                p.id === playerId
+                    ? {
+                        ...p,
+                        developmentCards,
+                    }
+                    : p
+            ),
+        };
+        return removedCard.type === "victory_point"
+            ? this.modifyVictoryPoints(
+                nextGame,
+                playerId,
+                "-"
+            )
+            : nextGame;
+    }
+    // ─────────────────────────────────────────────
+    //  Demo Controls - Victory Points
+    // ─────────────────────────────────────────────
+    static modifyVictoryPoints(
+        game: GameState,
+        playerId: string,
+        modifier: "+" | "=" | "-"
+    ): GameState {
+        if (!this.isEditable(game)) return game;
+        const player = this.getPlayer(game, playerId);
+        if (!player) return game;
+        const amount =
+            modifier === "+" || modifier === "="
+                ? 1
+                : -1;
+        if (amount < 0 && player.vp <= 2) {
+            return game;
+        }
+        const nextGame = {
+            ...game,
+            players: game.players.map((p) =>
+                p.id === playerId
+                    ? {
+                        ...p,
+                        vp: Math.max(2, p.vp + amount),
+                    }
+                    : p
+            ),
+        };
+        if (nextGame.players.some((p) => p.vp >= 15)) {
+            return evaluateMilestones(nextGame);
+        }
+        // Demo creates Prosperity.
+        if (
+            game.era === "standard" &&
+            player.vp < 6 &&
+            nextGame.players.find(
+                (p) => p.id === playerId
+            )!.vp >= 6
+        ) {
+            return {
+                ...nextGame,
+                era: "prosperity",
+                prosperitySourceTurn: -1,
+                prosperitySourceVP: Object.fromEntries(
+                    nextGame.players.map((p) => [
+                        p.id,
+                        p.vp,
+                    ])
+                ),
+            };
+        }
+        // Demo can undo only Demo-created Prosperity,
+        // and only when BOTH players are below 6 VP.
+        if (
+            game.era === "prosperity" &&
+            game.prosperitySourceTurn === -1 &&
+            nextGame.players.every((p) => p.vp < 6)
+        ) {
+            return {
+                ...nextGame,
+                era: "standard",
+                prosperitySourceTurn: undefined,
+                prosperitySourceVP: undefined,
+            };
+        }
+        return nextGame;
+    }
+    // ─────────────────────────────────────────────
+    // Demo Controls - Secondary (Prosperity) Rolls
+    // ─────────────────────────────────────────────
+    static modifySecondaryRolls(
+        game: GameState,
+        playerId: string,
+        modifier: "+" | "=" | "-",
+        showSecondaryRoll: boolean
+    ): GameState {
+        if (!this.isEditable(game) || !showSecondaryRoll) return game;
+        const player = this.getPlayer(game, playerId);
+        if (!player) return game;
+        return {
+            ...game,
+            players: game.players.map((p) =>
+                p.id === playerId
+                    ? {
+                        ...p,
+                        secondaryRolls:
+                            modifier === "+" || modifier === "="
+                                ? [1, 2, 3, 4, 5, 6]
+                                : [],
+                        superUnlocked:
+                            modifier === "+" || modifier === "=",
+                    }
+                    : p
+            ),
+        };
+    }
 }
 export default App;

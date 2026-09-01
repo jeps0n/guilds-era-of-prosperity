@@ -135,7 +135,7 @@ function PlayerPanel({
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
                     gridTemplateRows: "auto auto",
-                    rowGap: "8px",
+                    rowGap: "4px",
                     alignItems: "center",
                   }}
                 >
@@ -195,7 +195,7 @@ function PlayerPanel({
                       ? `${player.guild.charAt(0).toUpperCase()}${player.guild.slice(1)} Guild`
                       : "No Guild"}
                   </div>
-                  {/* RESOURCES - BOTTOM LEFT */}
+                  {/* RESOURCES LABEL - BOTTOM LEFT */}
                   <div
                     style={{
                       color:
@@ -213,7 +213,27 @@ function PlayerPanel({
                     Resources:{" "}
                     {totalResources}
                   </div>
-                  {/* EMPTY BOTTOM RIGHT */}
+                  {/* GUILD PASSIVE - BOTTOM RIGHT */}
+                  <div
+                    style={{
+                      textAlign: "right",
+                      fontSize: "13px",
+                      color: player.guildPassiveUsedThisTurn
+                        ? "#6b7280"
+                        : "#f9fafb",
+                    }}
+                  >
+                    Passive:{" "}
+                    <span
+                      style={{
+                        fontSize: "12px",
+                      }}
+                    >
+                      {player.guildPassiveUsedThisTurn
+                        ? "USED"
+                        : "ACTIVE"}
+                    </span>
+                  </div>
                   <div />
                 </div>
                 <hr
@@ -222,6 +242,7 @@ function PlayerPanel({
                     borderColor: "#374151",
                   }}
                 />
+                {/* RESOURCES */}
                 <div
                   style={{
                     display: "flex",

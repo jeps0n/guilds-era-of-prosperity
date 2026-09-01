@@ -66,6 +66,7 @@ export default function RobberActionBar({
                 display: "flex",
                 justifyContent: "center",
                 width: "100%",
+                userSelect: "none"
             }}
         >
             <div

@@ -99,7 +99,9 @@ export function tradeWithBank(
       ...game.eventLog,
       createEvent(
         "BANK_TRADE",
-        `${player.name} traded [${giveResource}] ${ratio} for [${receiveResource}] 1.`
+        usedMerchantPassive
+          ? `${player.name} traded [${giveResource}] ${ratio} for [${receiveResource}] 1 using the Merchant Passive.`
+          : `${player.name} traded [${giveResource}] ${ratio} for [${receiveResource}] 1.`
       ),
     ],
   };

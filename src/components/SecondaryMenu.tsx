@@ -29,6 +29,8 @@ export function SecondaryMenu({
         color: "white",
         boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
         zIndex: 10,
+        cursor: "default",
+        userSelect: "none"
       }}
     >
       <div

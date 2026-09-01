@@ -114,7 +114,7 @@ export default function BoardEdgeView({
                 onMouseLeave={() => onHover(null)}
                 onClick={() => onSelectEdge?.(edge.id)}
                 style={{
-                    cursor: onSelectEdge ? "pointer" : "default",
+                    cursor: onSelectEdge ? "default" : "default",
                 }}
             />
         </>

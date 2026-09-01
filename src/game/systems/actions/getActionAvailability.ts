@@ -1,5 +1,8 @@
 import type { GameState } from "../../engine/GameState";
 import { hasPlayableKnight } from "../developmentCards/hasPlayableKnight";
+import { hasLegalRoadPlacement } from "../building/buildRoad";
+import { hasLegalSettlementPlacement } from "../building/buildSettlement";
+import { hasLegalCityPlacement } from "../building/buildCity";
 export interface ActionAvailability {
     // Actions the current player can currently take.
     canRollDice: boolean;
@@ -12,6 +15,24 @@ export interface ActionAvailability {
     canPlayDevelopmentCard: boolean;
     hasPlayableKnight: boolean;
     canEndTurn: boolean;
+}
+// Physical piece availability.
+// These only determine whether the player still has
+// pieces remaining in their supply.
+function hasRoadPiece(
+    player: GameState["players"][number]
+): boolean {
+    return player.roads.length < 15;
+}
+function hasSettlementPiece(
+    player: GameState["players"][number]
+): boolean {
+    return player.settlements.length < 5;
+}
+function hasCityPiece(
+    player: GameState["players"][number]
+): boolean {
+    return player.cities.length < 4;
 }
 export function getActionAvailability(
     game: GameState
@@ -38,6 +59,10 @@ export function getActionAvailability(
     }
     // Resources are checked throughout the availability rules.
     const resources = currentPlayer.resources;
+    // Check whether the player still has physical pieces available.
+    const hasRoad = hasRoadPiece(currentPlayer);
+    const hasSettlement = hasSettlementPiece(currentPlayer);
+    const hasCity = hasCityPiece(currentPlayer);
     // Explorer can use one discounted road per turn.
     const isExplorer =
         currentPlayer.guild === "explorer";
@@ -58,19 +83,26 @@ export function getActionAvailability(
         game.grandExpeditionPending;
     // Determine whether the player can build a road.
     const canRoad =
-        grandExpeditionCanRoad ||
+        hasRoad &&
+        hasLegalRoadPlacement(
+            game,
+            currentPlayer.id
+        ) &&
         (
+            grandExpeditionCanRoad ||
             (
-                // Explorer can use the discounted road if
-                // at least one road resource is available.
-                explorerPassiveAvailable &&
-                roadResourcesAvailable >= 1
-            ) ||
-            (
-                // Everyone else needs the normal road cost.
-                !explorerPassiveAvailable &&
-                resources.brick >= 1 &&
-                resources.lumber >= 1
+                (
+                    // Explorer can use the discounted road if
+                    // at least one road resource is available.
+                    explorerPassiveAvailable &&
+                    roadResourcesAvailable >= 1
+                ) ||
+                (
+                    // Everyone else needs the normal road cost.
+                    !explorerPassiveAvailable &&
+                    resources.brick >= 1 &&
+                    resources.lumber >= 1
+                )
             )
         );
     // Builder can use one discounted settlement or city per turn.
@@ -95,18 +127,25 @@ export function getActionAvailability(
         ).length;
     // Determine whether the player can build a settlement.
     const canSettlement =
+        hasSettlement &&
+        hasLegalSettlementPlacement(
+            game,
+            currentPlayer.id
+        ) &&
         (
-            // Builder can omit one settlement resource.
-            builderPassiveAvailable &&
-            settlementResourcesAvailable >= 3
-        ) ||
-        (
-            // Everyone else needs the full settlement cost.
-            !builderPassiveAvailable &&
-            resources.brick >= 1 &&
-            resources.lumber >= 1 &&
-            resources.wheat >= 1 &&
-            resources.sheep >= 1
+            (
+                // Builder can omit one settlement resource.
+                builderPassiveAvailable &&
+                settlementResourcesAvailable >= 3
+            ) ||
+            (
+                // Everyone else needs the full settlement cost.
+                !builderPassiveAvailable &&
+                resources.brick >= 1 &&
+                resources.lumber >= 1 &&
+                resources.wheat >= 1 &&
+                resources.sheep >= 1
+            )
         );
     // Builder can omit one resource from the normal city cost.
     const builderCanAffordDiscountedCity =
@@ -122,16 +161,23 @@ export function getActionAvailability(
         );
     // Determine whether the player can build a city.
     const canCity =
+        hasCity &&
+        hasLegalCityPlacement(
+            game,
+            currentPlayer.id
+        ) &&
         (
-            // Builder can use the discounted city cost.
-            builderPassiveAvailable &&
-            builderCanAffordDiscountedCity
-        ) ||
-        (
-            // Everyone else needs the full city cost.
-            !builderPassiveAvailable &&
-            resources.ore >= 3 &&
-            resources.wheat >= 2
+            (
+                // Builder can use the discounted city cost.
+                builderPassiveAvailable &&
+                builderCanAffordDiscountedCity
+            ) ||
+            (
+                // Everyone else needs the full city cost.
+                !builderPassiveAvailable &&
+                resources.ore >= 3 &&
+                resources.wheat >= 2
+            )
         );
     // Merchant can use one discounted development-card
     // purchase per turn.

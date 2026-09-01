@@ -3,6 +3,7 @@ import { GUILDS } from "../game/data/guilds";
 import type { GameState } from "../game/engine/GameState";
 import type { GuildType } from "../game/engine/types";
 interface GuildInformationPanelProps {
+    era: GameState["era"];
     player: GameState["players"][number];
     prosperityRollSequenceActive: boolean;
     roadBuildingPending: boolean;
@@ -11,6 +12,7 @@ interface GuildInformationPanelProps {
     onUseSuper: () => void;
 }
 function GuildInformationPanel({
+    era,
     player,
     prosperityRollSequenceActive,
     roadBuildingPending,
@@ -20,9 +22,15 @@ function GuildInformationPanel({
 }: GuildInformationPanelProps) {
     const secondaryRolls = player.secondaryRolls;
     const showSuperButton =
-        player.superUnlocked && !prosperityRollSequenceActive;
+        player.superUnlocked &&
+        secondaryRolls.length === 6 &&
+        !prosperityRollSequenceActive;
     const boardPending = roadBuildingPending || robberPending;
-    const superDisabled = player.superUsed || boardPending || superMenuIsOpen;
+    const superDisabled =
+        era !== "prosperity" ||
+        player.superUsed ||
+        boardPending ||
+        superMenuIsOpen;
     return (
         <div style={{
             marginTop: "12px",
