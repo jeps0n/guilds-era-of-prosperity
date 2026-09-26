@@ -1,285 +1,93 @@
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Panel from "./ui/Panel";
 import { GUILDS } from "../game/data/guilds";
 import type { GameState } from "../game/engine/GameState";
-import type { GuildType } from "../game/engine/types";
 interface GuildInformationPanelProps {
-    era: GameState["era"];
-    player: GameState["players"][number];
-    prosperityRollSequenceActive: boolean;
-    roadBuildingPending: boolean;
-    robberPending: boolean;
-    superMenuIsOpen: boolean;
-    onUseSuper: () => void;
+  era: GameState["era"];
+  player: GameState["players"][number];
+  prosperityRollSequenceActive: boolean;
+  roadBuildingPending: boolean;
+  robberPending: boolean;
+  superMenuIsOpen: boolean;
+  onUseSuper?: () => void;
+  interactive?: boolean;
 }
-function GuildInformationPanel({
-    era,
-    player,
-    prosperityRollSequenceActive,
-    roadBuildingPending,
-    robberPending,
-    superMenuIsOpen,
-    onUseSuper,
-}: GuildInformationPanelProps) {
-    const secondaryRolls = player.secondaryRolls;
-    const showSuperButton =
-        player.superUnlocked &&
-        secondaryRolls.length === 6 &&
-        !prosperityRollSequenceActive;
-    const boardPending = roadBuildingPending || robberPending;
-    const superDisabled =
-        era !== "prosperity" ||
-        player.superUsed ||
-        boardPending ||
-        superMenuIsOpen;
-    return (
-        <div style={{
-            marginTop: "12px",
-            userSelect: "none"
-        }}>
-            <Panel>
-                {/* SUPER PROGRESS / SUPER BUTTON */}
-                {!showSuperButton ? (
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            gap: "8px",
-                            marginBottom: "12px",
-                        }}
-                    >
-                        {[1, 2, 3, 4, 5, 6].map((number) => {
-                            const claimed =
-                                secondaryRolls.includes(number);
-                            const diceFaces = [
-                                "⚀",
-                                "⚁",
-                                "⚂",
-                                "⚃",
-                                "⚄",
-                                "⚅",
-                            ];
-                            return (
-                                <div
-                                    key={number}
-                                    style={{
-                                        width: "52px",
-                                        height: "52px",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        borderRadius: "9px",
-                                        fontSize: "40px",
-                                        lineHeight: 1,
-                                        color: claimed
-                                            ? "#f3f4f6"
-                                            : "#4b5563",
-                                        backgroundColor: claimed
-                                            ? "#374151"
-                                            : "#1f2937",
-                                        border: claimed
-                                            ? "1px solid #9ca3af"
-                                            : "1px solid #111827",
-                                        boxShadow: claimed
-                                            ? `
-                                                0 3px 6px rgba(0, 0, 0, 0.45),
-                                                inset 0 1px 0 rgba(255, 255, 255, 0.15)
-                                            `
-                                            : `
-                                                inset 0 3px 5px rgba(0, 0, 0, 0.55),
-                                                0 1px 1px rgba(255, 255, 255, 0.03)
-                                            `,
-                                        opacity: claimed ? 1 : 0.45,
-                                        cursor: "default"
-                                    }}
-                                >
-                                    {diceFaces[number - 1]}
-                                </div>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            marginBottom: "12px",
-                        }}
-                    >
-                        <button
-                            type="button"
-                            onClick={onUseSuper}
-                            disabled={superDisabled}
-                            style={{
-                                width: "352px",
-                                height: "52px",
-                                padding: "0",
-                                borderRadius: "10px",
-                                fontSize: player.superUsed
-                                    ? "12px"
-                                    : "24px",
-                                fontWeight: player.superUsed
-                                    ? "normal"
-                                    : "bold",
-                                border: player.superUsed
-                                    ? "1px solid #374151"
-                                    : superDisabled
-                                        ? "2px solid #75643d"
-                                        : "2px solid #D4AF55",
-                                background: player.superUsed
-                                    ? "#252b33"
-                                    : superDisabled
-                                        ? "linear-gradient(180deg, #5a4a2a, #3a321f)"
-                                        : "linear-gradient(180deg, #D4AF55, #9F7B2F)",
-                                color: player.superUsed
-                                    ? "#6b7280"
-                                    : superDisabled
-                                        ? "#a89b7a"
-                                        : "#FFF8DF",
-                                boxShadow: player.superUsed
-                                    ? "inset 0 1px 3px rgba(0,0,0,0.3)"
-                                    : superDisabled
-                                        ? "none"
-                                        : "0 0 10px rgba(212, 175, 85, 0.35)",
-                                textShadow:
-                                    player.superUsed || superDisabled
-                                        ? "none"
-                                        : "0 1px 2px rgba(0,0,0,0.5)",
-                                cursor: player.superUsed
-                                    ? "default"
-                                    : superDisabled
-                                        ? "not-allowed"
-                                        : "pointer",
-                            }}
-                        >
-                            {player.superUsed
-                                ? "SUPER HAS BEEN USED"
-                                : "USE SUPER"}
-                        </button>
-                    </div>
-                )}
-                {/* GUILD INFORMATION */}
-                <div
-                    style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(3, 1fr)",
-                    }}
-                >
-                    <GuildColumn
-                        guildType="builder"
-                        guildName="BUILDER"
-                        playerGuild={player.guild}
-                    />
-                    <GuildColumn
-                        guildType="explorer"
-                        guildName="EXPLORER"
-                        playerGuild={player.guild}
-                    />
-                    <GuildColumn
-                        guildType="merchant"
-                        guildName="MERCHANT"
-                        playerGuild={player.guild}
-                    />
-                </div>
-            </Panel>
+function GuildInformationPanel({ era, player, prosperityRollSequenceActive, roadBuildingPending, robberPending, superMenuIsOpen, onUseSuper, interactive = true }: GuildInformationPanelProps) {
+  const guild = GUILDS.find((entry) => entry.type === player.guild);
+  const collectedFaces = new Set(player.secondaryRolls);
+  const collectedCount = collectedFaces.size;
+  const previousCollectedCount = useRef(collectedCount);
+  const previousPassiveUsed = useRef(player.guildPassiveUsedThisTurn);
+  const previousSuperUnlocked = useRef(player.superUnlocked);
+  const previousSuperUsed = useRef(player.superUsed);
+  const [feedback, setFeedback] = useState<"die" | "passive" | "ready" | "activate" | "used" | null>(null);
+  useEffect(() => {
+    let next: typeof feedback = null;
+    if (!previousSuperUsed.current && player.superUsed) next = "used";
+    else if (!previousSuperUnlocked.current && player.superUnlocked) next = "ready";
+    else if (previousCollectedCount.current < collectedCount) next = "die";
+    else if (!previousPassiveUsed.current && player.guildPassiveUsedThisTurn) next = "passive";
+    previousCollectedCount.current = collectedCount;
+    previousPassiveUsed.current = player.guildPassiveUsedThisTurn;
+    previousSuperUnlocked.current = player.superUnlocked;
+    previousSuperUsed.current = player.superUsed;
+    if (!next) return;
+    setFeedback(next);
+    const timer = window.setTimeout(() => setFeedback(null), next === "ready" ? 950 : 620);
+    return () => window.clearTimeout(timer);
+  }, [collectedCount, player.guildPassiveUsedThisTurn, player.superUnlocked, player.superUsed]);
+  if (!guild) return null;
+  const superReady = player.superUnlocked && collectedCount === 6 && !player.superUsed;
+  const canOpenSuper = superReady && !prosperityRollSequenceActive;
+  const superDisabled = !interactive || era !== "prosperity" || player.superUsed || roadBuildingPending || robberPending || superMenuIsOpen;
+  const diceFaces = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+  const superState = player.superUsed ? "used" : superReady ? "ready" : "locked";
+  const readyIsActionable = interactive && canOpenSuper && !superDisabled;
+  const readyIsInactive = superReady && !readyIsActionable;
+  const playerColor = player.id === "player-1" ? "#f97316" : "#9333ea";
+  const [superTitleFirst, ...superTitleRest] = guild.superName.toUpperCase().split(" ");
+  const superContents = (
+    <>
+      <span className="guild-hud__super-name"><span>{superTitleFirst}</span><span>{superTitleRest.join(" ")}</span></span>
+      <span className="guild-hud__super-kicker">SUPER</span>
+      {superState !== "ready" && (
+        <div className="guild-hud__super-dice" aria-label={`${collectedCount} of 6 Prosperity dice collected`}>
+          {diceFaces.map((face, index) => {
+            const value = index + 1;
+            const claimed = collectedFaces.has(value);
+            return (
+              <span className={`guild-hud__super-die${claimed ? " is-claimed" : ""}${feedback === "die" && claimed && value === player.secondaryRolls[player.secondaryRolls.length - 1] ? " feedback-prosperity-die" : ""}`} key={face}>
+                <b>{face}</b><small>{value}</small>
+              </span>
+            );
+          })}
         </div>
-    );
-}
-interface GuildColumnProps {
-    guildType: GuildType;
-    guildName: string;
-    playerGuild?: GuildType;
-}
-function GuildColumn({
-    guildType,
-    guildName,
-    playerGuild,
-}: GuildColumnProps) {
-    const guild = GUILDS.find(
-        (guild) => guild.type === guildType
-    );
-    const superName = guild?.superName;
-    const superDescription = guild?.superDescription;
-    const passiveName = guild?.passiveName;
-    const passiveDescrition = guild?.passiveDescription;
-    const isActive = guildType === playerGuild;
-    return (
-        <div
-            style={{
-                position: "relative",
-                padding: "9px 9px",
-                boxSizing: "border-box",
-                opacity: isActive ? 1 : 0.45,
-                background: isActive
-                    ? "#292f38"
-                    : "transparent",
-                border: isActive
-                    ? "1px solid rgba(212, 175, 85, 0.36)"
-                    : "1px solid transparent",
-                borderRadius: isActive
-                    ? "8px"
-                    : "0",
-                boxShadow: isActive
-                    ? `
-                        0 3px 6px rgba(0, 0, 0, 0.34),
-                        0 0 5px ${guild?.color ?? "#D4AF55"}18,
-                        inset 0 1px 0 rgba(255, 255, 255, 0.08),
-                        inset 0 -2px 4px rgba(0, 0, 0, 0.20)
-                    `
-                    : "none",
-                transition: "transform 0.15s ease",
-                zIndex: isActive ? 2 : 1,
-                cursor: "default"
-            }}
+      )}
+      {superState === "locked" && <><strong className="guild-hud__super-state">🔒 LOCKED</strong><em>{collectedCount} / 6 PROSPERITY</em></>}
+      {superState === "ready" && <><strong className="guild-hud__super-state">READY</strong><em>✦ USE SUPER ✦</em></>}
+      {superState === "used" && <><strong className="guild-hud__super-state">SUPER USED</strong><em>ABILITY EXPENDED</em></>}
+    </>
+  );
+  return <div className="guild-hud" style={{ "--guild-color": guild.color, "--player-color": playerColor } as CSSProperties}>
+    <Panel>
+      <div className="guild-hud__heading"><span>{guild.type.toUpperCase()} GUILD</span></div>
+      <div className={`guild-hud__ability${feedback === "passive" ? " feedback-passive-used" : ""}`}><div className="guild-hud__ability-row"><strong>{guild.passiveName}</strong><span className={`guild-hud__passive-status ${player.guildPassiveUsedThisTurn ? "is-used" : "is-available"}`}>PASSIVE · {player.guildPassiveUsedThisTurn ? "USED" : "AVAILABLE"}</span></div><p>{guild.passiveDescription}</p></div>
+      <div className="guild-hud__ability guild-hud__ability--super"><div className="guild-hud__ability-row"><strong>{guild.superName}</strong><span className="guild-hud__ability-type">SUPER</span></div><p>{guild.superDescription}</p></div>
+      {interactive && canOpenSuper ? (
+        <button
+          className={`guild-hud__super-button is-ready${readyIsInactive ? " is-ready-inactive" : ""}${feedback === "ready" ? " feedback-super-ready" : ""}${feedback === "activate" ? " feedback-super-activate" : ""}${feedback === "used" ? " feedback-super-used" : ""}`}
+          type="button"
+          onClick={() => { setFeedback("activate"); onUseSuper?.(); }}
+          disabled={superDisabled}
         >
-            <div style={{
-                textAlign: "center",
-            }}>
-                <strong
-                    style={{
-                        color: guild?.color,
-                        textAlign: "center",
-                    }}
-                >
-                    {guildName}
-                </strong>
-            </div>
-            <div
-                style={{
-                    margin: "1px 0px",
-                }}
-            >
-                <strong>{superName}</strong>
-                <span> (Super)</span>
-            </div>
-            <div
-                style={{
-                    fontSize: "12px",
-                    color: "#9ca3af",
-                }}
-            >
-                {superDescription}
-            </div>
-            <hr style={{ margin: "3px" }} />
-            <div
-                style={{
-                    margin: "1px 0px",
-                    fontSize: "12px",
-                }}
-            >
-                <strong>{passiveName}</strong>
-                <span> (Passive)</span>
-            </div>
-            <div
-                style={{
-                    fontSize: "12px",
-                    color: "#9ca3af",
-                }}
-            >
-                {passiveDescrition}
-            </div>
+          {superContents}
+        </button>
+      ) : (
+        <div className={`guild-hud__super-button guild-hud__super-button--display is-${superState}${readyIsInactive ? " is-ready-inactive" : ""}${feedback === "ready" ? " feedback-super-ready" : ""}${feedback === "activate" ? " feedback-super-activate" : ""}${feedback === "used" ? " feedback-super-used" : ""}`}>
+          {superContents}
         </div>
-    );
+      )}
+    </Panel>
+  </div>;
 }
 export default GuildInformationPanel;

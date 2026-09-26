@@ -52,6 +52,7 @@ export default function BoardEdgeView({
                 <>
                     {/* BLACK ROAD BORDER */}
                     <line
+                        className="feedback-board-piece-enter"
                         x1={nodeA.x}
                         y1={nodeA.y}
                         x2={nodeB.x}
@@ -68,6 +69,7 @@ export default function BoardEdgeView({
                     />
                     {/* PLAYER ROAD COLOR */}
                     <line
+                        className="feedback-board-piece-enter"
                         x1={nodeA.x}
                         y1={nodeA.y}
                         x2={nodeB.x}

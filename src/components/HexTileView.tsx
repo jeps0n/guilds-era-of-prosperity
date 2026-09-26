@@ -88,7 +88,7 @@ export default function HexTileView({
             </text>
             {/* ROBBER / PUMPKIN */}
             {isRobberTile && (
-                <g>
+                <g className="feedback-robber-arrival">
                     {/* TOKEN BACKGROUND COLOR */}
                     <circle
                         cx={tile.x}

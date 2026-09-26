@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 interface RobberActionBarProps {
     playerColor?: string;
     roadBuildingPending?: boolean;
@@ -31,10 +32,13 @@ export default function RobberActionBar({
     grandExpeditionRoadsPlaced = 0,
     roadBuildingRoadsPlaced = 0,
 }: RobberActionBarProps) {
-    const actionBarBackground = hexToRgba(
-        playerColor,
-        0.50
-    );
+    // Player color is illumination over dark material, not the material itself.
+    // Keep this paint-only so every pending-action state retains the 1K geometry.
+    const actionBarBackground = [
+        `radial-gradient(ellipse at 8% 50%, ${hexToRgba(playerColor, 0.24)} 0%, transparent 42%)`,
+        `radial-gradient(ellipse at 92% 50%, ${hexToRgba(playerColor, 0.18)} 0%, transparent 40%)`,
+        `linear-gradient(180deg, ${hexToRgba(playerColor, 0.08)} 0%, rgba(20, 23, 21, 0.98) 42%, rgba(12, 14, 13, 0.99) 100%)`,
+    ].join(", ");
     const headerText = masterBuilderPending
         ? "MASTER BUILDER"
         : roadBuildingPending
@@ -60,40 +64,29 @@ export default function RobberActionBar({
                 ? `Road: ${2 - roadBuildingRoadsPlaced}`
                 : undefined;
     return (
-        <div
-            style={{
-                marginTop: "12px",
-                display: "flex",
-                justifyContent: "center",
-                width: "100%",
-                userSelect: "none"
-            }}
-        >
-            <div
+        <div className="game-command-shell" style={{ userSelect: "none" }}>
+            <div className={`game-command-tray game-command-tray--pending${grandExpeditionPending || masterBuilderPending ? " feedback-guild-workflow" : ""}`}
                 style={{
                     background: actionBarBackground,
-                    border: "1px solid #374151",
                     borderRadius: "14px",
                     padding: "10px",
                     display: "flex",
                     gap: "8px",
                     alignItems: "center",
                     justifyContent: "center",
-                    boxShadow:
-                        "0 8px 24px rgba(0,0,0,0.25)",
                     flexWrap: "nowrap",
-                    minHeight: "64px",
-                    boxSizing: "border-box",
-                }}
+                } as CSSProperties}
             >
                 <div
                     style={{
                         minWidth: "760px",
-                        minHeight: "64px",
-                        padding: "10px 12px",
+                        height: "58px",
+                        minHeight: "58px",
+                        maxHeight: "58px",
+                        padding: "6px 12px",
                         boxSizing: "border-box",
                         borderRadius: "10px",
-                        background: "#000000",
+                        background: "linear-gradient(180deg, rgba(9, 11, 10, 0.98), rgba(3, 4, 4, 0.99))",
                         color: "white",
                         display: "flex",
                         alignItems: "center",

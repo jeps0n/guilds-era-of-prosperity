@@ -10,8 +10,8 @@ function Panel({
   children,
   width,
   minHeight,
-  background = "#111827",
-  border = "1px solid #374151",
+  background = "linear-gradient(145deg, rgba(31,35,31,.96), rgba(17,20,18,.98))",
+  border = "1px solid rgba(205,170,92,.26)",
 }: PanelProps) {
   return (
     <div
@@ -23,6 +23,7 @@ function Panel({
         width,
         minHeight,
         boxSizing: "border-box",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,.025), 0 8px 20px rgba(0,0,0,.14)",
       }}
     >
       {children}

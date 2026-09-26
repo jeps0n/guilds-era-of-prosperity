@@ -172,14 +172,7 @@ function GameLog({
         });
     }
     return (
-        <div
-            style={{
-                marginTop: "12px",
-                marginBottom: "0px",
-                cursor: "default",
-                userSelect: "none",
-            }}
-        >
+        <div className="game-log" style={{ cursor: "default", userSelect: "none" }}>
             <Panel>
                 <strong>Game Log</strong>
                 <hr
@@ -191,7 +184,8 @@ function GameLog({
                 <div
                     ref={logRef}
                     style={{
-                        height: "180px",
+                        height: "100%",
+                        minHeight: 0,
                         overflowY: "auto",
                         fontSize: "14px",
                         textAlign: "left",

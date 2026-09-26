@@ -1,10 +1,11 @@
+import type { CSSProperties } from "react";
 import type { GamePhase } from "../game/engine/GameState";
 import type { ActionAvailability } from "../game/systems/actions/getActionAvailability";
-const ACTIVE_BUTTON_BACKGROUND = "#1d4ed8";
-const DISABLED_BUTTON_BACKGROUND = "#1f2937";
-const DEFAULT_BUTTON_BACKGROUND = "#111827";
-const ACTIVE_BUTTON_BORDER = "#60a5fa";
-const DEFAULT_BUTTON_BORDER = "#374151";
+const ACTIVE_BUTTON_BACKGROUND = "linear-gradient(180deg, #c5a45c, #7b5d29)";
+const DISABLED_BUTTON_BACKGROUND = "#171a18";
+const DEFAULT_BUTTON_BACKGROUND = "linear-gradient(180deg, #292d28, #171a18)";
+const ACTIVE_BUTTON_BORDER = "#efd68b";
+const DEFAULT_BUTTON_BORDER = "rgba(205, 170, 92, 0.28)";
 interface ActionBarProps {
     prosperityRollSequenceActive?: boolean;
     onRollDice?: () => void;
@@ -27,30 +28,36 @@ interface ActionBarProps {
 }
 interface ActionButtonProps {
     label: string;
+    feedbackClassName?: string;
     icon: string;
     active?: boolean;
     disabled?: boolean;
     onClick?: () => void;
+    rollDiceSize?: boolean;
 }
 function ActionButton({
     label,
+    feedbackClassName,
     icon,
     active = false,
     disabled = false,
     onClick,
+    rollDiceSize = false,
 }: ActionButtonProps) {
     return (
         <button
             type="button"
+            className={feedbackClassName}
             onClick={onClick}
             disabled={disabled}
             style={{
-                minWidth: "100px",
-                maxWidth: "100px",
-                minHeight: "64px",
-                maxHeight: "64px",
-                padding: "10px 12px",
-                borderRadius: "10px",
+                width: rollDiceSize ? "110px" : "94px",
+                minWidth: rollDiceSize ? "110px" : "94px",
+                height: rollDiceSize ? "76px" : "58px",
+                minHeight: rollDiceSize ? "76px" : "58px",
+                maxHeight: rollDiceSize ? "76px" : "58px",
+                padding: rollDiceSize ? "8px" : "6px 7px",
+                borderRadius: "8px",
                 border: active
                     ? `3px solid ${ACTIVE_BUTTON_BORDER}`
                     : `3px solid ${DEFAULT_BUTTON_BORDER}`,
@@ -60,8 +67,8 @@ function ActionButton({
                         ? DISABLED_BUTTON_BACKGROUND
                         : DEFAULT_BUTTON_BACKGROUND,
                 color: disabled
-                    ? "#6b7280"
-                    : "white",
+                    ? "#666b63"
+                    : active ? "#17130b" : "#f3ead5",
                 cursor: disabled
                     ? "not-allowed"
                     : "pointer",
@@ -69,53 +76,39 @@ function ActionButton({
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "4px",
+                justifyContent: "center",
+                gap: rollDiceSize ? "5px" : "7px",
                 transition:
-                    "background 0.15s ease, border 0.15s ease",
+                    "background 0.15s ease, border 0.15s ease, transform 0.15s ease",
+                boxShadow: active ? "0 0 16px rgba(220,180,88,.22)" : "inset 0 1px 0 rgba(255,255,255,.035)",
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
             }}
         >
             <span
                 style={{
-                    fontSize: "23px",
+                    fontSize: rollDiceSize ? "27px" : "22px",
                     lineHeight: 1,
-                    transform: "translateY(-2px)",
+                    display: "block",
                 }}
             >
                 {icon}
             </span>
             <span
                 style={{
-                    fontSize: "12px",
-                    lineHeight: 1,
+                    fontSize: rollDiceSize ? "11px" : "9px",
+                    lineHeight: 1.05,
+                    display: "block",
                     whiteSpace: "nowrap",
+                    overflowWrap: "normal",
+                    textAlign: "center",
+                    maxWidth: "100%",
                 }}
             >
                 {label}
             </span>
         </button>
     );
-}
-function hexToRgba(
-    hex: string,
-    alpha: number
-): string {
-    const normalized = hex.replace("#", "");
-    if (normalized.length !== 6) {
-        return `rgba(17, 24, 39, ${alpha})`;
-    }
-    const red = parseInt(
-        normalized.slice(0, 2),
-        16
-    );
-    const green = parseInt(
-        normalized.slice(2, 4),
-        16
-    );
-    const blue = parseInt(
-        normalized.slice(4, 6),
-        16
-    );
-    return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }
 function ActionBar({
     prosperityRollSequenceActive = false,
@@ -130,7 +123,6 @@ function ActionBar({
     availability,
     diceOnly = false,
     hideDice = false,
-    playerColor = "DEFAULT_BUTTON_BACKGROUND",
     roadBuildingPending = false,
     hasPlayableKnight = false,
     superMenuIsOpen = false,
@@ -172,8 +164,6 @@ function ActionBar({
             lastDiceRoll === undefined &&
             hasPlayableKnight
         );
-    const actionBarBackground =
-        hexToRgba(playerColor, 0.50);
     const actionBarLocked =
         prosperityRollSequenceActive || superMenuIsOpen;
     if (diceOnly) {
@@ -196,34 +186,24 @@ function ActionBar({
                     roadBuildingPending
                 }
                 onClick={onRollDice}
+                rollDiceSize
+                feedbackClassName={lastDiceRoll !== undefined ? `feedback-dice-result${lastDiceRoll === 7 ? " feedback-dice-result--seven" : ""}` : undefined}
             />
         );
     }
     return (
-        <div
-            style={{
-                marginTop: "12px",
-                display: "flex",
-                justifyContent: "center",
-                width: "100%",
-                overflowX: "auto",
-            }}
-        >
-            <div
+        <div className="game-command-shell">
+            <div className="game-command-tray"
                 style={{
-                    background:
-                        actionBarBackground,
-                    border: `1px solid ${DEFAULT_BUTTON_BORDER}`,
+                    background: "linear-gradient(180deg, rgba(35,39,35,.98), rgba(17,20,18,.98))",
                     borderRadius: "14px",
                     padding: "10px",
                     display: "flex",
                     gap: "8px",
                     alignItems: "center",
                     justifyContent: "center",
-                    boxShadow:
-                        "0 8px 24px rgba(0,0,0,0.25)",
                     flexWrap: "nowrap",
-                }}
+                } as CSSProperties}
             >
                 {!hideDice && (
                     <ActionButton
@@ -236,6 +216,7 @@ function ActionBar({
                         active={canRoll && !actionBarLocked}
                         disabled={actionBarLocked || !canRoll}
                         onClick={onRollDice}
+                        feedbackClassName={lastDiceRoll !== undefined ? `feedback-dice-result${lastDiceRoll === 7 ? " feedback-dice-result--seven" : ""}` : undefined}
                     />
                 )}
                 <ActionButton

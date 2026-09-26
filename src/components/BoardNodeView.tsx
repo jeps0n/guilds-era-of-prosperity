@@ -26,6 +26,7 @@ export default function BoardNodeView({
       {city ? (
         <>
           <polygon
+            className="feedback-board-piece-enter"
             points={`
               ${node.x},${node.y - 24}
               ${node.x + 21},${node.y - 8}
@@ -71,6 +72,7 @@ export default function BoardNodeView({
         </>
       ) : settlement ? (
         <polygon
+          className="feedback-board-piece-enter"
           points={`
               ${node.x},${node.y - 18}
               ${node.x + 16},${node.y - 6}

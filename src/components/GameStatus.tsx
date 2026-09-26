@@ -1,69 +1,44 @@
 import type { GameState } from "../game/engine/GameState";
+import type { Resources } from "../game/engine/types";
 interface GameStatusProps {
   game: GameState;
   onRestoreCheckpoint: () => void;
   canRestoreCheckpoint: boolean;
+  showResourceBank?: boolean;
 }
-function GameStatus({
-  game,
-  onRestoreCheckpoint,
-  canRestoreCheckpoint,
-}: GameStatusProps) {
+const RESOURCE_COLORS: Record<keyof Resources, string> = {
+  brick: "#b45309", lumber: "#166534", wheat: "#eab308", sheep: "#65a30d", ore: "#6b7280",
+};
+const RESOURCE_LABELS: Record<keyof Resources, string> = {
+  brick: "Brick", lumber: "Lumber", wheat: "Wheat", sheep: "Sheep", ore: "Ore",
+};
+function GameStatus({ game, onRestoreCheckpoint, canRestoreCheckpoint, showResourceBank = false }: GameStatusProps) {
+  const phaseLabel = game.phase.replaceAll("_", " ");
   return (
-    <div
-      style={{
-        background: "#111827",
-        border: "1px solid #374151",
-        borderRadius: "12px",
-        padding: "12px 20px",
-        minWidth: "280px",
-        textAlign: "center",
-        cursor:"default",
-        userSelect: "none"
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "8px",
-        }}
-      >
-        <div style={{ textAlign: "left" }}>
-          <strong>Phase:</strong>{" "}
-          {game.phase}
+    <div className="game-status">
+      <div className="game-status__primary">
+        <div className="game-status__campaign">
+          <span className="game-status__eyebrow">Current Campaign:</span>
+          <span className="game-status__phase">{phaseLabel}</span>
         </div>
-        <div style={{ textAlign: "right" }}>
-          <strong>Turn:</strong>{" "}
-          {game.turnNumber}
-        </div>
+        <div className="game-status__turn"><span>Turn</span><strong>{game.turnNumber}</strong></div>
+        <button type="button" className="game-status__restore" onClick={onRestoreCheckpoint} disabled={!canRestoreCheckpoint}>
+          Turn Back
+        </button>
       </div>
-      <button
-        type="button"
-        onClick={onRestoreCheckpoint}
-        disabled={!canRestoreCheckpoint}
-        style={{
-          padding: "8px 16px",
-          borderRadius: "8px",
-          border: "none",
-          background:
-            canRestoreCheckpoint
-              ? "#4b5563"
-              : "#1f2937",
-          color:
-            canRestoreCheckpoint
-              ? "white"
-              : "#6b7280",
-          cursor:
-            canRestoreCheckpoint
-              ? "pointer"
-              : "not-allowed",
-          fontWeight: "bold",
-        }}
-      >
-        Turn Back
-      </button>
+      {showResourceBank && (
+        <div className="game-status__bank">
+          <span className="game-status__bank-label">Resource Bank</span>
+          <div className="game-status__bank-resources">
+            {(Object.keys(RESOURCE_COLORS) as (keyof Resources)[]).map((resource) => (
+              <div className="game-status__bank-resource" key={resource} title={RESOURCE_LABELS[resource]}>
+                <span style={{ background: RESOURCE_COLORS[resource] }}>{game.resourceBank[resource]}</span>
+                <small>{RESOURCE_LABELS[resource]}</small>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
